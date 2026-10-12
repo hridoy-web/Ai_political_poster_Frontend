@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { Hind_Siliguri, Outfit, Geist } from "next/font/google";
+import { Outfit, Noto_Serif_Bengali } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const outfitFont = Outfit({
   variable: "--font-outfit",
@@ -13,7 +11,7 @@ const outfitFont = Outfit({
   preload: true,
 });
 
-const banglaFont = Hind_Siliguri({
+const banglaFont = Noto_Serif_Bengali({
   variable: "--font-bengali",
   subsets: ["bengali"],
   weight: ["400", "500", "700"],
@@ -43,10 +41,10 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={cn("h-full", outfitFont.variable, banglaFont.variable, "font-sans", geist.variable)}
+      className={cn("h-full", outfitFont.variable, banglaFont.variable, "font-sans")}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
         
         <main className="grow flex flex-col">
           {children}
