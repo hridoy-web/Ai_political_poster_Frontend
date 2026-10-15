@@ -8,7 +8,7 @@ export default function NotFoundPage() {
 
             <h2 className="text-9xl font-bold mb-4 text-gradient-green">404</h2>
 
-            <h3 className=" text-3xl font-extrabold text-brand-">Page Not Found</h3>
+            <h3 className=" text-3xl font-extrabold">Page Not Found</h3>
 
             <p className="text-base text-gradient-green">Sorry, the page you are looking for does not exist.</p>
 
