@@ -13,10 +13,13 @@ export default function TemplatesPage() {
       {/* Header Banner */}
       <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-10 space-y-4">
 
-       <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-  পছন্দের রাজনৈতিক <br className="hidden sm:block" />
-  <span className="text-gradient-brand">পোস্টার টেমপ্লেট</span> বেছে নিন
-</h1>
+       <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15] sm:leading-[1.08]">
+         পছন্দের রাজনৈতিক
+         <span className="block mt-0.5 sm:-mt-0.7">
+           <span className="text-gradient-brand">পোস্টার টেমপ্লেট</span> বেছে নিন
+         </span>
+       </h1>
+
 
 
         <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl">

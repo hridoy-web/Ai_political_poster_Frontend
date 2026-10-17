@@ -35,8 +35,8 @@ export function TemplateCard({
         />
 
         {/* Top Badges & Bookmark */}
-        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-          <div>
+        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-20 pointer-events-none">
+          <div className="pointer-events-auto">
             {template.isPremium ? (
               <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-md backdrop-blur-md flex items-center gap-1 font-bold">
                 <Crown className="size-3" />
@@ -53,13 +53,14 @@ export function TemplateCard({
           <button
             type="button"
             onClick={(e) => {
+              e.preventDefault()
               e.stopPropagation()
               onToggleBookmark(template.id)
             }}
             className={cn(
-              "size-8 rounded-full flex items-center justify-center transition-all backdrop-blur-md",
+              "pointer-events-auto cursor-pointer size-8 rounded-full flex items-center justify-center transition-all backdrop-blur-md shadow-md",
               isBookmarked
-                ? "bg-white text-brand-primary shadow-md"
+                ? "bg-white text-brand-primary"
                 : "bg-black/40 text-white hover:bg-white hover:text-brand-primary"
             )}
             title={isBookmarked ? "বুকমার্ক সরানো হয়েছে" : "বুকমার্ক করুন"}
@@ -74,7 +75,7 @@ export function TemplateCard({
         </div>
 
         {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2 z-10">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2 z-10 pointer-events-none group-hover:pointer-events-auto">
           <Button
             type="button"
             variant="secondary"
@@ -114,14 +115,6 @@ export function TemplateCard({
           >
             {template.title}
           </h3>
-        </div>
-
-        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/50">
-          <span>{template.downloadsCount.toLocaleString()} বার ব্যবহার</span>
-          <span className="flex items-center gap-1">
-            <Heart className="size-3 fill-muted-foreground/30" />
-            {template.likesCount}
-          </span>
         </div>
       </div>
     </div>

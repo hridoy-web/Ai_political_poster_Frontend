@@ -1,12 +1,12 @@
 import { CategoryOption, PosterTemplate, TemplateCategory, TemplateSort } from "./template.types";
 
 export const TEMPLATE_CATEGORIES: CategoryOption[] = [
-  { id: "all", label: "সকল টেমপ্লেট", count: 18 },
-  { id: "election", label: "নির্বাচন প্রচারণা", count: 6 },
-  { id: "national-day", label: "জাতীয় দিবস", count: 4 },
-  { id: "greetings", label: "দলীয় পদের শুভেচ্ছা", count: 3 },
-  { id: "birthday", label: "শুভ জন্মদিন", count: 3 },
-  { id: "religious", label: "ধর্মীয় উৎসব", count: 2 },
+  { id: "all", label: "সকল টেমপ্লেট", count: 5 },
+  { id: "election", label: "নির্বাচন প্রচারণা", count: 1 },
+  { id: "national-day", label: "জাতীয় দিবস", count: 1 },
+  { id: "greetings", label: "দলীয় পদের শুভেচ্ছা", count: 1 },
+  { id: "birthday", label: "শুভ জন্মদিন", count: 1 },
+  { id: "religious", label: "ধর্মীয় উৎসব", count: 1 },
 ];
 
 export const MOCK_TEMPLATES: PosterTemplate[] = [
@@ -18,11 +18,7 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
     categoryLabel: "নির্বাচন প্রচারণা",
     thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
     isPremium: true,
-    priceCredits: 2,
-    downloadsCount: 1420,
-    likesCount: 389,
     tags: ["নির্বাচন", "ভোট", "প্রচারণা", "পোস্টার"],
-    aspectRatio: "4:5",
     createdAt: "2026-03-10",
   },
   {
@@ -31,122 +27,52 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
     description: "লাল-সবুজের আবহে জাতীয় স্মৃতিসৌধ সম্বলিত দেশাত্মবোধক ও শ্রদ্ধাঞ্জলি পোস্টার ডিজাইন।",
     category: "national-day",
     categoryLabel: "জাতীয় দিবস",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
+    thumbnailUrl: "https://cdn.dribbble.com/userupload/36528011/file/original-328a6c43bd268cf3edd4592834f6139b.jpg",
     isPremium: false,
-    downloadsCount: 3890,
-    likesCount: 912,
     tags: ["স্বাধীনতা দিবস", "২৬ মার্চ", "বাংলাদেশ", "শ্রদ্ধাঞ্জলি"],
-    aspectRatio: "4:5",
     createdAt: "2026-03-01",
   },
   {
-    id: "tpl-112",
-    title: "জাতীয় সংসদ সদস্য প্রার্থী প্রচার পোস্টার",
-    description: "আসন্ন জাতীয় সংসদ নির্বাচনে মার্কা ও প্রার্থীর পক্ষে গণজোয়ার সৃষ্টির পোস্টার।",
-    category: "election",
-    categoryLabel: "নির্বাচন প্রচারণা",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
-    isPremium: true,
-    priceCredits: 3,
-    downloadsCount: 2450,
-    likesCount: 780,
-    tags: ["সংসদ সদস্য", "এমপি", "নির্বাচন", "ভোট"],
-    aspectRatio: "4:5",
-    createdAt: "2026-03-11",
-  },
-  {
-    id: "tpl-113",
-    title: "সিটি কর্পোরেশন কাউন্সিলর প্রার্থী পোস্টার",
-    description: "ওয়ার্ডবাসীর সেবা ও উন্নয়নের অঙ্গীকার নিয়ে কাউন্সিলর প্রার্থীর নির্বাচনী পোস্টার।",
-    category: "election",
-    categoryLabel: "নির্বাচন প্রচারণা",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
+    id: "tpl-103",
+    title: "দলীয় নবনির্বাচিত কমিটিকে উষ্ণ অভিনন্দন",
+    description: "সভাপতি ও সাধারণ সম্পাদক পদে নির্বাচিত নেতৃবৃন্দকে শুভেচ্ছা ও অভিনন্দন জানানোর পোস্টার।",
+    category: "greetings",
+    categoryLabel: "দলীয় পদের শুভেচ্ছা",
+    thumbnailUrl: "https://cdn.dribbble.com/userupload/43070883/file/original-a95afc36f38069131a411ed8fc5e9168.jpg?resize=752x&vertical=center",
     isPremium: false,
-    downloadsCount: 1320,
-    likesCount: 410,
-    tags: ["কাউন্সিলর", "ওয়ার্ড", "নির্বাচন", "ভোট"],
-    aspectRatio: "4:5",
-    createdAt: "2026-03-02",
+    tags: ["শুভেচ্ছা", "কমিটি", "অভিনন্দন", "দলীয় পদ"],
+    createdAt: "2026-02-18",
   },
   {
-    id: "tpl-114",
-    title: "নির্বাচনী বিশাল জনসভা ও পথসভা ব্যানার",
-    description: "প্রধান অতিথির শুভাগমন ও নির্বাচনী পথসভা সফল করার উদাত্ত আহ্বান ব্যানার।",
-    category: "election",
-    categoryLabel: "নির্বাচন প্রচারণা",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
-    isPremium: true,
-    priceCredits: 2,
-    downloadsCount: 1750,
-    likesCount: 520,
-    tags: ["জনসভা", "পথসভা", "নির্বাচন", "ব্যানার"],
-    aspectRatio: "4:5",
-    createdAt: "2026-03-09",
-  },
-  {
-    id: "tpl-115",
-    title: "১৬ই ডিসেম্বর মহান বিজয় দিবস শ্রদ্ধাঞ্জলি",
-    description: "বীর মুক্তিযোদ্ধাদের প্রতি বিনম্র শ্রদ্ধা ও বিজয়ের রক্তিম শুভেচ্ছা পোস্টার।",
-    category: "national-day",
-    categoryLabel: "জাতীয় দিবস",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
-    isPremium: false,
-    downloadsCount: 4600,
-    likesCount: 1390,
-    tags: ["বিজয় দিবস", "১৬ ডিসেম্বর", "মুক্তিযোদ্ধা", "শ্রদ্ধাঞ্জলি"],
-    aspectRatio: "4:5",
-    createdAt: "2026-02-10",
-  },
-  {
-    id: "tpl-116",
-    title: "ঐতিহাসিক ৭ই নভেম্বর জাতীয় সংহতি দিবস",
-    description: "জাতীয় বিপ্লব ও সংহতি দিবস উপলক্ষে দলীয় নেতাকর্মীদের স্মরণ ও শুভেচ্ছা বার্তা।",
-    category: "national-day",
-    categoryLabel: "জাতীয় দিবস",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
-    isPremium: true,
-    priceCredits: 2,
-    downloadsCount: 2890,
-    likesCount: 890,
-    tags: ["সংহতি দিবস", "৭ নভেম্বর", "জাতীয় দিবস"],
-    aspectRatio: "4:5",
-    createdAt: "2026-02-05",
-  },
-  {
-    id: "tpl-117",
-    title: "দেশনেত্রীর শুভ জন্মদিনে দীর্ঘায়ু কামনায় শুভেচ্ছা",
-    description: "গণমানুষের প্রিয় দেশনেত্রীর শুভ জন্মদিনে আন্তরিক শুভেচ্ছা ও সুস্বাস্থ্য কামনায় ব্যানার।",
+    id: "tpl-104",
+    title: "প্রিয় নেতার শুভ জন্মদিন ব্যানার",
+    description: "নেতা বা দলীয় প্রধানের জন্মদিনে দীর্ঘায়ু ও সুস্বাস্থ্য কামনায় বিশেষ জন্মদিনের ফ্রেম।",
     category: "birthday",
     categoryLabel: "শুভ জন্মদিন",
     thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
-    isPremium: false,
-    downloadsCount: 3100,
-    likesCount: 1100,
-    tags: ["দেশনেত্রী", "জন্মদিন", "শুভ জন্মদিন", "নেতা"],
-    aspectRatio: "4:5",
-    createdAt: "2026-02-27",
+    isPremium: true,
+    tags: ["জন্মদিন", "নেতা", "শুভেচ্ছা", "দীর্ঘায়ু"],
+    createdAt: "2026-02-25",
   },
   {
-    id: "tpl-118",
-    title: "পবিত্র ঈদে মিলাদুন্নবী (সাঃ) উপলক্ষে শুভেচ্ছা ব্যানার",
-    description: "বিশ্বনবী হযরত মুহাম্মদ (সাঃ) এর পবিত্র শুভাগমন উপলক্ষে রাজনৈতিক শুভেচ্ছা পোস্টার।",
+    id: "tpl-105",
+    title: "পবিত্র ঈদুল ফিতর মোবারক রাজনৈতিক শুভেচ্ছা",
+    description: "জনসাধারণ ও দলীয় নেতাকর্মীদের পবিত্র ঈদের শুভেচ্ছা ও শান্তি কামনায় বিশেষ পোস্টার।",
     category: "religious",
     categoryLabel: "ধর্মীয় উৎসব",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
+    thumbnailUrl: "https://cdn.dribbble.com/userupload/43070968/file/original-080ea70639ed00e7260c3c3e81903fc6.jpg?resize=752x&vertical=center",
     isPremium: false,
-    downloadsCount: 2200,
-    likesCount: 670,
-    tags: ["ঈদে মিলাদুন্নবী", "ধর্মীয়", "উৎসব", "শুভেচ্ছা"],
-    aspectRatio: "4:5",
-    createdAt: "2026-03-01",
+    tags: ["ঈদ", "ঈদ মোবারক", "ধর্মীয়", "উৎসব"],
+    createdAt: "2026-03-12",
   },
 ];
 
 export class TemplateService {
+  // Fetch all templates (supports future backend API with caching)
   static async getAllTemplates(): Promise<PosterTemplate[]> {
-    /*ভবিষ্যতে এপিআই আসলে নিচের অংশটি আন-কমেন্ট করবেন:
+    /* When backend API is ready, uncomment the block below:
     try {
-      const response = await fetch("এপিআই", {
+      const response = await fetch("API_URL_HERE", {
         next: { revalidate: 60 },
       });
       if (!response.ok) throw new Error("API Network response was not ok");
@@ -161,12 +87,26 @@ export class TemplateService {
     return MOCK_TEMPLATES;
   }
 
-  // নির্দিষ্ট একটি পোস্টার খুঁজে বের করার মেথড
-   static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
+  // Find a specific template by ID
+  static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
+    /* When single template detail API is ready, uncomment the block below:
+    try {
+      const response = await fetch("API_URL_HERE", {
+        next: { revalidate: 60 },
+      });
+      if (!response.ok) throw new Error("Single template API response was not ok");
+      const data: PosterTemplate = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Single Template Fetch Failed, falling back to mock:", error);
+      return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
+    }
+    */
+
     return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
   }
 
-  //ক্যাটাগরি তালিকা ও আসল পোস্টার কাউন্ট পাওয়ার মেথড
+  // Get categories with dynamic template count
   static getCategories(): CategoryOption[] {
     return TEMPLATE_CATEGORIES.map((cat) => {
       if (cat.id === "all") {
@@ -177,23 +117,24 @@ export class TemplateService {
     });
   }
 
-  //সার্চ ও ফিল্টারিং মেথড
+  // Search and filtering engine
   static filterTemplates(
     templates: PosterTemplate[],
     options: {
       category?: TemplateCategory;
       search?: string;
       sort?: TemplateSort;
+      bookmarkedIds?: Set<string>;
     }
   ): PosterTemplate[] {
     let result = [...templates];
 
-    // ১. ক্যাটাগরি ফিল্টার ("all" বাদে বাকি ক্যাটাগরি ফিল্টার হবে)
+    // 1. Category filter (skip if 'all')
     if (options.category && options.category !== "all") {
       result = result.filter((item) => item.category === options.category);
     }
 
-    // ২. সার্চ ফিল্টার (নাম, বর্ণনা বা ট্যাগ মিলিয়ে দেখা)
+    // 2. Search filter (matches title, description, or tags)
     if (options.search && options.search.trim() !== "") {
       const query = options.search.toLowerCase().trim();
       result = result.filter(
@@ -204,14 +145,17 @@ export class TemplateService {
       );
     }
 
-    // ৩. সর্টিং ফিল্টার (জনপ্রিয়, নতুন বা প্রিমিয়াম অনুযায়ী সাজানো)
+    // 3. Sorting filter (popular, latest, or premium)
     if (options.sort) {
       if (options.sort === "popular") {
-        result.sort((a, b) => b.downloadsCount - a.downloadsCount);
+        // Show templates that have user's love/bookmark react
+        if (options.bookmarkedIds) {
+          result = result.filter((item) => options.bookmarkedIds!.has(item.id));
+        }
       } else if (options.sort === "latest") {
         result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       } else if (options.sort === "premium") {
-        // শুধুমাত্র প্রিমিয়াম পোস্টার ফিল্টার হয়ে আসবে
+        // Filter only premium templates
         result = result.filter((item) => item.isPremium);
       }
     }

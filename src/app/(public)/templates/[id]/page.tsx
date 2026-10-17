@@ -5,7 +5,7 @@ import Image from "next/image"
 import { TemplateService } from "@/modules/templates/template.service"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Wand2, ArrowLeft, Download, Heart, Crown, CheckCircle2 } from "lucide-react"
+import { Wand2, ArrowLeft, Heart, Crown, CheckCircle2 } from "lucide-react"
 
 interface TemplateDetailsPageProps {
   params: Promise<{ id: string }>
@@ -84,9 +84,6 @@ export default async function TemplateDetailsPage({
               <Badge variant="outline" className="text-xs">
                 {template.categoryLabel}
               </Badge>
-              <span className="text-xs text-muted-foreground">
-                অনুপাত: {template.aspectRatio}
-              </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
@@ -96,31 +93,6 @@ export default async function TemplateDetailsPage({
             <p className="text-sm text-muted-foreground leading-relaxed">
               {template.description}
             </p>
-
-            <div className="grid grid-cols-2 gap-4 py-4 border-y border-border">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Download className="size-4 text-brand-green" />
-                <span>{template.downloadsCount.toLocaleString()} বার ডাউনলোড</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Heart className="size-4 text-brand-primary" />
-                <span>{template.likesCount.toLocaleString()} জন পছন্দ করেছেন</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-muted-foreground">ট্যাগসমূহ:</span>
-              <div className="flex flex-wrap gap-2">
-                {template.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2.5 py-1 rounded-md bg-muted text-muted-foreground border border-border"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="space-y-3 pt-4">

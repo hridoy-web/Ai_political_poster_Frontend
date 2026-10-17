@@ -11,11 +11,7 @@ export interface PosterTemplate {
   thumbnailUrl: string
   previewUrl?: string
   isPremium: boolean
-  priceCredits?: number
-  downloadsCount: number
-  likesCount: number
   tags: string[]
-  aspectRatio: "4:5" | "1:1" | "16:9"
   createdAt: string
 }
 

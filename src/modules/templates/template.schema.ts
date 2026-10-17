@@ -1,4 +1,4 @@
-// Template module filter / parameter schemas
+// Template module filter 
 
 export interface TemplateFilterParams {
   category?: string

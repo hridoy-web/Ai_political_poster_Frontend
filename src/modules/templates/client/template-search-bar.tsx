@@ -54,23 +54,22 @@ export function TemplateSearchBar({
       </div>
 
       {/* Sort Options */}
-      <div className="flex items-center justify-between md:justify-end gap-2">
-
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border">
+      <div className="flex flex-wrap items-center justify-start md:justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border">
           {SORT_OPTIONS.map((opt) => {
             const isSelected = currentSort === opt.id
             return (
               <Button
                 key={opt.id}
                 type="button"
-                variant={isSelected ? "default" : "ghost"}
+                variant="ghost"
                 size="sm"
                 onClick={() => onSortChange(opt.id)}
                 className={cn(
-                  "h-8 px-2.5 text-xs font-medium rounded-lg gap-1.5 transition-all",
+                  "h-8 px-3 text-xs font-medium rounded-lg gap-1.5 transition-colors duration-200 cursor-pointer select-none",
                   isSelected
-                    ? "bg-card text-foreground shadow-xs border border-border font-semibold text-brand-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                    ? "bg-gradient-brand text-white shadow-xs hover:text-white"
+                    : "text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10"
                 )}
               >
                 {opt.icon}

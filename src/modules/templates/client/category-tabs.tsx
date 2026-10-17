@@ -42,8 +42,8 @@ export function CategoryTabs({
   onSelectCategory,
 }: CategoryTabsProps) {
   return (
-    <div className="w-full overflow-x-auto pb-2 scrollbar-none">
-      <div className="flex items-center gap-2 min-w-max p-1 rounded-xl bg-muted/60 border border-border">
+    <div className="w-full">
+      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-muted/60 border border-border">
         {categories.map((cat) => {
           const isActive = selectedCategory === cat.id
           return (
@@ -54,10 +54,10 @@ export function CategoryTabs({
               size="sm"
               onClick={() => onSelectCategory(cat.id)}
               className={cn(
-                "rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium gap-2 px-3 py-1.5 h-9",
+                "rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium gap-2 px-3.5 py-1.5 h-9 cursor-pointer select-none",
                 isActive
                   ? "bg-gradient-brand text-white shadow-md hover:text-white"
-                  : "text-muted-foreground hover:text-foreground hover:bg-card"
+                  : "text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10"
               )}
             >
               {getCategoryIcon(cat.id)}
@@ -65,7 +65,7 @@ export function CategoryTabs({
               {typeof cat.count === "number" && (
                 <span
                   className={cn(
-                    "text-[10px] px-1.5 py-0.2 rounded-full font-medium transition-colors duration-200",
+                    "text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-colors duration-200 leading-none",
                     isActive
                       ? "bg-white/20 text-white"
                       : "bg-muted text-muted-foreground"

@@ -24,7 +24,7 @@ export function TemplateGalleryView({
   const [currentSort, setCurrentSort] = React.useState<TemplateSort>("trending")
   const [previewTemplate, setPreviewTemplate] = React.useState<PosterTemplate | null>(null)
   const [dialogOpen, setDialogOpen] = React.useState(false)
-  const [bookmarkedIds, setBookmarkedIds] = React.useState<Set<string>>(new Set(["tpl-102"]))
+  const [bookmarkedIds, setBookmarkedIds] = React.useState<Set<string>>(new Set(["tpl-101", "tpl-102"]))
 
   // Filter & sort templates interactively
   const filteredTemplates = React.useMemo(() => {
@@ -32,8 +32,9 @@ export function TemplateGalleryView({
       category: selectedCategory,
       search: searchQuery,
       sort: currentSort,
+      bookmarkedIds,
     })
-  }, [initialTemplates, selectedCategory, searchQuery, currentSort])
+  }, [initialTemplates, selectedCategory, searchQuery, currentSort, bookmarkedIds])
 
   const handleOpenPreview = (tpl: PosterTemplate) => {
     setPreviewTemplate(tpl)
@@ -41,6 +42,7 @@ export function TemplateGalleryView({
   }
 
   const handleToggleBookmark = (id: string) => {
+    // Optimistic local state update for instant bookmark toggle
     setBookmarkedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -50,6 +52,16 @@ export function TemplateGalleryView({
       }
       return next
     })
+
+    /* When bookmark API is ready, uncomment the block below:
+    try {
+      fetch("API_URL_HERE", {
+        method: "POST",
+      })
+    } catch (error) {
+      console.error("Bookmark API Failed:", error)
+    }
+    */
   }
 
   return (
@@ -89,10 +101,14 @@ export function TemplateGalleryView({
             <LayoutGrid className="size-6" />
           </div>
           <h3 className="text-base font-semibold text-foreground">
-            কোনো টেমপ্লেট খুঁজে পাওয়া যায়নি
+            {currentSort === "popular"
+              ? "পছন্দের কোনো পোস্টার পাওয়া যায়নি"
+              : "কোনো টেমপ্লেট খুঁজে পাওয়া যায়নি"}
           </h3>
           <p className="text-xs text-muted-foreground max-w-sm">
-            আপনার অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্টার পাওয়া যায়নি। অনুগ্রহ করে অন্য কি-ওয়ার্ড দিয়ে চেষ্টা করুন।
+            {currentSort === "popular"
+              ? "পোস্টারের ওপরের লাভ (হার্ট) আইকনে ক্লিক করে আপনার পছন্দের তালিকা তৈরি করুন।"
+              : "আপনার অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্টার পাওয়া যায়নি। অনুগ্রহ করে অন্য কি-ওয়ার্ড দিয়ে চেষ্টা করুন।"}
           </p>
           <Button
             variant="outline"

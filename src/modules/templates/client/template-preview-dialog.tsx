@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { PosterTemplate } from "../template.types"
@@ -13,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Wand2, Download, Heart, Crown, CheckCircle2 } from "lucide-react"
+import { Wand2, Heart, Crown, CheckCircle2 } from "lucide-react"
 
 interface TemplatePreviewDialogProps {
   template: PosterTemplate | null
@@ -52,7 +51,7 @@ export function TemplatePreviewDialog({
                 {template.isPremium ? (
                   <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-md flex items-center gap-1 font-bold">
                     <Crown className="size-3" />
-                    <span>প্রিমিয়াম ({template.priceCredits || 1} ক্রেডিট)</span>
+                    <span>প্রিমিয়াম</span>
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-md flex items-center gap-1 font-medium">
@@ -95,33 +94,6 @@ export function TemplatePreviewDialog({
                   {template.description}
                 </DialogDescription>
               </DialogHeader>
-
-              {/* Stats & Features */}
-              <div className="grid grid-cols-2 gap-3 my-5 py-3 border-y border-border">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Download className="size-4 text-brand-green" />
-                  <span>{template.downloadsCount.toLocaleString()} বার ব্যবহৃত</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Heart className="size-4 text-brand-primary" />
-                  <span>{template.likesCount.toLocaleString()} জন পছন্দ করেছেন</span>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="space-y-2 mb-6">
-                <span className="text-xs font-semibold text-muted-foreground block">ট্যাগসমূহ:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {template.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/50"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Bottom Actions */}
