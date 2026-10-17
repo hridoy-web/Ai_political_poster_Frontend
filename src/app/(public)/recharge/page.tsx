@@ -1,94 +1,16 @@
-// দায়িত্বে: Amirul Islam Saad (Frontend)
 import type { Metadata } from "next";
-import {
-  Wallet,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
+import { Wallet } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RechargeClient, type PackagePlan } from "@/modules/recharge/client/recharge-client";
+import { RechargeClient } from "@/modules/recharge/client/recharge-client";
+import {
+  PRESET_PACKAGES,
+  QUICK_AMOUNTS,
+  TRUST_BADGES,
+  rechargeMetadata,
+} from "@/modules/recharge/data/recharge.data";
 
-export const metadata: Metadata = {
-  title: "কুইক ওয়ালেট রিচার্জ | PosterAI",
-  description:
-    "সহজেই এবং তাৎক্ষণিকভাবে রিচার্জ করুন পোস্টার ওয়ালেট। আকর্ষণীয় প্যাকেজে ফ্রি বোনাস পোস্টার সহ প্রিমিয়াম এআই পলিটিক্যাল টেমপ্লেট আনলক করুন।",
-  keywords: [
-    "PosterAI Wallet",
-    "Wallet Recharge",
-    "Political Poster Pricing",
-    "পোস্টার রিচার্জ",
-    "নির্বাচনী পোস্টার মেকার",
-  ],
-};
-
-const PRESET_PACKAGES: PackagePlan[] = [
-  {
-    id: "starter",
-    nameBangla: "মিনিমাম প্যাক",
-    nameEnglish: "Starter Pack",
-    amount: 20,
-    posters: 20,
-    freePosters: 0,
-    totalPosters: 20,
-    tag: "স্টার্টার প্যাক",
-    isPopular: false,
-    features: [
-      "২০টি পোস্টার তৈরির সুযোগ (প্রতিটি ১ টাকা)",
-    ],
-    bonusText: "কোনো অতিরিক্ত চার্জ বা ওয়াটারমার্ক ছাড়া সাধারণ ডাউনলোড।",
-  },
-  {
-    id: "campaign",
-    nameBangla: "পপুলার ক্যাম্পেইন প্যাক",
-    nameEnglish: "Campaign Booster Pack",
-    amount: 50,
-    posters: 50,
-    freePosters: 10,
-    totalPosters: 60,
-    tag: "সবচেয়ে জনপ্রিয়",
-    isPopular: true,
-    features: [
-      "৫০টি পোস্টার তৈরির সুযোগ + ১০টি পোস্টার সম্পূর্ণ ফ্রি! (মোট ৬০টি)",
-      "সমস্ত প্রিমিয়াম টেমপ্লেট এবং এআই স্লোগান জেনারেটরের আনলিমিটেড অ্যাক্সেস",
-    ],
-    bonusText: "১০টি পোস্টার সম্পূর্ণ ফ্রি! (মোট ৬০টি)",
-  },
-  {
-    id: "pro",
-    nameBangla: "প্রো পলিটিক্যাল প্যাক",
-    nameEnglish: "Pro Political Package",
-    amount: 100,
-    posters: 100,
-    freePosters: 25,
-    totalPosters: 125,
-    tag: "সেরা ভ্যালু (২৫% ফ্রি)",
-    isBestValue: true,
-    features: [
-      "১০০টি পোস্টার তৈরির সুযোগ + ২৫টি পোস্টার সম্পূর্ণ ফ্রি! (মোট ১২৫টি)",
-      "সমস্ত প্রিমিয়াম টেমপ্লেট এবং এআই স্লোগান জেনারেটরের আনলিমিটেড অ্যাক্সেস",
-    ],
-    bonusText: "২৫টি পোস্টার সম্পূর্ণ ফ্রি! (মোট ১২৫টি)",
-  },
-];
-
-const QUICK_AMOUNTS = [20, 50, 100];
-
-// DRY Reusable Data Array for Trust Signals
-const TRUST_BADGES = [
-  {
-    id: "secure",
-    icon: ShieldCheck,
-    iconColor: "text-secondary",
-    label: "১০০% নিরাপদ ট্রানজেকশন",
-  },
-  {
-    id: "instant",
-    icon: Zap,
-    iconColor: "text-primary",
-    label: "তাৎক্ষণিক ব্যালেন্স অ্যাক্টিভেশন",
-  },
-];
+export const metadata: Metadata = rechargeMetadata;
 
 export default function WalletPage() {
   return (
