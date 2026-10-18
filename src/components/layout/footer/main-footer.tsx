@@ -10,11 +10,11 @@ import Copyright from "./copyright";
 
 export function MainFooter() {
   return (
-    <footer className="w-full mx-auto max-w-7xl border-t border-border/80 bg-card/40 backdrop-blur-xl text-card-foreground mt-auto relative overflow-hidden">
+    <footer className=" px-4 sm:px-6 lg:px-14 w-full mx-auto max-w-7xl border-t border-border/80 bg-card/40 backdrop-blur-xl text-card-foreground mt-auto relative overflow-hidden ">
       {/* Background Subtle Gradient Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-linear-to-r from-brand-primary/10 via-brand-green/10 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 pt-10 sm:pt-14 pb-6 sm:pb-8">
+      <div className="container mx-auto  pt-10 sm:pt-14 pb-6 sm:pb-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 pb-8 sm:pb-10 border-b border-border/60">
           
           {/* Brand Info Section */}
