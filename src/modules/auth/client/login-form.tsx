@@ -4,12 +4,13 @@ import { useState, type ChangeEvent, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
-import { LogIn, Eye, EyeOff, Home } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authApi, { serverURL } from "@/lib/api/authApi";
+import { FcGoogle } from "react-icons/fc";
 
 /* ---------------- Validation (Zod) ---------------- */
 
@@ -104,7 +105,7 @@ export default function LoginForm() {
           password: result.data.password,
         },
         // todo
-        // withCredentials: true,
+        withCredentials: true,
       });
 
       console.log(res);
@@ -282,7 +283,7 @@ export default function LoginForm() {
           disabled={busy}
           className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-background/80 px-5 py-2.5 text-sm font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
         >
-          <Home className="h-4 w-4" />
+          <FcGoogle className="h-4 w-4" />
           {googleLoading ? "Redirecting..." : "Continue with Google"}
         </button>
 
