@@ -4,11 +4,10 @@ import Statistics from "@/modules/home/server/statistics";
 import TrendingTemplates from "@/modules/home/server/trending-templates";
 import { UserFeedbackSection } from "@/modules/home/server/user-feedback";
 
-
 export default function Home() {
   return (
-    <section className="container mx-auto ">
-      <div className="px-4">
+    <section>
+      <div>
         <TrendingTemplates />
         <HowToUse />
         <Statistics />
