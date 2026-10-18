@@ -1,11 +1,12 @@
+import { FaqSection } from "@/modules/home/server/faq-section";
 
 
-const HomePage = () => {
-    return (
-        <>
-            Lets Build Something Amazing Together
-        </>
-    );
-};
-
-export default HomePage;
+export default function Home() {
+  return (
+    <section className="container mx-auto ">
+     <div className="px-4">
+         <FaqSection />
+     </div>
+    </section>
+  )
+}
