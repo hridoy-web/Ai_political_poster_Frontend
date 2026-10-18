@@ -169,3 +169,24 @@ body {
   box-shadow: 0px 6px 18px rgba(52, 211, 153, 0.4) !important;
 }
 
+/* Animated Pulse Dot along connecting line */
+@keyframes pulseDotLine {
+  0% {
+    left: 0%;
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-travel-line {
+  animation: pulseDotLine 6s linear infinite;
+}

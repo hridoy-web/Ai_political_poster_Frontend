@@ -1,3 +1,4 @@
+import React from "react";
 import { TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StatisticsClient from "../client/statistics-client";

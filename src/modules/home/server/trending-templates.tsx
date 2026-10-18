@@ -1,3 +1,4 @@
+import React from 'react';
 import { Flame, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";

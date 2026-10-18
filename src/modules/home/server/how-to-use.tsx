@@ -1,3 +1,6 @@
+// দায়িত্বে: > Diponkor Roy
+
+import React from "react";
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StepCard, { type StepItem } from "../client/step-card";
@@ -100,7 +103,7 @@ const HowToUse = () => {
                         ))}
                     </div>
                 </div>
-
+                
             </div>
         </section>
     );

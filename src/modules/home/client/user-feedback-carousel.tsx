@@ -95,8 +95,8 @@ export function UserFeedbackCarousel({ reviews }: UserFeedbackCarouselProps) {
                                                     <Star
                                                         key={i}
                                                         className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${i < review.rating
-                                                            ? "fill-amber-400 text-amber-400"
-                                                            : "text-muted/40"
+                                                                ? "fill-amber-400 text-amber-400"
+                                                                : "text-muted/40"
                                                             }`}
                                                     />
                                                 ))}
