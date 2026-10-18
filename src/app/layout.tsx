@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Hind_Siliguri, Outfit, Geist } from "next/font/google";
+import { Outfit, Noto_Serif_Bengali } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const outfitFont = Outfit({
   variable: "--font-outfit",
@@ -13,7 +13,7 @@ const outfitFont = Outfit({
   preload: true,
 });
 
-const banglaFont = Hind_Siliguri({
+const banglaFont = Noto_Serif_Bengali({
   variable: "--font-bengali",
   subsets: ["bengali"],
   weight: ["400", "500", "700"],
@@ -23,12 +23,20 @@ const banglaFont = Hind_Siliguri({
 
 export const metadata: Metadata = {
   title: "PosterAI - AI-Powered Political Poster Maker Platform",
-  description: "Create professional political posters, campaign banners, and promotional graphics instantly using AI background generation and custom text overlays.",
-  keywords: ["Political Poster Maker", "AI Poster Generator", "Campaign Banner", "Bangladesh Political Poster", "PosterAI"],
+  description:
+    "Create professional political posters, campaign banners, and promotional graphics instantly using AI background generation and custom text overlays.",
+  keywords: [
+    "Political Poster Maker",
+    "AI Poster Generator",
+    "Campaign Banner",
+    "Bangladesh Political Poster",
+    "PosterAI",
+  ],
   authors: [{ name: "PosterAI Team" }],
   openGraph: {
     title: "PosterAI - AI-Powered Political Poster Maker Platform",
-    description: "Create professional political posters and campaign banners instantly with AI.",
+    description:
+      "Create professional political posters and campaign banners instantly with AI.",
     type: "website",
     locale: "bn_BD",
   },
@@ -41,17 +49,23 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="bn"
       data-scroll-behavior="smooth"
-      className={cn("h-full", outfitFont.variable, banglaFont.variable, "font-sans", geist.variable)}
+      className={cn("h-full", outfitFont.variable, banglaFont.variable, "font-sans")}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
-        
-        <main className="grow flex flex-col">
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased">
+        <ThemeProvider
+         attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+      scriptProps={{ type: "application/json" }}
+    
+        >
           {children}
-        </main>
-
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );
