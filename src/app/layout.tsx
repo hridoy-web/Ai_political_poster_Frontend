@@ -3,6 +3,7 @@ import { Outfit, Noto_Serif_Bengali } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const outfitFont = Outfit({
   variable: "--font-outfit",
@@ -54,12 +55,17 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased">
-
-        <main className="grow flex flex-col">
+        <ThemeProvider
+         attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      disableTransitionOnChange
+      scriptProps={{ type: "application/json" }}
+    
+        >
           {children}
-        </main>
-        
-        <Toaster position="top-center" richColors />
+          <Toaster position="top-center" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

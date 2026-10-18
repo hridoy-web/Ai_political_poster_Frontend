@@ -1,12 +1,18 @@
+import { MainFooter } from "@/components/layout/footer/main-footer";
+import { MainNavbar } from "@/components/layout/navbar/main-navbar";
+
 export default function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* Mahadi Hasan ভাই যখন Navbar ও Footer বানাবেন, তখন এখানে যুক্ত করবেন */}
-      <div className="flex-1">{children}</div>
+    <div className="min-h-full flex flex-col font-sans">
+      <MainNavbar />
+      <main className="grow flex flex-col">
+        {children}
+      </main>
+      <MainFooter />
     </div>
   );
 }
