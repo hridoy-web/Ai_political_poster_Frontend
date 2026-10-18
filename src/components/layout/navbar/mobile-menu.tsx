@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
@@ -24,8 +25,15 @@ const mainNavLinks = [
   { name: "রিচার্জ প্যাক", href: "/recharge" },
 ];
 
+const emptySubscribe = () => () => {};
+
 export default function MobileMenu() {
   const pathname = usePathname();
+  const isMounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   return (
     <div className="lg:hidden">
@@ -41,7 +49,6 @@ export default function MobileMenu() {
           className="w-72 p-6 flex flex-col justify-between font-sans"
         >
           <div className="space-y-6">
-            {/* Header */}
             <SheetHeader className="p-0 pb-4 text-left border-b border-border/50">
               <SheetTitle className="flex items-center">
                 <Logo />
@@ -51,10 +58,9 @@ export default function MobileMenu() {
               </SheetDescription>
             </SheetHeader>
 
-            {/* Main Navigation Links */}
             <nav className="flex flex-col gap-1">
               {mainNavLinks.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = isMounted && pathname === link.href;
                 return (
                   <Button
                     key={link.href}
@@ -64,7 +70,7 @@ export default function MobileMenu() {
                       "w-full justify-between h-10 px-3 text-sm font-medium rounded-xl transition-colors",
                       isActive
                         ? "text-brand-green font-bold dark:text-brand-mint bg-brand-green/10"
-                        : "text-foreground hover:bg-muted",
+                        : "text-foreground hover:bg-muted"
                     )}
                   >
                     <Link href={link.href}>
@@ -81,7 +87,6 @@ export default function MobileMenu() {
             </nav>
           </div>
 
-          {/* Bottom Theme Toggle */}
           <div className="pt-4 border-t border-border/50 mt-auto flex items-center justify-between px-2 text-xs text-muted-foreground">
             <span>থিম পরিবর্তন</span>
             <ThemeToggle />
