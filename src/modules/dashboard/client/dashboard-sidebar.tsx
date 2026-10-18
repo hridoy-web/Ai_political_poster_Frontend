@@ -4,11 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  Image as ImageIcon,
-  Bookmark,
-  ReceiptText,
-  User,
   LogOut,
   Home,
   Sparkles,
@@ -25,14 +20,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/brand/logo";
-
-const navItems = [
-  { name: "ওভারভিউ", href: "/dashboard", icon: LayoutDashboard },
-  { name: "মাই পোস্টার্স", href: "/dashboard/posters", icon: ImageIcon },
-  { name: "বুকমার্কস", href: "/dashboard/saved", icon: Bookmark },
-  { name: "ট্রানজেকশন", href: "/dashboard/history", icon: ReceiptText },
-  { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: User },
-];
+import { USER_NAV_ITEMS } from "../dashboard.constants";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
@@ -59,7 +47,7 @@ export function DashboardSidebar() {
       {/* Sidebar Content: Smooth Navigation Links */}
       <SidebarContent className="p-2 pt-6 space-y-1.5 group-data-[collapsible=icon]:px-1 transition-all duration-300">
         <SidebarMenu className="space-y-1">
-          {navItems.map((item) => {
+          {USER_NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
             return (
