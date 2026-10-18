@@ -1,8 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   Settings,
@@ -12,8 +12,9 @@ import {
   UserPlus,
   User,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +24,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { NavbarAvatar } from "./navbar-avatar";
 import { isAuthenticated } from "./main-navbar";
 import DesktopAuthButtons from "./desktop-auth-buttons";
-
 
 const demoUser = {
   name: "আবুল বাশার",
@@ -39,42 +40,33 @@ const userDropdownLinks = [
   { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: Settings },
 ];
 
-// 🎨 সেম ডিজাইন স্টাইল ও ক্লাসগুলোকে রিইউজেবল ভেরিয়েবলে রাখা হলো (Code Reduction)
 export const loginBtnStyle =
   "cursor-pointer font-semibold rounded-full transition-all duration-200 px-4 text-muted-foreground hover:text-foreground hover:bg-muted";
 
 export const registerBtnStyle =
   "cursor-pointer font-semibold rounded-full shadow-md transition-all duration-200 px-3 bg-gradient-brand text-primary-foreground hover:opacity-95";
 
-export function NavbarActions() {
+function NavbarActionsContent() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center  ">
-      {/* ১. একক ড্রপডাউন মেনু */}
+    <div className="flex items-center">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div>
-            {/* Large screen: কেবল ইউজার লগইন থাকলে অবতার দেখাবে */}
-            {isAuthenticated && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden lg:flex size-9 rounded-full ring-2 ring-brand-green/20 dark:ring-brand-mint/30 hover:ring-brand-green dark:hover:ring-brand-mint transition-all duration-300 shadow-sm"
-              >
+          <Button
+            variant="ghost"
+            className="p-0 rounded-full h-auto hover:bg-transparent"
+          >
+            {isAuthenticated ? (
+              <span className="hidden lg:flex size-9 items-center justify-center rounded-full ring-2 ring-brand-green/20 dark:ring-brand-mint/30 hover:ring-brand-green dark:hover:ring-brand-mint transition-all duration-300 shadow-sm">
                 <NavbarAvatar />
-              </Button>
-            )}
+              </span>
+            ) : null}
 
-            {/* Mobile / Medium screen: User Icon Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex lg:hidden px-1.5  rounded-full    hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 text-muted-foreground hover:text-foreground transition-all duration-300"
-            >
+            <span className="flex lg:hidden p-1.5 rounded-full hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 text-muted-foreground hover:text-foreground transition-all duration-300">
               <User className="size-4" />
-            </Button>
-          </div>
+            </span>
+          </Button>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
@@ -111,7 +103,7 @@ export function NavbarActions() {
                           "flex items-center w-full px-2.5 py-2 text-xs font-medium transition-colors",
                           isActive
                             ? "bg-brand-green/10 text-brand-green font-bold dark:bg-brand-mint/15 dark:text-brand-mint"
-                            : "text-foreground hover:bg-muted",
+                            : "text-foreground hover:bg-muted"
                         )}
                       >
                         <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -129,7 +121,6 @@ export function NavbarActions() {
               </DropdownMenuItem>
             </>
           ) : (
-            /* 🎯 ড্রপডাউনের ভেতরেও ডেস্কটপের মতো সেম স্টাইলের বাটনসমূহ */
             <DropdownMenuGroup className="flex flex-col gap-1.5 p-1">
               <Button
                 asChild
@@ -163,5 +154,13 @@ export function NavbarActions() {
 
       <DesktopAuthButtons />
     </div>
+  );
+}
+
+export function NavbarActions() {
+  return (
+    <Suspense fallback={<div className="h-9 w-20" />}>
+      <NavbarActionsContent />
+    </Suspense>
   );
 }

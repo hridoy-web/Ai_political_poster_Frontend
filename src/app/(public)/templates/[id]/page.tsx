@@ -5,10 +5,18 @@ import Image from "next/image"
 import { TemplateService } from "@/modules/templates/template.service"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Wand2, ArrowLeft, Heart, Crown, CheckCircle2 } from "lucide-react"
+import { Wand2, ArrowLeft, Crown, CheckCircle2 } from "lucide-react"
 
 interface TemplateDetailsPageProps {
   params: Promise<{ id: string }>
+}
+
+export async function generateStaticParams() {
+  return [
+    { id: "1" },
+    { id: "2" },
+    { id: "3" },
+  ]
 }
 
 export async function generateMetadata({
@@ -19,7 +27,7 @@ export async function generateMetadata({
 
   if (!template) {
     return {
-      title: "টেমপ্লেট পাওয়া যায়নি | রাজনৈতিক পোস্টার মেকার",
+      title: "টেমপ্লেট পাওয়া যায়নি | রাজনৈতিক পোস্টার মেকার",
     }
   }
 
@@ -52,7 +60,7 @@ export default async function TemplateDetailsPage({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-start bg-card p-6 md:p-8 rounded-3xl border border-border shadow-sm">
         {/* Poster Preview */}
-        <div className="relative aspect-[4/5] w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl border border-border bg-muted">
+        <div className="relative aspect-4/5 w-full max-w-md mx-auto rounded-2xl overflow-hidden shadow-2xl border border-border bg-muted">
           <Image
             src={template.thumbnailUrl}
             alt={template.title}
@@ -105,7 +113,7 @@ export default async function TemplateDetailsPage({
                 className="w-full h-12 bg-gradient-brand text-white font-semibold text-base rounded-xl gap-2 shadow-lg"
               >
                 <Wand2 className="size-5" />
-                <span>এই টেমপ্লেট দিয়ে পোস্টার বানান</span>
+                <span>এই টেমপ্লেট দিয়ে পোস্টার বানান</span>
               </Button>
             </Link>
           </div>
