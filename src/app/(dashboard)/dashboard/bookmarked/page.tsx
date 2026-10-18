@@ -1,1 +1,0 @@
-// দায়িত্বে: Frontend Developer (Pinon)
