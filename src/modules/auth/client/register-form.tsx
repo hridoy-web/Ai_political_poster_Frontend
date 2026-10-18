@@ -1,62 +1,14 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type SyntheticEvent,
-} from "react";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
-import { ImagePlus, Check, UserPlus, User, Eye, EyeOff } from "lucide-react";
-import { z } from "zod";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authApi, { serverURL } from "@/lib/api/authApi";
-
-/* ---------------- Validation (Zod) ---------------- */
-
-const registerSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be 100 characters or less"),
-
-  email: z.email("Enter a valid email address"),
-
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must include an uppercase letter")
-    .regex(/[a-z]/, "Password must include a lowercase letter")
-    .regex(/[0-9]/, "Password must include a number")
-    .regex(/[^A-Za-z0-9]/, "Password must include a special character"),
-});
-
-type FormData_ = z.input<typeof registerSchema>;
-type FieldErrors = Partial<Record<keyof FormData_, string[]>>;
-
-/* ---------------- Constants ---------------- */
-
-const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
-const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-
-
-
-
-
-/* ---------------- Styles ---------------- */
-
-const inputClass =
-  "h-auto w-full rounded-xl border border-input bg-background/80 px-3.5 py-2 text-sm outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-ring/10 aria-invalid:border-destructive sm:py-2.5";
-
-const labelClass = "mb-1 block text-xs font-semibold sm:text-sm";
-const fieldErrorClass = "mt-1 text-xs text-destructive";
+import { ImagePlus, Check, CheckCheck, UserPlus, User, Eye, EyeOff, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { ALLOWED_IMAGE_TYPES, fieldErrorClass, FieldErrors, FormData_, inputClass, labelClass, MAX_IMAGE_SIZE, PASSWORD_REQUIREMENTS, registerSchema, STRENGTH_BAR_COLORS, STRENGTH_TEXTS, StrengthScore } from "../auth.schema";
 
 /* ---------------- Component ---------------- */
 
@@ -76,6 +28,23 @@ export default function RegisterForm() {
   const [done, setDone] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+
+  /* ---------------- Password Strength ---------------- */
+
+  const passwordStrength = useMemo(() => {
+    const requirements = PASSWORD_REQUIREMENTS.map((req) => ({
+      met: req.regex.test(form.password),
+      text: req.text,
+    }));
+
+    return {
+      score: requirements.filter((req) => req.met).length as StrengthScore,
+      requirements,
+    };
+  }, [form.password]);
+
+  // password error checklist .
+  const showPasswordHelp = form.password.length > 0 || !!fieldErrors.password;
 
   /* ---------------- Image Preview ---------------- */
 
@@ -225,8 +194,10 @@ export default function RegisterForm() {
 
   return (
     <>
-      <div className="mb-4">
-        <div className="flex items-center gap-3">
+      {/* Top: heading + subtitle (full width, centered) */}
+
+      <div className="mb-6 text-center">
+        <div className="flex items-center justify-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
             <UserPlus className="h-5 w-5" />
           </span>
@@ -241,216 +212,283 @@ export default function RegisterForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-3">
-        {/* Profile Image */}
+      <form onSubmit={handleSubmit} noValidate>
+        {/* Two columns (stack on mobile) */}
 
-        <div>
-          <Label htmlFor="image" className={labelClass}>
-            Profile image{" "}
-            <span className="font-normal text-muted-foreground">
-              (optional)
-            </span>
-          </Label>
+        <div className="grid gap-x-8 gap-y-3 md:grid-cols-2">
+          {/* ---------- Left column ---------- */}
 
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/20 bg-card">
-              {preview ? (
-                <Image
-                  src={preview}
-                  alt="Profile image preview"
-                  width={64}
-                  height={64}
-                  unoptimized
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <User className="h-7 w-7 text-muted-foreground" />
+          <div className="space-y-3">
+            {/* Profile Image */}
+
+            <div>
+              <Label htmlFor="image" className={labelClass}>
+                Profile image{" "}
+                <span className="font-normal text-muted-foreground">
+                  (optional)
+                </span>
+              </Label>
+
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-2.5">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-primary/20 bg-card">
+                  {preview ? (
+                    <Image
+                      src={preview}
+                      alt="Profile image preview"
+                      width={64}
+                      height={64}
+                      unoptimized
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <User className="h-7 w-7 text-muted-foreground" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground sm:text-sm"
+                    >
+                      <ImagePlus className="h-3.5 w-3.5 shrink-0" />
+                      {preview ? "Change photo" : "Upload photo"}
+                    </button>
+
+                    {preview && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImage(null);
+
+                          if (fileRef.current) {
+                            fileRef.current.value = "";
+                          }
+                        }}
+                        className="text-xs font-semibold text-destructive hover:underline sm:text-sm"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="mt-1 truncate text-[10px] text-muted-foreground sm:text-xs">
+                    {image ? image.name : "PNG, JPG or WEBP · Max 2 MB"}
+                  </p>
+
+                  <input
+                    ref={fileRef}
+                    id="image"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={handleImage}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Name */}
+
+            <div>
+              <Label htmlFor="name" className={labelClass}>
+                Full name
+              </Label>
+
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Enter your full name"
+                autoComplete="name"
+                value={form.name}
+                onChange={handleChange}
+                maxLength={100}
+                aria-invalid={!!fieldErrors.name}
+                className={inputClass}
+              />
+
+              {fieldErrors.name && (
+                <p role="alert" className={fieldErrorClass}>
+                  {fieldErrors.name[0]}
+                </p>
               )}
             </div>
 
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
+            {/* Email */}
+
+            <div>
+              <Label htmlFor="email" className={labelClass}>
+                Email address
+              </Label>
+
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                value={form.email}
+                onChange={handleChange}
+                aria-invalid={!!fieldErrors.email}
+                className={inputClass}
+              />
+
+              {fieldErrors.email && (
+                <p role="alert" className={fieldErrorClass}>
+                  {fieldErrors.email[0]}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* ---------- Right column ---------- */}
+
+          <div className="space-y-3">
+            {/* Password */}
+
+            <div>
+              <Label htmlFor="password" className={labelClass}>
+                Password
+              </Label>
+
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
+                  value={form.password}
+                  onChange={handleChange}
+                  aria-invalid={!!fieldErrors.password}
+                  aria-describedby="password-strength"
+                  className={`${inputClass} pr-16`}
+                />
+
                 <button
                   type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground sm:text-sm"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition hover:text-primary sm:text-sm"
                 >
-                  <ImagePlus className="h-3.5 w-3.5" />
-                  {preview ? "Change photo" : "Upload photo"}
+                  {showPassword ? (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      <span>Hide</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      <span>Show</span>
+                    </>
+                  )}
                 </button>
-
-                {preview && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImage(null);
-
-                      if (fileRef.current) {
-                        fileRef.current.value = "";
-                      }
-                    }}
-                    className="text-xs font-semibold text-destructive hover:underline sm:text-sm"
-                  >
-                    Remove
-                  </button>
-                )}
               </div>
 
-              <p className="mt-1 truncate text-[10px] text-muted-foreground sm:text-xs">
-                {image ? image.name : "PNG, JPG or WEBP · Max 2 MB"}
-              </p>
+              {/* Password strength + requirements */}
 
-              <input
-                ref={fileRef}
-                id="image"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                onChange={handleImage}
-                className="hidden"
-              />
+              {showPasswordHelp && (
+                <div id="password-strength" role="alert" className="mt-2">
+                  {/* Strength bar */}
+                  <div className="flex w-full justify-between gap-2">
+                    {STRENGTH_BAR_COLORS.map((color, i) => (
+                      <span
+                        key={color}
+                        className={`h-1.5 w-full rounded-full transition-colors ${
+                          passwordStrength.score >= i + 1 ? color : "bg-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Label */}
+                  <p className="mt-2 flex justify-between text-xs font-medium sm:text-sm">
+                    <span>Must contain:</span>
+                    <span>{STRENGTH_TEXTS[passwordStrength.score]}</span>
+                  </p>
+
+                  {/* Requirements checklist */}
+                  <ul
+                    className="mt-1.5 space-y-1"
+                    aria-label="Password requirements"
+                  >
+                    {passwordStrength.requirements.map((req) => (
+                      <li key={req.text} className="flex items-center gap-2">
+                        {req.met ? (
+                          <CheckCheck size={14} className="text-emerald-500" />
+                        ) : (
+                          <X
+                            size={14}
+                            className={
+                              fieldErrors.password
+                                ? "text-destructive"
+                                : "text-muted-foreground/80"
+                            }
+                          />
+                        )}
+
+                        <span
+                          className={`text-xs ${
+                            req.met
+                              ? "text-emerald-600"
+                              : fieldErrors.password
+                                ? "text-destructive"
+                                : "text-muted-foreground"
+                          }`}
+                        >
+                          {req.text}
+                          <span className="sr-only">
+                            {req.met
+                              ? " - Requirement met"
+                              : " - Requirement not met"}
+                          </span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Name */}
+        {/* ---------- Bottom (full width) ---------- */}
 
-        <div>
-          <Label htmlFor="name" className={labelClass}>
-            Full name
-          </Label>
+        <div className="mt-5 space-y-3">
+          {/* API / Upload Error */}
 
-          <Input
-            id="name"
-            name="name"
-            type="text"
-            placeholder="Enter your full name"
-            autoComplete="name"
-            value={form.name}
-            onChange={handleChange}
-            maxLength={100}
-            aria-invalid={!!fieldErrors.name}
-            className={inputClass}
-          />
-
-          {fieldErrors.name && (
-            <p role="alert" className={fieldErrorClass}>
-              {fieldErrors.name[0]}
-            </p>
-          )}
-        </div>
-
-        {/* Email */}
-
-        <div>
-          <Label htmlFor="email" className={labelClass}>
-            Email address
-          </Label>
-
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            autoComplete="email"
-            value={form.email}
-            onChange={handleChange}
-            aria-invalid={!!fieldErrors.email}
-            className={inputClass}
-          />
-
-          {fieldErrors.email && (
-            <p role="alert" className={fieldErrorClass}>
-              {fieldErrors.email[0]}
-            </p>
-          )}
-        </div>
-
-        {/* Password */}
-
-        <div>
-          <Label htmlFor="password" className={labelClass}>
-            Password
-          </Label>
-
-          <div className="relative">
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="At least 8 characters"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={handleChange}
-              aria-invalid={!!fieldErrors.password}
-              className={`${inputClass} pr-16`}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              aria-pressed={showPassword}
-              className="absolute inset-y-0 right-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition hover:text-primary sm:text-sm"
+          {error && (
+            <p
+              role="alert"
+              className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive"
             >
-              {showPassword ? (
-                <>
-                  <EyeOff className="h-4 w-4" />
-                  <span>Hide</span>
-                </>
-              ) : (
-                <>
-                  <Eye className="h-4 w-4" />
-                  <span>Show</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {fieldErrors.password && (
-            <ul role="alert" className="mt-1 space-y-0.5">
-              {fieldErrors.password.map((msg) => (
-                <li
-                  key={msg}
-                  className="flex items-start gap-1.5 text-xs text-destructive"
-                >
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-destructive" />
-                  {msg}
-                </li>
-              ))}
-            </ul>
+              {error}
+            </p>
           )}
-        </div>
 
-        {/* API / Upload Error */}
+          {/* Submit */}
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive"
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
           >
-            {error}
+            {loading ? "Submitting..." : "Create account"}
+          </button>
+
+          <p className="text-center text-xs text-muted-foreground sm:text-sm">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:underline"
+            >
+              Login
+            </Link>
           </p>
-        )}
-
-        {/* Submit */}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
-        >
-          {loading ? "Submitting..." : "Create account"}
-        </button>
-
-        <p className="text-center text-xs text-muted-foreground sm:text-sm">
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-primary hover:underline"
-          >
-            Login
-          </Link>
-        </p>
+        </div>
       </form>
     </>
   );
