@@ -6,14 +6,14 @@ import { MessageSquare } from "lucide-react";
 export default function ContactPage() {
     return (
         <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-16 relative overflow-hidden">
-            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
             <section className="text-center space-y-4 max-w-3xl mx-auto">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/80 border border-primary/20 text-accent-foreground text-xs sm:text-sm font-semibold backdrop-blur-md shadow-sm">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/80 border border-primary/10 text-accent-foreground text-xs sm:text-sm font-semibold backdrop-blur-md shadow-sm">
                     <MessageSquare className="w-4 h-4 text-primary animate-pulse" />
                     <span>২৪/৭ সাপোর্ট ও সহায়তা</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
+                <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
                     যোগাযোগ <span className="text-gradient-brand">করুন</span>
                 </h1>
 
