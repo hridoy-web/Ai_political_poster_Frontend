@@ -6,14 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -29,33 +22,22 @@ const emptySubscribe = () => () => {};
 
 export default function MobileMenu() {
   const pathname = usePathname();
-  const isMounted = useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
+  const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   return (
     <div className="lg:hidden">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Open Menu">
-            <Menu className="h-5 w-5" />
+          <Button variant="ghost" size="icon" aria-label="Open Menu" className="rounded-full size-9 hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 transition-all duration-300">
+            <Menu className="size-5" />
           </Button>
         </SheetTrigger>
 
-        <SheetContent
-          side="right"
-          className="w-72 p-6 flex flex-col justify-between font-sans"
-        >
+        <SheetContent side="left" className="w-72 p-6 flex flex-col justify-between font-sans">
           <div className="space-y-6">
             <SheetHeader className="p-0 pb-4 text-left border-b border-border/50">
-              <SheetTitle className="flex items-center">
-                <Logo />
-              </SheetTitle>
-              <SheetDescription className="sr-only">
-                মোবাইল নেভিগেশন মেনু
-              </SheetDescription>
+              <SheetTitle className="flex items-center"><Logo /></SheetTitle>
+              <SheetDescription className="sr-only">মোবাইল নেভিগেশন মেনু</SheetDescription>
             </SheetHeader>
 
             <nav className="flex flex-col gap-1">
@@ -68,9 +50,7 @@ export default function MobileMenu() {
                     asChild
                     className={cn(
                       "w-full justify-between h-10 px-3 text-sm font-medium rounded-xl transition-colors",
-                      isActive
-                        ? "text-brand-green font-bold dark:text-brand-mint bg-brand-green/10"
-                        : "text-foreground hover:bg-muted"
+                      isActive ? "text-brand-green font-bold dark:text-brand-mint bg-brand-green/10" : "text-foreground hover:bg-muted"
                     )}
                   >
                     <Link href={link.href}>

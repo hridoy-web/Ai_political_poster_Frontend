@@ -18,34 +18,19 @@ import { LayoutDashboard, User, FolderKanban, LogOut } from "lucide-react";
 import { UserData } from "@/types/user.types";
 import { NavbarAvatar } from "./navbar-avatar";
 
-
-
 interface NavbarDropdownAvatarProps {
   user: UserData;
   onLogout?: () => void;
 }
 
+const menuItems = [
+  { name: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
+  { name: "মাই পোস্টার্স", href: "/dashboard/posters", icon: FolderKanban },
+  { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: User },
+];
+
 export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
   const pathname = usePathname();
-
-  // PRD Router structure onujayi routes
-  const menuItems = [
-    {
-      name: "ড্যাশবোর্ড",
-      href: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "মাই পোস্টার্স",
-      href: "/dashboard/posters",
-      icon: FolderKanban,
-    },
-    {
-      name: "প্রোফাইল সেটিংস",
-      href: "/dashboard/profile",
-      icon: User,
-    },
-  ];
 
   return (
     <DropdownMenu>
@@ -56,7 +41,6 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
           className="group relative flex items-center justify-center rounded-full p-0.5 outline-hidden ring-2 ring-brand-green/30 hover:ring-brand-green dark:ring-brand-mint/30 dark:hover:ring-brand-mint focus-visible:ring-ring transition-all duration-200 cursor-pointer"
         >
           <NavbarAvatar />
-          {/* Emerald Green Online Status Indicator */}
           <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-brand-green dark:bg-brand-mint ring-2 ring-background" />
         </button>
       </DropdownMenuTrigger>
@@ -66,17 +50,12 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
         sideOffset={8}
         className="w-60 p-1.5 rounded-2xl bg-card text-card-foreground border border-border shadow-xl backdrop-blur-xl dark:bg-(--card)/90 animate-in fade-in-80 zoom-in-95 duration-150"
       >
-        {/* User Info Header */}
         <DropdownMenuLabel className="p-2.5 font-normal">
           <div className="flex items-center gap-3">
             <NavbarAvatar />
             <div className="flex flex-col space-y-1 overflow-hidden">
-              <p className="text-sm font-semibold text-foreground leading-none truncate">
-                {user.name}
-              </p>
-              <p className="text-xs text-muted-foreground leading-none truncate">
-                {user.email}
-              </p>
+              <p className="text-sm font-semibold text-foreground leading-none truncate">{user.name}</p>
+              <p className="text-xs text-muted-foreground leading-none truncate">{user.email}</p>
             </div>
           </div>
           {user.role && (
@@ -90,7 +69,6 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
 
         <DropdownMenuSeparator className="my-1 bg-border" />
 
-        {/* Quick Navigation Items */}
         <DropdownMenuGroup className="space-y-0.5">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
@@ -102,7 +80,6 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors duration-150",
-                    /* ☀️ Light & 🌙 Dark Menu Active & Hover Styles */
                     isActive
                       ? "bg-brand-green/10 text-brand-green font-bold dark:bg-brand-mint/15 dark:text-brand-mint"
                       : "text-foreground hover:bg-muted hover:text-brand-green dark:hover:text-brand-mint"
@@ -111,9 +88,7 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
                   <Icon
                     className={cn(
                       "size-4 shrink-0 transition-colors",
-                      isActive
-                        ? "text-brand-green dark:text-brand-mint"
-                        : "text-muted-foreground group-hover:text-brand-green dark:group-hover:text-brand-mint"
+                      isActive ? "text-brand-green dark:text-brand-mint" : "text-muted-foreground group-hover:text-brand-green dark:group-hover:text-brand-mint"
                     )}
                   />
                   <span>{item.name}</span>
@@ -125,7 +100,6 @@ export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
 
         <DropdownMenuSeparator className="my-1 bg-border" />
 
-        {/* Logout Action with Crimson Red Accent */}
         <DropdownMenuItem
           onClick={onLogout}
           className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors duration-150 text-brand-primary hover:bg-brand-primary/10 focus:bg-brand-primary/10 focus:text-brand-primary dark:text-brand-secondary dark:hover:bg-brand-secondary/10"

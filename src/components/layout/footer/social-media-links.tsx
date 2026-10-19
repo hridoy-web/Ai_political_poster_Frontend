@@ -1,43 +1,21 @@
-import { FaFacebookF, FaXTwitter, FaYoutube, FaLinkedinIn } from "react-icons/fa6";
-
-const socialLinks = [
-  {
-    name: "Facebook",
-    icon: FaFacebookF,
-    href: "https://facebook.com",
-    // ফেসবুক অরিজিনাল কালার ও হোভার ইফেক্ট
-    brandColor: "text-[#1877F2] hover:bg-[#1877F2]/10 hover:border-[#1877F2]/30",
-  },
-  {
-    name: "Twitter",
-    icon: FaXTwitter,
-    href: "https://twitter.com",
-    // টুইটার/X অরিজিনাল কালার ও হোভার ইফেক্ট
-    brandColor: "text-[#0F1419] dark:text-[#E7E9EA] hover:bg-[#0F1419]/10 dark:hover:bg-[#E7E9EA]/10 hover:border-current",
-  },
-  {
-    name: "YouTube",
-    icon: FaYoutube,
-    href: "https://youtube.com",
-    // ইউটিউব অরিজিনাল কালার ও হোভার ইফেক্ট
-    brandColor: "text-[#FF0000] hover:bg-[#FF0000]/10 hover:border-[#FF0000]/30",
-  },
-  {
-    name: "LinkedIn",
-    icon: FaLinkedinIn,
-    href: "https://linkedin.com",
-    // লিঙ্কডইন অরিজিনাল কালার ও হোভার ইফেক্ট
-    brandColor: "text-[#0A66C2] hover:bg-[#0A66C2]/10 hover:border-[#0A66C2]/30",
-  },
-];
+import { Mail } from "lucide-react";
+import { socialLinks } from "./footer-data";
 
 export function SocialMediaLinks() {
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <h3 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-widest">
-        সোশ্যাল মিডিয়া
-      </h3>
-      <div className="flex items-center gap-2.5 sm:gap-3">
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="h-4 w-1 rounded-full bg-brand-green dark:bg-brand-mint" />
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider font-heading">
+          ফলো করুন
+        </h3>
+      </div>
+
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        আমাদের সাথে যুক্ত হয়ে নতুন টেমপ্লেট ও ক্যাম্পেইন আপডেট পান।
+      </p>
+
+      <div className="flex items-center gap-2 flex-wrap">
         {socialLinks.map((social) => {
           const Icon = social.icon;
           return (
@@ -47,13 +25,23 @@ export function SocialMediaLinks() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={social.name}
-              className={`size-9 sm:size-10 rounded-xl bg-background/80 border border-border flex items-center justify-center transition-all duration-300 transform hover:-translate-y-0.5 shadow-xs ${social.brandColor}`}
+              className={`group size-9 rounded-full border border-border/50 bg-muted/20 flex items-center justify-center transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer ${social.color} ${social.hoverStyle}`}
             >
-              <Icon className="size-4 sm:size-4.5" />
+              <Icon className="size-4 transition-transform duration-200 group-hover:scale-110" />
             </a>
           );
         })}
       </div>
+
+      <a
+        href="mailto:support@posterai.com"
+        className="group inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+      >
+        <Mail className="size-3.5 text-muted-foreground/70 group-hover:text-brand-green dark:group-hover:text-brand-mint transition-colors" />
+        <span className="font-medium underline-offset-4 group-hover:underline">
+          support@posterai.com
+        </span>
+      </a>
     </div>
   );
 }

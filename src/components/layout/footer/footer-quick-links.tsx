@@ -1,30 +1,32 @@
 import Link from "next/link";
-
-const quickLinks = [
-  { name: "হোম", href: "/" },
-  { name: "টেমপ্লেট গ্যালারি", href: "/templates" },
-  { name: "পোস্টার তৈরি করুন", href: "/create-poster" },
-  { name: "রিচার্জ প্যাকেজ", href: "/recharge" },
-  { name: "আমাদের সম্পর্কে", href: "/about" },
-  { name: "যোগাযোগ", href: "/contact" },
-  
-];
+import { ChevronRight, Sparkles } from "lucide-react";
+import { quickLinks } from "./footer-data";
 
 export function FooterQuickLinks() {
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <h3 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-widest font-heading">
-        কুইক লিংকস
-      </h3>
-      <ul className="grid grid-cols-2  lg:grid-cols-1 gap-2.5 sm:gap-2">
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="h-4 w-1 rounded-full bg-brand-green dark:bg-brand-mint" />
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider font-heading">
+          কুইক লিংকস
+        </h3>
+      </div>
+
+      <ul className="flex flex-col gap-2">
         {quickLinks.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-brand-green dark:hover:text-brand-mint transition-colors duration-200 group"
+              className="group inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-all duration-200 py-0.5"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-green/40 dark:bg-brand-mint/50 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 mr-2 shrink-0 hidden sm:inline-block" />
-              <span>{link.name}</span>
+              <ChevronRight className="size-3 text-muted-foreground/50 group-hover:text-brand-green dark:group-hover:text-brand-mint group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
+              <span className="transition-colors duration-200">{link.name}</span>
+              {link.badge && (
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary dark:text-brand-secondary border border-brand-primary/20 shrink-0">
+                  <Sparkles className="size-2" />
+                  <span>{link.badge}</span>
+                </span>
+              )}
             </Link>
           </li>
         ))}
