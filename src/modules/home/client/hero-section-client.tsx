@@ -1,251 +1,253 @@
 "use client";
-
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, ChevronLeft, Sparkles, Image as ImageIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Sparkles, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export interface SlideItem {
+export interface PosterCardItem {
+    id: string;
     src: string;
     title: string;
     subtitle: string;
+    category: string;
     accent: string;
 }
 
-// Brand colors strictly according to globals.css
-const BRAND_GREEN = "#059669"; // --color-brand-green
-const BRAND_RED = "#e11d48"; // --color-brand-primary
+// Brand colors referencing globals.css
+const BRAND_GREEN = "var(--color-brand-green)";
+const BRAND_RED = "var(--color-brand-primary)";
 
-const slides: SlideItem[] = [
+// 5 curated poster cards (no repeated code)
+const POSTERS: PosterCardItem[] = [
     {
+        id: "poster-1",
         src: "/image/images11.jpg",
         title: "নির্বাচনী প্রচারণা",
         subtitle: "ভোট দিন প্রতীকে",
+        category: "নির্বাচনী",
         accent: BRAND_GREEN,
     },
     {
+        id: "poster-2",
         src: "/image/images26.jpg",
         title: "দলীয় সমাবেশ",
         subtitle: "২৫ অক্টোবর, ঢাকা",
+        category: "সমাবেশ",
         accent: BRAND_RED,
     },
     {
+        id: "poster-3",
         src: "/image/images21.jpg",
         title: "প্রতিষ্ঠাবার্ষিকী",
         subtitle: "৭৫তম বর্ষপূর্তি",
+        category: "বার্ষিকী",
         accent: BRAND_GREEN,
     },
     {
+        id: "poster-4",
         src: "/image/image6.jpg",
         title: "বিজয় দিবস",
         subtitle: "১৬ ডিসেম্বর ১৯৭১",
+        category: "জাতীয় দিবস",
         accent: BRAND_RED,
     },
     {
+        id: "poster-5",
         src: "/image/images24.jpg",
-        title: "শোকবার্তা",
-        subtitle: "গভীর শোক ও সমবেদনা",
+        title: "শুভ জন্মদিন",
+        subtitle: "আন্তরিক শুভেচ্ছা ও অভিনন্দন",
+        category: "জন্মদিন",
         accent: BRAND_GREEN,
     },
 ];
 
-export default function HeroClient() {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isPaused, setIsPaused] = useState(false);
-    const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
-    const nextSlide = useCallback(() => {
-        setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, []);
+const CARD_TRANSFORMS = [
+    { rotate: -10, x: "-22%", defaultZ: 1 },
+    { rotate: -5, x: "-11%", defaultZ: 2 },
+    { rotate: 0, x: "0%", defaultZ: 3 },
+    { rotate: 5, x: "11%", defaultZ: 4 },
+    { rotate: 10, x: "22%", defaultZ: 5 },
+];
 
-    const prevSlide = useCallback(() => {
-        setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
-    }, []);
+export default function HeroSectionClient() {
+    const [activeIdx, setActiveIdx] = useState(POSTERS.length - 1);
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+    const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+    const containerRef = useRef<HTMLDivElement>(null);
 
-    // Auto-slide effect with pause on hover/touch
-    useEffect(() => {
-        if (isPaused) return;
-        const timer = setInterval(nextSlide, 5000);
-        return () => clearInterval(timer);
-    }, [isPaused, nextSlide]);
+    // Scroll-linked upward motion
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end start"],
+    });
+    const scrollParallaxY = useTransform(scrollYProgress, [0, 1], [0, -40]);
 
-    const handleImageError = (index: number) => {
-        setImageErrors((prev) => ({ ...prev, [index]: true }));
+    // const activePoster = POSTERS[activeIdx];
+
+    const handleImageError = (id: string) => {
+        setImageErrors((prev) => ({ ...prev, [id]: true }));
     };
-
-    const activeSlide = slides[currentIndex];
-
-    // Synchronize title
-    useEffect(() => {
-        const hero = document.getElementById("hero-section");
-        if (hero) {
-            hero.style.setProperty("--hero-accent", activeSlide.accent);
-        }
-    }, [activeSlide.accent]);
 
     return (
         <div
-            className="relative z-10 flex w-full flex-col items-center justify-center"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+            ref={containerRef}
+            className="relative z-10 flex w-full flex-col items-center justify-center py-2 sm:py-4"
         >
-            {/* Dynamic Ambient Glow behind poster */}
+            {/* Ambient Background Glow (Red Brand Gradient) */}
             <motion.div
-                key={activeSlide.accent}
                 animate={{
-                    backgroundColor: activeSlide.accent,
                     scale: [1, 1.08, 1],
                 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                className="pointer-events-none absolute -inset-4 -z-10 rounded-full opacity-25 blur-3xl sm:-inset-8 sm:opacity-35 dark:opacity-35"
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-full bg-brand-primary/20 opacity-20 blur-3xl sm:-inset-10 sm:opacity-25"
             />
 
-            {/* Poster Showcase Card */}
-            <div className="group relative w-full max-w-[320px] sm:max-w-90 md:max-w-95 lg:max-w-97.5">
-                {/* Floating Top-Right Feature Badge */}
-                <div className="pointer-events-none absolute -top-3.5 -right-2 z-20 hidden items-center gap-1.5 rounded-full border border-white/70 bg-card/90 px-3 py-1.5 text-xs font-bold text-foreground shadow-xl shadow-black/10 backdrop-blur-xl sm:flex dark:border-white/15 dark:bg-card/95 animate-in fade-in duration-500">
-                    <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>✨ এআই স্মার্ট কাটআউট</span>
-                </div>
+            {/* Fanned Stack Canvas Container */}
+            <motion.div
+                style={{ y: scrollParallaxY }}
+                className="relative flex h-95 w-full max-w-85 items-center justify-center sm:h-110 sm:max-w-100 md:h-122.5 md:max-w-112.5 lg:h-132.5 lg:max-w-122.5 xl:h-140 xl:max-w-132.5"
+            >
+                {POSTERS.map((poster, index) => {
+                    const transform = CARD_TRANSFORMS[index % CARD_TRANSFORMS.length];
+                    const isHovered = hoveredIdx === index;
+                    const isActive = activeIdx === index;
 
-                {/* Floating Bottom-Left Feature Badge */}
-                <div className="pointer-events-none absolute -bottom-3 -left-2 z-20 hidden items-center gap-1.5 rounded-full border border-white/70 bg-card/90 px-3 py-1.5 text-xs font-bold text-foreground shadow-xl shadow-black/10 backdrop-blur-xl sm:flex dark:border-white/15 dark:bg-card/95 animate-in fade-in duration-500">
-                    <span
-                        className="flex h-2 w-2 rounded-full transition-colors duration-500"
-                        style={{ backgroundColor: activeSlide.accent }}
-                    />
-                    <span>🎨 ১-ক্লিকে এইচডি পোস্টার</span>
-                </div>
+                    // smooth cinematic timing
+                    const entranceDelay = 0.2 + index * 0.48;
 
-                {/* Outer Glass Card */}
-                <div className="relative aspect-3/4 w-full overflow-hidden rounded-3xl border border-white/80 bg-card/70 p-2.5 shadow-2xl shadow-black/10 backdrop-blur-2xl transition-all duration-300 sm:p-3 dark:border-white/15 dark:bg-card/85">
-                    {/* Top Specular Highlight Line */}
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-linear-to-r from-transparent via-white/80 to-transparent dark:via-white/30" />
+                    // Compute dynamic zIndex
+                    const zIndex = isHovered
+                        ? 40
+                        : isActive
+                            ? 20
+                            : transform.defaultZ;
 
-                    {/* Inner Poster Canvas */}
-                    <div className="relative h-full w-full overflow-hidden rounded-2xl bg-muted">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentIndex}
-                                initial={{ opacity: 0, scale: 0.96 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 1.03 }}
-                                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                                className="relative h-full w-full"
-                            >
-                                {/* Fallback Backdrop if image fails */}
-                                <div
-                                    className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-white"
-                                    style={{
-                                        background: `linear-gradient(145deg, ${activeSlide.accent}, #0f172a)`,
-                                    }}
-                                >
-                                    {imageErrors[currentIndex] && (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="rounded-full bg-white/20 p-3 backdrop-blur-md">
-                                                <ImageIcon className="h-8 w-8 text-white" />
-                                            </div>
-                                            <span className="text-lg font-bold">{activeSlide.title}</span>
-                                            <span className="text-xs text-white/80">{activeSlide.subtitle}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Slide Image */}
-                                {!imageErrors[currentIndex] && (
+                    return (
+                        <motion.div
+                            key={poster.id}
+                            initial={{
+                                y: 350,
+                                opacity: 0,
+                                scale: 2.00,
+                                rotate: 0,
+                            }}
+                            animate={{
+                                y: 0,
+                                opacity: 1,
+                                scale: isActive ? 1.02 : 1.00,
+                                rotate: transform.rotate,
+                            }}
+                            transition={{
+                                duration: 3.0,
+                                delay: entranceDelay,
+                                ease: [0.16, 1, 0.3, 1],
+                            }}
+                            whileHover={{
+                                y: -24,
+                                scale: 1.05,
+                                rotate: transform.rotate * 0.8,
+                                transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+                            }}
+                            onClick={() => setActiveIdx(index)}
+                            onMouseEnter={() => setHoveredIdx(index)}
+                            onMouseLeave={() => setHoveredIdx(null)}
+                            style={{
+                                x: transform.x,
+                                zIndex,
+                            }}
+                            className={cn(
+                                "group absolute aspect-3/4 w-46 sm:w-54 md:w-62 lg:w-68 xl:w-74 cursor-pointer overflow-hidden rounded-2xl border bg-card/90 shadow-2xl transition-all duration-500 backdrop-blur-md select-none",
+                                isActive
+                                    ? "border-white/80 ring-2 ring-primary/40 shadow-black/40 dark:border-white/30"
+                                    : "border-white/40 shadow-black/25 hover:border-white/70 dark:border-white/10 dark:hover:border-white/25"
+                            )}
+                        >
+                            {/* Inner Poster Canvas */}
+                            <div className="relative h-full w-full overflow-hidden bg-muted">
+                                {!imageErrors[poster.id] ? (
                                     <Image
-                                        src={activeSlide.src}
-                                        alt={activeSlide.title}
+                                        src={poster.src}
+                                        alt={poster.title}
                                         fill
-                                        priority
-                                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 50vw, 400px"
-                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                        onError={() => handleImageError(currentIndex)}
+                                        priority={index >= 3}
+                                        sizes="(max-width: 640px) 200px, (max-width: 1024px) 280px, 340px"
+                                        className={cn(
+                                            "object-cover transition-all duration-1000 group-hover:scale-105",
+                                            !isActive && !isHovered
+                                                ? "contrast-95 brightness-95"
+                                                : "contrast-105 brightness-100"
+                                        )}
+                                        onError={() => handleImageError(poster.id)}
                                     />
+                                ) : (
+                                    <div
+                                        className="flex h-full w-full flex-col items-center justify-center bg-linear-to-br from-brand-primary/80 via-slate-900 to-black p-4 text-center text-white"
+                                    >
+                                        <ImageIcon className="mb-2 h-8 w-8 text-white/80" />
+                                        <span className="text-xs font-bold sm:text-sm">{poster.title}</span>
+                                    </div>
                                 )}
 
-                                {/* Contrast Vignette Overlay */}
-                                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
+                                {/* Top Light Reflection Line */}
+                                <div className="pointer-events-none absolute inset-x-0 top-0 h-[1.5px] bg-linear-to-r from-transparent via-white/80 to-transparent dark:via-white/30" />
 
-                                {/* Top Floating Badge */}
-                                <div className="absolute left-3.5 top-3.5 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/40 px-3 py-1 text-[11px] font-semibold text-white backdrop-blur-md shadow-md sm:text-xs">
+                                {/* Top Category Badge */}
+                                <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full border border-white/30 bg-black/50 px-2 py-0.5 text-[9px] font-semibold text-white backdrop-blur-md sm:left-3 sm:top-3 sm:px-2.5 sm:text-[10px]">
                                     <span
-                                        className="h-2 w-2 rounded-full"
-                                        style={{ backgroundColor: activeSlide.accent }}
+                                        className={cn(
+                                            "h-1.5 w-1.5 rounded-full",
+                                            poster.accent === BRAND_GREEN ? "bg-brand-green" : "bg-brand-primary"
+                                        )}
                                     />
-                                    <span>{activeSlide.title}</span>
+                                    <span>{poster.category}</span>
                                 </div>
 
-                                {/* Bottom Info Glass Strip */}
-                                <div className="absolute bottom-3.5 left-3.5 right-3.5 z-10 rounded-xl border border-white/20 bg-black/50 p-2.5 backdrop-blur-md">
-                                    <div className="flex items-center justify-between gap-2">
+                                {/* Contrast Vignette + Bottom Title Card */}
+                                <div className="absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/90 via-black/35 to-transparent p-3 sm:p-4">
+                                    <div className="flex items-center justify-between gap-1.5">
                                         <div className="min-w-0">
-                                            <p className="truncate text-xs font-bold text-white sm:text-sm">
-                                                {activeSlide.title}
+                                            <p className="truncate text-xs font-black uppercase tracking-tight text-white sm:text-sm">
+                                                {poster.title}
                                             </p>
-                                            <p className="truncate text-[10px] text-white/75 sm:text-xs">
-                                                {activeSlide.subtitle}
+                                            <p className="truncate text-[10px] text-white/80 sm:text-xs">
+                                                {poster.subtitle}
                                             </p>
                                         </div>
-                                        <div className="flex shrink-0 items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
-                                            <Sparkles className="h-3 w-3 text-amber-300" />
-                                            <span>HD প্রিন্ট</span>
+                                        <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm sm:px-2 sm:text-[10px]">
+                                            <Sparkles className="h-2.5 w-2.5 text-amber-300" />
+                                            <span>HD</span>
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
+                            </div>
+                        </motion.div>
+                    );
+                })}
+            </motion.div>
 
-                    {/* Prev / Next Floating Arrows */}
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={prevSlide}
-                        aria-label="পূর্ববর্তী স্লাইড"
-                        className="absolute left-1 top-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-black/40 text-white backdrop-blur-md shadow-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95"
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={nextSlide}
-                        aria-label="পরবর্তী স্লাইড"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full border border-white/30 bg-black/40 text-white backdrop-blur-md shadow-md transition-all duration-200 hover:bg-black/70 hover:scale-110 active:scale-95"
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-
-                {/* Pagination Indicator Dots */}
-                <div className="mt-4 flex items-center justify-center gap-1.5 sm:gap-2">
-                    {slides.map((slide, idx) => {
-                        const isCurrent = idx === currentIndex;
-                        return (
-                            <button
-                                key={slide.title}
-                                type="button"
-                                onClick={() => setCurrentIndex(idx)}
-                                aria-label={`স্লাইড ${idx + 1}`}
-                                className={cn(
-                                    "h-2 rounded-full transition-all duration-300 cursor-pointer",
-                                    isCurrent
-                                        ? "w-7"
-                                        : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                                )}
-                                style={{
-                                    backgroundColor: isCurrent ? activeSlide.accent : undefined,
-                                }}
-                            />
-                        );
-                    })}
-                </div>
+            {/* Quick Interactive Indicators */}
+            <div className="mt-4 flex items-center justify-center gap-1.5 sm:gap-2">
+                {POSTERS.map((poster, idx) => {
+                    const isCurrent = idx === activeIdx;
+                    return (
+                        <button
+                            key={poster.id}
+                            type="button"
+                            onClick={() => setActiveIdx(idx)}
+                            aria-label={`পোস্টার ${idx + 1}: ${poster.title}`}
+                            className={cn(
+                                "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
+                                isCurrent
+                                    ? poster.accent === BRAND_GREEN
+                                        ? "w-6 bg-brand-green"
+                                        : "w-6 bg-brand-primary"
+                                    : "w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                            )}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
