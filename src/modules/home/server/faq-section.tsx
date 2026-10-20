@@ -53,11 +53,11 @@ export const faqData: FAQItem[] = [
 
 export function FaqSection() {
   return (
-    <section className="max-w-3xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-14">
+    <section className="max-w-3xl lg:max-w-4xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-14">
       {/* Header Section */}
       <div className="text-center mb-8 sm:mb-10 space-y-2">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-          সাধারণ জিজ্ঞাসা (<span className="text-gradient-green">FAQ</span>)
+          সাধারণ জিজ্ঞাসা (<span className="text-gradient-brand">FAQ</span>)
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
           আপনাদের যেকোনো প্রশ্ন বা উত্তর জানতে নিচে দেখতে পারেন

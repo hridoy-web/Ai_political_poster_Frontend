@@ -50,7 +50,7 @@ export default function TermsPage() {
 
     return (
         <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20 relative overflow-hidden">
-            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
             <div className="absolute top-[40%] right-0 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
             <section className="text-center space-y-6 max-w-3xl mx-auto">
@@ -59,7 +59,7 @@ export default function TermsPage() {
                     <span>আইনগত নির্দেশিকা ও নিয়মাবলী</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
+                <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
                     সেবার <span className="text-gradient-brand">শর্তাবলী</span>
                 </h1>
 

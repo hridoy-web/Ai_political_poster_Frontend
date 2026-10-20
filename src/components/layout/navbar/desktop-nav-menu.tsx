@@ -40,7 +40,7 @@ export function DesktopNavMenu() {
             className={cn(
               "relative px-4 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 flex items-center cursor-pointer select-none",
               isActive
-                ? "bg-brand-green/15 text-brand-green font-bold shadow-xs border border-brand-green/20 dark:bg-brand-mint/10 dark:text-brand-mint dark:border-brand-mint/30 dark:shadow-[0_0_12px_rgba(16,185,129,0.25)]"
+                ? "bg-brand-mint/15  text-brand-green font-bold  border border-brand-green/20 dark:bg-brand-mint/10 dark:text-brand-mint dark:border-brand-mint/30 dark:shadow-[0_0_12px_rgba(16,185,129,0.25)]"
                 : "text-muted-foreground hover:text-brand-green hover:bg-brand-green/10 dark:hover:text-brand-mint dark:hover:bg-brand-mint/10"
             )}
           >
