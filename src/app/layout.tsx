@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { AuthProvider } from "@/context/AuthContext";
 
 const outfitFont = Outfit({
   variable: "--font-outfit",
@@ -51,19 +52,23 @@ export default function RootLayout({
     <html
       lang="bn"
       data-scroll-behavior="smooth"
-      className={cn("h-full", outfitFont.variable, banglaFont.variable, "font-sans")}
+      className={cn(
+        "h-full",
+        outfitFont.variable,
+        banglaFont.variable,
+        "font-sans",
+      )}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased">
         <ThemeProvider
-         attribute="class"
-      defaultTheme="dark"
-      enableSystem={false}
-      disableTransitionOnChange
-      scriptProps={{ type: "application/json" }}
-    
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+          scriptProps={{ type: "application/json" }}
         >
-          {children}
+          <AuthProvider> {children}</AuthProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>

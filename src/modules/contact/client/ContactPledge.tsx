@@ -28,7 +28,7 @@ export default function ContactPledge() {
   return (
     <div className="bg-card/70 backdrop-blur-xl border border-border/80 p-6 sm:p-8 rounded-3xl space-y-6 shadow-xl relative overflow-hidden">
       {/* Glow Effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -z-10 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -z-10 pointer-events-none" />
 
       <div className="space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent text-primary text-xs font-semibold">

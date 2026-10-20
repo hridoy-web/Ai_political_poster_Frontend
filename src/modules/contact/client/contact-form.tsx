@@ -123,7 +123,7 @@ export default function ContactForm() {
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-6 rounded-xl font-bold bg-gradient-brand text-white shadow-lg hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:hover:scale-100 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+                className="w-full md:mt-18 py-3.5 px-6 rounded-xl font-bold bg-gradient-brand text-white shadow-lg hover:shadow-primary/30 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 disabled:hover:scale-100 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
                 {loading ? (
                     <>

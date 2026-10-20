@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
 
     return (
         <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20 relative overflow-hidden">
-            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
+            <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
             <div className="absolute top-[40%] right-0 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
             <section className="text-center space-y-6 max-w-3xl mx-auto">
@@ -55,7 +55,7 @@ export default function PrivacyPolicyPage() {
                     <span>আপনার তথ্যের সর্বোচ্চ সুরক্ষা</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-6xl font-black tracking-tight leading-tight">
+                <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
                     গোপনীয়তা <span className="text-gradient-brand">নীতিমালা</span>
                 </h1>
 
@@ -63,10 +63,7 @@ export default function PrivacyPolicyPage() {
                     আমাদের প্ল্যাটফর্মে আপনার আপলোড করা ছবি, নাম এবং ডাটা কতটা সুরক্ষিত রাখা হয় এবং কীভাবে ব্যবহার করা হয়, তার স্পষ্ট বিবরণ নিচে দেওয়া হলো।
                 </p>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-muted/60 border text-xs text-muted-foreground font-medium">
-                    <span>সর্বশেষ সংস্করণ:</span>
-                    <span className="text-foreground font-bold">{lastUpdated}</span>
-                </div>
+               
             </section>
 
             <section className="grid sm:grid-cols-3 gap-6">
@@ -191,7 +188,7 @@ export default function PrivacyPolicyPage() {
                     </div>
                     <div className="pl-11 space-y-2">
                         <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-                            আমরা ডাটা ও ইমেজ হোস্ট করার জন্য নিরাপদ ব্যাকএন্ড এনভায়রনমেন্ট ও এনক্রিপ্টেড ক্লাউড স্টোরেজ (Cloudinary / Cloudflare R2) ব্যবহার করি। কোনো বাণিজ্যিকভাবে তৃতীয় পক্ষের কাছে ডাটা উন্মুক্ত করা হয় না।
+                            আমরা ডাটা ও ইমেজ হোস্ট করার জন্য নিরাপদ ব্যাকএন্ড এনভায়রনমেন্ট ও এনক্রিপ্টেড ক্লাউড স্টোরেজ ব্যবহার করি। কোনো বাণিজ্যিকভাবে তৃতীয় পক্ষের কাছে ডাটা উন্মুক্ত করা হয় না।
                         </p>
                     </div>
                 </div>

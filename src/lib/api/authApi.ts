@@ -26,7 +26,7 @@ const authApi: AuthApiType = {
     method: "POST",
   },
   getCurrentUser: {
-    url: "/api/v1/auth/me",
+    url: "/api/v1/user/me",
     method: "GET",
   },
 };
