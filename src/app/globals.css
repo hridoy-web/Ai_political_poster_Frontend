@@ -190,3 +190,42 @@ body {
 .animate-travel-line {
   animation: pulseDotLine 6s linear infinite;
 }
+
+@layer utilities {
+  /* Ultra-smooth 60FPS Floating Effect without JS */
+  @keyframes smoothFloat {
+    0%, 100% {
+      transform: translate3d(0, 0px, 0) rotate(0deg);
+    }
+    50% {
+      transform: translate3d(0, -10px, 0) rotate(0.8deg);
+    }
+  }
+
+  /* Ambient Glow Slow Pulse Effect */
+  @keyframes ambientPulse {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-smooth-float {
+    animation: smoothFloat 6s ease-in-out infinite;
+    will-change: transform;
+  }
+
+  .animate-ambient-pulse {
+    animation: ambientPulse 8s ease-in-out infinite;
+    will-change: transform, opacity;
+  }
+
+  /* Pause floating on hover for better user control */
+  .hover\:pause-animation:hover {
+    animation-play-state: paused;
+  }
+}
