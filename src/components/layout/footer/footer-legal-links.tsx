@@ -1,29 +1,37 @@
 import Link from "next/link";
-
-const legalLinks = [
-  { name: "প্রাইভেসি পলিসি", href: "/privacy" },
-  { name: "ব্যবহারের শর্তাবলী", href: "/terms" },
-];
+import { ChevronRight, ShieldCheck } from "lucide-react";
+import { legalLinks } from "./footer-data";
 
 export function FooterLegalLinks() {
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <h3 className="text-xs sm:text-sm font-bold text-foreground uppercase tracking-widest font-heading">
-        আইনি নোটিশ
-      </h3>
-      <ul className="flex flex-col gap-2.5 sm:gap-2">
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="h-4 w-1 rounded-full bg-brand-primary dark:bg-brand-secondary" />
+        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider font-heading">
+          আইনি ও পলিসি
+        </h3>
+      </div>
+
+      <ul className="flex flex-col gap-2.5">
         {legalLinks.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="inline-flex items-center text-xs sm:text-sm text-muted-foreground hover:text-brand-green dark:hover:text-brand-mint transition-colors duration-200 group"
+              className="group inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-all duration-200 py-0.5"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-brand-green/40 dark:bg-brand-mint/50 opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200 mr-2 shrink-0 hidden sm:inline-block" />
-              <span>{link.name}</span>
+              <ChevronRight className="size-3.5 text-muted-foreground/60 group-hover:text-brand-primary dark:group-hover:text-brand-secondary group-hover:translate-x-1 transition-all duration-200 shrink-0" />
+              <span className="transition-colors duration-200 font-medium">{link.name}</span>
             </Link>
           </li>
         ))}
       </ul>
+
+      <div className="pt-2">
+        <div className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-muted/40 border border-border/60 text-muted-foreground text-[11px]">
+          <ShieldCheck className="size-3.5 text-brand-green dark:text-brand-mint shrink-0" />
+          <span>সুরক্ষিত ও ভেরিফাইড ডেটা</span>
+        </div>
+      </div>
     </div>
   );
 }

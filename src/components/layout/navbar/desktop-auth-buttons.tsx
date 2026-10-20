@@ -6,22 +6,19 @@ import Link from "next/link";
 
 
 const DesktopAuthButtons = () => {
-  return (
-    <div>
-     
-      {!isAuthenticated && (
-        <div className="hidden lg:flex items-center gap-2">
-          <Button asChild variant="ghost" className={loginBtnStyle}>
-            <Link href="/login">লগইন</Link>
-          </Button>
+  if (isAuthenticated) return null;
 
-          <Button asChild  className={registerBtnStyle}>
-            <Link href="/register">
-              <span>রেজিস্ট্রেশন</span>
-            </Link>
-          </Button>
-        </div>
-      )}
+  return (
+    <div className="hidden lg:flex items-center gap-2 shrink-0">
+      <Button asChild variant="ghost" className={loginBtnStyle}>
+        <Link href="/login">লগইন</Link>
+      </Button>
+
+      <Button asChild className={registerBtnStyle}>
+        <Link href="/register">
+          <span>রেজিস্ট্রেশন</span>
+        </Link>
+      </Button>
     </div>
   );
 };
