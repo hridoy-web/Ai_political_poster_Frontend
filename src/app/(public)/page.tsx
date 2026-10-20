@@ -1,4 +1,5 @@
 import { FaqSection } from "@/modules/home/server/faq-section";
+import HeroSection from "@/modules/home/server/hero-section";
 import HowToUse from "@/modules/home/server/how-to-use";
 import Statistics from "@/modules/home/server/statistics";
 import TrendingTemplates from "@/modules/home/server/trending-templates";
@@ -8,6 +9,7 @@ export default function Home() {
   return (
     <section>
       <div>
+        <HeroSection/>
         <TrendingTemplates />
         <HowToUse />
         <Statistics />
