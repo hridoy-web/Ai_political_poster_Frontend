@@ -1,13 +1,15 @@
-// দায়িত্বে: Frontend Dev > Kaowser
-export default function CreatePosterPage() {
-  return (
-    <div className="container mx-auto px-4 py-16 text-center">
-      <h1 className="text-3xl font-bold text-foreground">
-        পোস্টার জেনারেটর স্টুডিও
-      </h1>
-      <p className="text-muted-foreground mt-2">
-        কাজ চলমান রয়েছে... খুব শীঘ্রই পোস্টার মেকিং সুবিধা চালু হবে।
-      </p>
-    </div>
-  )
-}
+import { GeneratorPageContent } from "@/modules/poster-generator/server/generator-page-content";
+import { Metadata } from "next";
+
+ 
+
+ export const metadata: Metadata ={
+title: "পলিটিক্যাল পোস্টার মেকার",
+description: "এক ক্লিকে প্রফেশনাল নির্বাচনী ব্যানার ও রাজনৈতিক পোস্টার তৈরি করুন।",
+ };
+
+ export default function CreatePosterPage() {
+   return ( <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 max-w-7xl">
+      <GeneratorPageContent></GeneratorPageContent>
+    </main>)
+ }

@@ -90,9 +90,6 @@ export function TemplatePreviewDialog({
                 <DialogTitle className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
                   {template.title}
                 </DialogTitle>
-                <DialogDescription className="text-sm text-muted-foreground pt-1 leading-relaxed">
-                  {template.description}
-                </DialogDescription>
               </DialogHeader>
             </div>
 

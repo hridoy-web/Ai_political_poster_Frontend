@@ -32,8 +32,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${template.title} | রাজনৈতিক পোস্টার ফ্রেম`,
-    description: template.description,
+    title: `${template.title} | রাজনৈতিক পোস্টার ফ্রেম`
   }
 }
 
@@ -97,10 +96,7 @@ export default async function TemplateDetailsPage({
             <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
               {template.title}
             </h1>
-
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {template.description}
-            </p>
+            
           </div>
 
           <div className="space-y-3 pt-4">
