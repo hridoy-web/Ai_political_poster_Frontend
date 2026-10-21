@@ -75,13 +75,14 @@ export function TemplateCard({
         </div>
 
         {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 gap-2 z-10 pointer-events-none group-hover:pointer-events-auto">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 gap-2 z-10 pointer-events-none group-hover:pointer-events-auto">
+
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={() => onPreview(template)}
-            className="w-full bg-white/90 hover:bg-white text-foreground font-semibold text-xs h-9 rounded-xl shadow-md gap-1.5"
+            className="w-full bg-white/90 hover:bg-white text-zinc-900 font-semibold text-xs h-9 rounded-xl shadow-md gap-1.5 dark:bg-rose-600 dark:hover:bg-rose-700 dark:text-white cursor-pointer"
           >
             <Eye className="size-3.5" />
             <span>প্রিভিউ দেখুন</span>
@@ -103,19 +104,14 @@ export function TemplateCard({
         </div>
       </div>
 
-      {/* Card Info Footer */}
+           {/* Card Info Footer */}
       <div className="p-3.5 flex flex-col gap-1.5 flex-1 justify-between bg-card">
-        <div>
-          <span className="text-[11px] font-medium text-brand-primary uppercase tracking-wider block">
-            {template.categoryLabel}
-          </span>
-          <h3
-            onClick={() => onPreview(template)}
-            className="text-sm font-semibold text-foreground line-clamp-1 hover:text-brand-primary cursor-pointer transition-colors"
-          >
-            {template.title}
-          </h3>
-        </div>
+        <h3
+          onClick={() => onPreview(template)}
+          className="text-sm font-semibold text-foreground line-clamp-1 hover:text-brand-primary cursor-pointer transition-colors"
+        >
+          {template.title}
+        </h3>
       </div>
     </div>
   )

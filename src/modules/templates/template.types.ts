@@ -5,7 +5,6 @@ export type TemplateSort = "trending" | "popular" | "latest" | "premium"
 export interface PosterTemplate {
   id: string
   title: string
-  description: string
   category: TemplateCategory
   categoryLabel: string
   thumbnailUrl: string
