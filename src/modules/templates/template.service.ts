@@ -12,60 +12,89 @@ export const TEMPLATE_CATEGORIES: CategoryOption[] = [
 export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-101",
-    title: "নির্বাচনী গণসংযোগ পোস্টার - বিজয়ী ২০২৬",
-    description: "স্থানীয় ও জাতীয় নির্বাচন প্রচারণার জন্য আদর্শ প্রিমিয়াম গ্রাফিক ফ্রেম ও স্লোগান স্পেস।",
+    title: "নির্বাচনী প্রচারণা",
     category: "election",
     categoryLabel: "নির্বাচন প্রচারণা",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
+    thumbnailUrl: "/image/images26.jpg",
     isPremium: true,
     tags: ["নির্বাচন", "ভোট", "প্রচারণা", "পোস্টার"],
     createdAt: "2026-03-10",
   },
   {
     id: "tpl-102",
-    title: "২৬শে মার্চ মহান স্বাধীনতা দিবস শুভেচ্ছা",
-    description: "লাল-সবুজের আবহে জাতীয় স্মৃতিসৌধ সম্বলিত দেশাত্মবোধক ও শ্রদ্ধাঞ্জলি পোস্টার ডিজাইন।",
-    category: "national-day",
-    categoryLabel: "জাতীয় দিবস",
-    thumbnailUrl: "https://cdn.dribbble.com/userupload/36528011/file/original-328a6c43bd268cf3edd4592834f6139b.jpg",
+    title: "জনসভা পোস্টার",
+    category: "greetings",
+    categoryLabel: "সমাবেশ ও জনসভা",
+    thumbnailUrl: "/image/image6.jpg",
     isPremium: false,
-    tags: ["স্বাধীনতা দিবস", "২৬ মার্চ", "বাংলাদেশ", "শ্রদ্ধাঞ্জলি"],
+    tags: ["জনসভা", "সমাবেশ", "মিছিল", "দলীয়"],
     createdAt: "2026-03-01",
   },
   {
     id: "tpl-103",
-    title: "দলীয় নবনির্বাচিত কমিটিকে উষ্ণ অভিনন্দন",
-    description: "সভাপতি ও সাধারণ সম্পাদক পদে নির্বাচিত নেতৃবৃন্দকে শুভেচ্ছা ও অভিনন্দন জানানোর পোস্টার।",
-    category: "greetings",
-    categoryLabel: "দলীয় পদের শুভেচ্ছা",
-    thumbnailUrl: "https://cdn.dribbble.com/userupload/43070883/file/original-a95afc36f38069131a411ed8fc5e9168.jpg?resize=752x&vertical=center",
+    title: "নেতার জন্মদিন",
+    category: "birthday",
+    categoryLabel: "শুভ জন্মদিন",
+    thumbnailUrl: "/image/images24.jpg",
     isPremium: false,
-    tags: ["শুভেচ্ছা", "কমিটি", "অভিনন্দন", "দলীয় পদ"],
+    tags: ["জন্মদিন", "নেতা", "শুভেচ্ছা", "দীর্ঘায়ু"],
     createdAt: "2026-02-18",
   },
   {
     id: "tpl-104",
-    title: "প্রিয় নেতার শুভ জন্মদিন ব্যানার",
-    description: "নেতা বা দলীয় প্রধানের জন্মদিনে দীর্ঘায়ু ও সুস্বাস্থ্য কামনায় বিশেষ জন্মদিনের ফ্রেম।",
-    category: "birthday",
-    categoryLabel: "শুভ জন্মদিন",
-    thumbnailUrl: "https://shorifart.com/wp-content/uploads/2025/10/cropped-01-4.jpg",
+    title: "বিজয় দিবস",
+    category: "national-day",
+    categoryLabel: "জাতীয় দিবস",
+    thumbnailUrl: "/image/images21.jpg",
     isPremium: true,
-    tags: ["জন্মদিন", "নেতা", "শুভেচ্ছা", "দীর্ঘায়ু"],
+    tags: ["বিজয় দিবস", "১৬ ডিসেম্বর", "বাংলাদেশ", "স্বাধীনতা"],
     createdAt: "2026-02-25",
   },
   {
     id: "tpl-105",
-    title: "পবিত্র ঈদুল ফিতর মোবারক রাজনৈতিক শুভেচ্ছা",
-    description: "জনসাধারণ ও দলীয় নেতাকর্মীদের পবিত্র ঈদের শুভেচ্ছা ও শান্তি কামনায় বিশেষ পোস্টার।",
-    category: "religious",
-    categoryLabel: "ধর্মীয় উৎসব",
-    thumbnailUrl: "https://cdn.dribbble.com/userupload/43070968/file/original-080ea70639ed00e7260c3c3e81903fc6.jpg?resize=752x&vertical=center",
+    title: "শোকবার্তা",
+    category: "national-day",
+    categoryLabel: "শোকবার্তা",
+    thumbnailUrl: "/image/images11.jpg",
     isPremium: false,
-    tags: ["ঈদ", "ঈদ মোবারক", "ধর্মীয়", "উৎসব"],
+    tags: ["শোকবার্তা", "শ্রদ্ধাঞ্জলি", "স্মরণসভা"],
     createdAt: "2026-03-12",
   },
+  {
+    id: "tpl-106",
+    title: "প্রতিষ্ঠাবার্ষিকী",
+    
+    category: "greetings",
+    categoryLabel: "প্রতিষ্ঠাবার্ষিকী",
+    thumbnailUrl: "/image/images3.jpg",
+    isPremium: false,
+    tags: ["প্রতিষ্ঠাবার্ষিকী", "শুভেচ্ছা", "দলীয়"],
+    createdAt: "2026-03-14",
+  },
+  {
+    id: "tpl-107",
+    title: "ভোটার উদ্বুদ্ধকরণ",
+    
+    category: "election",
+    categoryLabel: "ভোটার উদ্বুদ্ধকরণ",
+    thumbnailUrl: "/image/images5.jpg",
+    isPremium: true,
+    tags: ["ভোট", "নির্বাচন", "গণতন্ত্র"],
+    createdAt: "2026-03-15",
+  },
+  {
+    id: "tpl-108",
+    title: "ধর্মীয় উৎসব ও ঈদ শুভেচ্ছা",
+   
+    category: "religious",
+    categoryLabel: "ধর্মীয় উৎসব",
+    thumbnailUrl: "/image/images4.jpg",
+    isPremium: false,
+    tags: ["ঈদ", "ঈদ মোবারক", "ধর্মীয়", "উৎসব"],
+    createdAt: "2026-03-16",
+  },
 ];
+
 
 export class TemplateService {
   // Fetch all templates (supports future backend API with caching)
@@ -140,7 +169,6 @@ export class TemplateService {
       result = result.filter(
         (item) =>
           item.title.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query) ||
           item.tags.some((tag) => tag.toLowerCase().includes(query))
       );
     }

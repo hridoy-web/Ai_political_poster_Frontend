@@ -1,8 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
+import axios from "axios";
+import {
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  FileText,
+  LogIn,
+  UserPlus,
+  User,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,102 +24,129 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { LayoutDashboard, User, FolderKanban, LogOut } from "lucide-react";
-
-import { UserData } from "@/types/user.types";
 import { NavbarAvatar } from "./navbar-avatar";
+import { useAuth } from "@/hooks/get-user-data";
+import authApi, { serverURL } from "@/lib/api/authApi";
+import { loginBtnStyle, registerBtnStyle } from "./navbar-actions";
 
-interface NavbarDropdownAvatarProps {
-  user: UserData;
-  onLogout?: () => void;
-}
-
-const menuItems = [
+const userDropdownLinks = [
   { name: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
-  { name: "মাই পোস্টার্স", href: "/dashboard/posters", icon: FolderKanban },
-  { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: User },
+  { name: "আমার পোস্টারসমূহ", href: "/dashboard/posters", icon: FileText },
+  { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: Settings },
 ];
 
-export function NavbarDropdown({ user, onLogout }: NavbarDropdownAvatarProps) {
+export function NavbarDropdown() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, setUser } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await axios({
+        url: `${serverURL}${authApi.logout.url}`,
+        method: authApi.logout.method,
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setUser(null);
+      setIsLoggingOut(false);
+      router.push("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label="ইউজার মেনু খুলুন"
-          className="group relative flex items-center justify-center rounded-full p-0.5 outline-hidden ring-2 ring-brand-green/30 hover:ring-brand-green dark:ring-brand-mint/30 dark:hover:ring-brand-mint focus-visible:ring-ring transition-all duration-200 cursor-pointer"
-        >
-          <NavbarAvatar />
-          <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-brand-green dark:bg-brand-mint ring-2 ring-background" />
-        </button>
+        {user?.email ? (
+          <Button
+            variant="ghost"
+            aria-label="ইউজার প্রোফাইল মেনু"
+            className="size-8 rounded-full p-0 ring-2 ring-brand-green/20 dark:ring-brand-mint/30 hover:ring-brand-green dark:hover:ring-brand-mint transition-all duration-300 shadow-sm cursor-pointer shrink-0"
+          >
+            <NavbarAvatar />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="লগইন বা রেজিস্টার মেনু"
+            className="lg:hidden size-8 rounded-full hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 text-muted-foreground hover:text-foreground transition-all duration-300 cursor-pointer shrink-0"
+          >
+            <User className="size-4" />
+          </Button>
+        )}
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        sideOffset={8}
-        className="w-60 p-1.5 rounded-2xl bg-card text-card-foreground border border-border shadow-xl backdrop-blur-xl dark:bg-(--card)/90 animate-in fade-in-80 zoom-in-95 duration-150"
+        className="w-56 mt-2 bg-card/95 backdrop-blur-xl border-border rounded-2xl p-1.5 shadow-xl font-sans"
       >
-        <DropdownMenuLabel className="p-2.5 font-normal">
-          <div className="flex items-center gap-3">
-            <NavbarAvatar />
-            <div className="flex flex-col space-y-1 overflow-hidden">
-              <p className="text-sm font-semibold text-foreground leading-none truncate">{user.name}</p>
-              <p className="text-xs text-muted-foreground leading-none truncate">{user.email}</p>
-            </div>
-          </div>
-          {user.role && (
-            <div className="mt-2.5">
-              <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-green/10 text-brand-green dark:bg-brand-mint/10 dark:text-brand-mint border border-brand-green/20 dark:border-brand-mint/20">
-                {user.role}
-              </span>
-            </div>
-          )}
-        </DropdownMenuLabel>
+        {user?.email ? (
+          <>
+            <DropdownMenuLabel className="font-normal p-2.5">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-semibold text-foreground font-heading">{user.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator className="bg-border" />
 
-        <DropdownMenuSeparator className="my-1 bg-border" />
+            <DropdownMenuGroup className="space-y-0.5">
+              {userDropdownLinks.map(({ name, href, icon: Icon }) => {
+                const isActive = pathname === href;
+                return (
+                  <DropdownMenuItem key={href} asChild className="rounded-xl cursor-pointer">
+                    <Link
+                      href={href}
+                      className={cn(
+                        "flex items-center w-full px-2.5 py-2 text-xs font-medium transition-colors",
+                        isActive
+                          ? "bg-brand-green/10 text-brand-green font-bold dark:bg-brand-mint/15 dark:text-brand-mint"
+                          : "text-foreground hover:bg-muted"
+                      )}
+                    >
+                      <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span>{name}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuGroup>
 
-        <DropdownMenuGroup className="space-y-0.5">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors duration-150",
-                    isActive
-                      ? "bg-brand-green/10 text-brand-green font-bold dark:bg-brand-mint/15 dark:text-brand-mint"
-                      : "text-foreground hover:bg-muted hover:text-brand-green dark:hover:text-brand-mint"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "size-4 shrink-0 transition-colors",
-                      isActive ? "text-brand-green dark:text-brand-mint" : "text-muted-foreground group-hover:text-brand-green dark:group-hover:text-brand-mint"
-                    )}
-                  />
-                  <span>{item.name}</span>
-                </Link>
-              </DropdownMenuItem>
-            );
-          })}
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator className="my-1 bg-border" />
-
-        <DropdownMenuItem
-          onClick={onLogout}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors duration-150 text-brand-primary hover:bg-brand-primary/10 focus:bg-brand-primary/10 focus:text-brand-primary dark:text-brand-secondary dark:hover:bg-brand-secondary/10"
-        >
-          <LogOut className="size-4 shrink-0 text-brand-primary dark:text-brand-secondary" />
-          <span>লগআউট</span>
-        </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-border" />
+            <DropdownMenuItem
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="rounded-xl cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>{isLoggingOut ? "লগআউট হচ্ছে..." : "লগআউট"}</span>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <DropdownMenuGroup className="flex flex-col gap-1.5 p-1">
+            <Button asChild variant="ghost" size="sm" className={cn("w-full justify-start", loginBtnStyle)}>
+              <Link href="/login" className="flex items-center">
+                <LogIn className="mr-2 h-4 w-4 text-muted-foreground" />
+                <span>লগইন</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" className={cn("w-full justify-center", registerBtnStyle)}>
+              <Link href="/register" className="flex items-center justify-center">
+                <UserPlus className="mr-2 h-4 w-4" />
+                <span>রেজিস্ট্রেশন</span>
+              </Link>
+            </Button>
+          </DropdownMenuGroup>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+export default NavbarDropdown;
