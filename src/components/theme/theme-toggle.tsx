@@ -14,10 +14,10 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
 
   return (
     <Button
-      variant="ghost"
+      variant="outline"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       className={cn(
-        "relative w-11 h-7 rounded-full cursor-pointer bg-muted/60 dark:bg-muted/40 hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 transition-all duration-300 border border-border/50 shadow-xs shrink-0 flex items-center justify-center",
+        "relative w-10 sm:w-11 h-6.5 sm:h-7 rounded-full cursor-pointer bg-muted/60 dark:bg-muted/40 hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 transition-all duration-300 border border-border/50 shadow-xs shrink-0 flex items-center justify-center",
         className
       )}
       aria-label="Toggle theme"
