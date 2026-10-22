@@ -63,7 +63,7 @@ export function GeneratorWorkspace({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/*Left side: Input panel */}
-        <div className="lg:col-span-5 w-full">
+        <div className="lg:col-span-6 w-full">
           <StudioInputPanel
             candidate={candidate}
             onCandidateChange={handleCandidateChange}
@@ -76,7 +76,7 @@ export function GeneratorWorkspace({
         </div>
 
         {/* Right side: Live banner */}
-        <div className="lg:col-span-7 w-full sticky top-6">
+        <div className="lg:col-span-6 w-full sticky top-6">
           <StudioCanvas
             candidate={candidate}
             photoUrl={photoUrl}
