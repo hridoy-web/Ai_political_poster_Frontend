@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
+
+
 interface NavbarScrollShellProps {
   logo: React.ReactNode;
   desktopNav: React.ReactNode;
@@ -22,7 +24,9 @@ export function NavbarScrollShell({
   desktopActions,
   mobileMenu,
 }: NavbarScrollShellProps) {
+  
   const [isScrolled, setIsScrolled] = useState(false);
+
 
   useEffect(() => {
     let ticking = false;
@@ -69,11 +73,9 @@ export function NavbarScrollShell({
         {/* Mobile Menu Icon */}
         <div className="flex lg:hidden items-center shrink-0">{mobileMenu}</div>
 
-        {/* Desktop Logo */}
-        <div className="hidden lg:flex items-center gap-8 shrink-0">{logo}</div>
 
-        {/* Mobile Logo */}
-        <div className="flex lg:hidden items-center justify-center shrink-0">{logo}</div>
+
+        <div className="flex items-center justify-center shrink-0">{logo}</div>
 
         {/* Desktop Navigation Links */}
         {desktopNav}
@@ -94,7 +96,7 @@ export function NavbarScrollShell({
           </div>
 
           {/* Desktop Actions */}
-          <div className="hidden lg:flex items-center gap-2 border border-border/60 backdrop-blur-xl shadow-inner rounded-full p-2">
+          <div className="hidden lg:flex items-center justify-center gap-2 border border-border/60 backdrop-blur-xl shadow-inner rounded-full p-1">
             {desktopThemeToggle}
             {desktopActions}
           </div>

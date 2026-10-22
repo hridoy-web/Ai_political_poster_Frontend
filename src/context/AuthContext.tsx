@@ -4,7 +4,7 @@ import { createContext, useEffect, useState, type ReactNode } from "react";
 import axios from "axios";
 import authApi, { serverURL } from "@/lib/api/authApi";
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;

@@ -6,7 +6,9 @@ import { Logo } from "@/components/brand/logo";
 import { NavbarActions } from "./navbar-actions";
 import { NavbarScrollShell } from "./navbar-scroll-shell";
 
-export const isAuthenticated = false;
+
+
+
 
 /**
  * MainNavbar - Server Component (RSC)
