@@ -9,7 +9,7 @@ description: "এক ক্লিকে প্রফেশনাল নির্
  };
 
  export default function CreatePosterPage() {
-   return ( <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8 max-w-7xl">
+   return ( <main className="container mx-auto px-4 sm:px-6 lg:px-16 py-6 md:py-8 max-w-7xl">
       <GeneratorPageContent></GeneratorPageContent>
     </main>)
  }
