@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, type ChangeEvent, type SyntheticEvent } from "react";
+import {
+  useContext,
+  useState,
+  type ChangeEvent,
+  type SyntheticEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
@@ -11,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authApi, { serverURL } from "@/lib/api/authApi";
 import { FcGoogle } from "react-icons/fc";
+import { AuthContext } from "@/context/AuthContext";
 
 /* ---------------- Validation (Zod) ---------------- */
 
@@ -36,6 +42,13 @@ const fieldErrorClass = "mt-1 text-xs text-destructive";
 export default function LoginForm() {
   const router = useRouter();
 
+  const authContext = useContext(AuthContext);
+
+  if (!authContext) {
+    throw new Error("LoginForm must be used within AuthProvider");
+  }
+
+  const { setUser } = authContext;
   const [form, setForm] = useState<LoginData>({
     email: "",
     password: "",
@@ -104,12 +117,9 @@ export default function LoginForm() {
           email: result.data.email,
           password: result.data.password,
         },
-        // todo
         withCredentials: true,
       });
-
-      console.log(res);
-
+      setUser(res?.data?.data?.user);
       router.push("/");
       router.refresh();
     } catch (err: unknown) {
