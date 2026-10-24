@@ -69,7 +69,7 @@ export default function HeroSection() {
                                 size="lg"
                                 className="bg-gradient-brand group w-full rounded-full text-white font-bold px-8 py-6 text-sm sm:text-base cursor-pointer shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 sm:w-auto border-0"
                             >
-                                <Link href="/templates" className="inline-flex items-center justify-center gap-2">
+                                <Link href="/create-poster" className="inline-flex items-center justify-center gap-2">
                                     <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
                                     <span>পোস্টার তৈরি করুন</span>
                                     <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
