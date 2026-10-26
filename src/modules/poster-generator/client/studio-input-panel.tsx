@@ -3,15 +3,18 @@
 import { useState } from "react";
 import { BannerTheme, CandidateInfo } from "../generator.types";
 import { PosterGeneratorService, SLOGAN_TOPICS } from "../generator.service";
-import { Crop, Edit3, ImageIcon, Loader2, RotateCcw, Sparkles, UploadCloud, User, Wand2 } from "lucide-react";
+import { Crop, Edit3, ImageIcon, Loader2, RotateCcw, Sparkles, UploadCloud, User, Wand2, RefreshCw, Undo2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useBackgroundRemoval } from "@/modules/background-removal";
 
 interface StudioInputPanelProps {
   candidate: CandidateInfo;
   onCandidateChange: (field: keyof CandidateInfo, value: string) => void;
   theme: BannerTheme;
   onThemeChange: (theme: BannerTheme) => void;
+  photoUrl?: string;
+  onPhotoChange?: (newUrl: string) => void;
   onPhotoUpload: (file: File) => void;
   onOpenCropModal: () => void;
   onReset: () => void;
@@ -22,6 +25,8 @@ export function StudioInputPanel({
   onCandidateChange,
   theme,
   onThemeChange,
+  photoUrl,
+  onPhotoChange,
   onPhotoUpload,
   onOpenCropModal,
   onReset,
@@ -42,6 +47,39 @@ export function StudioInputPanel({
       setSuggestedSlogans(results);
       setIsGeneratingSlogans(false);
     }, 700);
+  };
+
+  // Background removal hook
+  const {
+    removeBg,
+    isProcessing: isRemovingBg,
+    progressPercent: bgProgressPercent,
+    progressText: bgProgressText,
+    revertToOriginal,
+    hasOriginal,
+  } = useBackgroundRemoval();
+
+  const handleRemoveBackground = async () => {
+    if (!photoUrl) {
+      alert("অনুগ্রহ করে প্রথমে প্রার্থীর একটি ছবি আপলোড করুন।");
+      return;
+    }
+    try {
+      const transparentUrl = await removeBg(photoUrl);
+      if (transparentUrl && onPhotoChange) {
+        onPhotoChange(transparentUrl);
+      }
+    } catch (err) {
+      console.error("Background removal error:", err);
+      alert("ব্যাকগ্রাউন্ড রিমুভ করতে সমস্যা হয়েছে। অন্য ছবি দিয়ে চেষ্টা করুন।");
+    }
+  };
+
+  const handleRevertBackground = () => {
+    const original = revertToOriginal();
+    if (original && onPhotoChange) {
+      onPhotoChange(original);
+    }
   };
 
   // Drag-and-drop file upload handle
@@ -220,14 +258,39 @@ export function StudioInputPanel({
             </div>
           </label>
 
-          {/* Background Remover Button */}
-          <button
-            type="button"
-            className="w-full py-1.5 px-3 rounded-lg border border-brand-green/30 bg-brand-green/10 hover:bg-brand-green/20 text-brand-green text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
-          >
-            <Wand2 className="size-3.5" />
-            <span>AI Background Remover (এক ক্লিকে রিমুভ)</span>
-          </button>
+          {/* Background Remover Action Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={isRemovingBg}
+              onClick={handleRemoveBackground}
+              className="flex-1 py-1.5 px-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+            >
+              {isRemovingBg ? (
+                <>
+                  <RefreshCw className="size-3.5 animate-spin" />
+                  <span>{bgProgressText || "রিমুভ হচ্ছে..."} ({bgProgressPercent}%)</span>
+                </>
+              ) : (
+                <>
+                  <Wand2 className="size-3.5" />
+                  <span>AI Background Remover (১-ক্লিকে রিমুভ)</span>
+                </>
+              )}
+            </button>
+
+            {hasOriginal && (
+              <button
+                type="button"
+                onClick={handleRevertBackground}
+                className="py-1.5 px-2.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                title="মূল ছবিতে ফিরে যান"
+              >
+                <Undo2 className="size-3.5" />
+                <span>মূল ছবি</span>
+              </button>
+            )}
+          </div>
 
           <div className="pt-1.5 border-t border-border/60">
             <label className="block text-[11px] font-semibold text-muted-foreground mb-1.5">

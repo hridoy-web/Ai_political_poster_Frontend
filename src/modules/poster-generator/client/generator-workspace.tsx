@@ -69,6 +69,8 @@ export function GeneratorWorkspace({
             onCandidateChange={handleCandidateChange}
             theme={theme}
             onThemeChange={setTheme}
+            photoUrl={photoUrl}
+            onPhotoChange={setPhotoUrl}
             onPhotoUpload={handlePhotoUpload}
             onOpenCropModal={() => alert("ক্রপ ডায়ালগ খুব শীঘ্রই ওপেন হবে!")}
             onReset={handleReset}
