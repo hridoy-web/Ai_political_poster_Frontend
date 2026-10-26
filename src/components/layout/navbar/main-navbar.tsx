@@ -6,10 +6,6 @@ import { Logo } from "@/components/brand/logo";
 import { NavbarActions } from "./navbar-actions";
 import { NavbarScrollShell } from "./navbar-scroll-shell";
 
-
-
-
-
 /**
  * MainNavbar - Server Component (RSC)
  * Renders on the server while delegating dynamic scroll transitions

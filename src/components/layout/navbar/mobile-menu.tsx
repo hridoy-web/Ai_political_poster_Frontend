@@ -28,8 +28,8 @@ export default function MobileMenu() {
     <div className="lg:hidden">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Open Menu" className="rounded-full size-9 hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 transition-all duration-300">
-            <Menu className="size-5" />
+          <Button variant="ghost" size="icon" aria-label="Open Menu" className="rounded-full size-8 hover:bg-brand-green/10 dark:hover:bg-brand-mint/15 transition-all duration-300">
+            <Menu className="size-4" />
           </Button>
         </SheetTrigger>
 

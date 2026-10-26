@@ -5,7 +5,7 @@ import StatisticsClient from "../client/statistics-client";
 
 export default function Statistics() {
     return (
-        <section className="relative overflow-hidden bg-linear-to-b from-background via-brand-primary/5 to-background py-14 sm:py-18 lg:py-20">
+        <section className="relative overflow-hidden bg-linear-to-b from-background via-brand-primary/5 to-background py-8 md:py-10 lg:py-12">
             {/* Background Radial Glow Effects */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute -top-20 left-1/3 h-80 w-80 rounded-full bg-brand-primary/10 blur-[120px]" />
