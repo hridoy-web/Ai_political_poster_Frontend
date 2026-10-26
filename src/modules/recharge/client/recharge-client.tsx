@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useId, useMemo, useCallback } from "react";
-import { Zap, Flame, Info, TrendingUp } from "lucide-react";
+import React, { useState, useId, useMemo, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Zap, Flame, Info, TrendingUp, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "cn";
+import { useAuth } from "@/hooks/get-user-data";
+import { initiateRechargePayment } from "../recharge.service";
 
 import type { PackagePlan } from "../types";
 import {
@@ -13,10 +16,12 @@ import {
   calculatePosterBenefits,
   getUpsellTip,
 } from "../utils";
-import { PAYMENT_GATEWAYS } from "../data/recharge.data";
+import { PAYMENT_GATEWAYS, TRUST_BADGES } from "../data/recharge.data";
 import { PackageCard } from "./package-card";
 import { RechargeSummary } from "./recharge-summary";
 import { PaymentGatewaySelector } from "./payment-gateway-selector";
+import { WalletBalanceCard } from "./wallet-balance-card";
+import type { TrustBadgeItem } from "../types";
 
 // Re-export types and utilities for 100% backward compatibility
 export type { PackagePlan } from "../types";
@@ -25,13 +30,42 @@ export { toBengaliNumber, toEnglishNumber } from "../utils";
 interface RechargeClientProps {
   presetPackages: PackagePlan[];
   quickAmounts: number[];
+  trustBadges?: TrustBadgeItem[];
 }
 
-export function RechargeClient({ presetPackages, quickAmounts }: RechargeClientProps) {
+export function RechargeClient({
+  presetPackages,
+  quickAmounts,
+  trustBadges,
+}: RechargeClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const inputId = useId();
+
   const [selectedPlanId, setSelectedPlanId] = useState<string>("campaign");
   const [displayAmount, setDisplayAmount] = useState<string>("৫০");
-  const [selectedPayment, setSelectedPayment] = useState<string>("bkash");
-  const inputId = useId();
+  const [selectedPayment, setSelectedPayment] = useState<string>("card");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const paymentStatus = searchParams?.get("status");
+  const [isStatusDismissed, setIsStatusDismissed] = useState(false);
+
+  // Derive status banner cleanly without setState inside useEffect
+  const statusBanner = isStatusDismissed ? null : paymentStatus;
+
+  // Clean up URL query parameters silently so page refreshes/hard-refreshes do not keep showing the banner
+  useEffect(() => {
+    if (paymentStatus) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("status");
+        window.history.replaceState(null, "", url.pathname + (url.search ? url.search : ""));
+      } catch (err) {
+        console.error("Failed to clean up URL query status:", err);
+      }
+    }
+  }, [paymentStatus]);
 
   // Numeric amount in English for calculations
   const currentAmount = useMemo(
@@ -97,8 +131,123 @@ export function RechargeClient({ presetPackages, quickAmounts }: RechargeClientP
     setSelectedPayment(gatewayId);
   }, []);
 
+  const handleProceedToPayment = useCallback(async () => {
+    if (!isMinimumValid || isSubmitting) return;
+
+    // 1. Auth Guard: Check if user is logged in
+    if (!user) {
+      alert("রিচার্জ সম্পন্ন করতে অনুগ্রহ করে প্রথমে আপনার অ্যাকাউন্টে লগইন করুন।");
+      router.push("/login?redirect=/recharge");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+
+      const response = await initiateRechargePayment({
+        customAmount: currentAmount,
+        packageId: selectedPlanId && selectedPlanId !== "custom" ? selectedPlanId : undefined,
+        paymentMethod: selectedPayment,
+      });
+
+      if (response.success && response.data?.GatewayPageURL) {
+        window.location.href = response.data.GatewayPageURL;
+      } else {
+        const msg = response.message || "পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।";
+        setErrorMessage(msg);
+        alert(msg);
+      }
+    } catch (err: unknown) {
+      console.error("Payment initiation error:", err);
+      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
+      const msg = errorObj.response?.data?.message || errorObj.message || "পেমেন্ট সেশন শুরু করতে সমস্যা হয়েছে।";
+      setErrorMessage(msg);
+      alert(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId, selectedPayment, router]);
+
   return (
     <div className="space-y-12">
+      {/* Dynamic Live Wallet Balance Card */}
+      <WalletBalanceCard
+        trustBadges={trustBadges || TRUST_BADGES}
+        refreshTrigger={paymentStatus || statusBanner}
+      />
+
+      {/* Payment Feedback Banners with Clean Dismissal */}
+      {statusBanner === "success" && (
+        <div className="rounded-2xl bg-emerald-500/15 border border-emerald-500/30 p-4 text-sm text-foreground flex items-center justify-between gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="size-5 text-emerald-500 shrink-0" />
+            <div>
+              <div className="font-bold text-emerald-600 dark:text-emerald-400">অভিনন্দন! আপনার রিচার্জ সফল হয়েছে।</div>
+              <div className="text-xs text-muted-foreground mt-0.5">আপনার ওয়ালেটে ক্রেডিট যোগ করা হয়েছে। আপনি এখন পোস্টার তৈরি করতে পারেন।</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsStatusDismissed(true)}
+            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-emerald-500/10 transition-colors shrink-0"
+            title="বার্তাটি বন্ধ করুন"
+            aria-label="বার্তাটি বন্ধ করুন"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
+      {statusBanner === "failed" && (
+        <div className="rounded-2xl bg-destructive/15 border border-destructive/30 p-4 text-sm text-foreground flex items-center justify-between gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="size-5 text-destructive shrink-0" />
+            <div>
+              <div className="font-bold text-destructive">পেমেন্ট সম্পন্ন হতে ব্যর্থ হয়েছে।</div>
+              <div className="text-xs text-muted-foreground mt-0.5">অনুগ্রহ করে আবার চেষ্টা করুন অথবা অন্য পেমেন্ট মেথড নির্বাচন করুন।</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsStatusDismissed(true)}
+            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-destructive/10 transition-colors shrink-0"
+            title="বার্তাটি বন্ধ করুন"
+            aria-label="বার্তাটি বন্ধ করুন"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
+      {statusBanner === "cancelled" && (
+        <div className="rounded-2xl bg-amber-500/15 border border-amber-500/30 p-4 text-sm text-foreground flex items-center justify-between gap-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-3">
+            <Info className="size-5 text-amber-500 shrink-0" />
+            <div>
+              <div className="font-bold text-amber-600 dark:text-amber-400">পেমেন্ট প্রক্রিয়াটি বাতিল করা হয়েছে।</div>
+              <div className="text-xs text-muted-foreground mt-0.5">আপনি চাইলে যেকোনো সময় পুনরায় রিচার্জ করতে পারেন।</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsStatusDismissed(true)}
+            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-amber-500/10 transition-colors shrink-0"
+            title="বার্তাটি বন্ধ করুন"
+            aria-label="বার্তাটি বন্ধ করুন"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="rounded-2xl bg-destructive/15 border border-destructive/30 p-4 text-sm text-destructive flex items-center gap-3 shadow-sm">
+          <AlertCircle className="size-5 shrink-0" />
+          <span className="font-semibold">{errorMessage}</span>
+        </div>
+      )}
+
       {/* 3 Distinct Preset Packages */}
       <section aria-labelledby="pricing-plans-heading" className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-border pb-4">
@@ -246,6 +395,8 @@ export function RechargeClient({ presetPackages, quickAmounts }: RechargeClientP
             currentAmount={currentAmount}
             benefits={benefits}
             isMinimumValid={isMinimumValid}
+            onProceed={handleProceedToPayment}
+            isLoading={isSubmitting}
           />
         </div>
       </section>

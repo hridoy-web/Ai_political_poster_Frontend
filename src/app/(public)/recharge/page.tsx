@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Wallet } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RechargeClient } from "@/modules/recharge/client/recharge-client";
 import {
   PRESET_PACKAGES,
   QUICK_AMOUNTS,
-  TRUST_BADGES,
   rechargeMetadata,
 } from "@/modules/recharge/data/recharge.data";
 
@@ -46,47 +43,7 @@ export default function WalletPage() {
           </p>
         </header>
 
-        {/* Current Balance & Trust Stats Bar using shadcn Card & Badge */}
-        <Card
-          aria-label="Wallet balance and security"
-          className="rounded-3xl border-border bg-card p-6 sm:p-7 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6"
-        >
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="size-14 rounded-2xl bg-secondary/15 flex items-center justify-center text-secondary shadow-inner shrink-0 border border-secondary/20">
-              <Wallet className="size-7" />
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                বর্তমান ওয়ালেট ব্যালেন্স
-              </div>
-              <div className="text-2xl sm:text-3xl font-black text-foreground flex items-baseline gap-2">
-                <span className="text-secondary font-black">৳ ০.০০</span>
-                <span className="text-xs font-semibold text-muted-foreground">
-                  (০টি পোস্টার ক্রেডিট)
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* DRY Trust Badges using shadcn Badge */}
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-start md:justify-end border-t md:border-t-0 pt-4 md:pt-0 border-border">
-            {TRUST_BADGES.map((badge) => {
-              const Icon = badge.icon;
-              return (
-                <Badge
-                  key={badge.id}
-                  variant="outline"
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-muted text-xs font-semibold text-foreground border-border/60"
-                >
-                  <Icon className={`size-4 ${badge.iconColor} shrink-0`} />
-                  <span>{badge.label}</span>
-                </Badge>
-              );
-            })}
-          </div>
-        </Card>
-
-        {/* Client Interactive Section (Preset Packages + Custom Box + Calculation) */}
+        {/* Client Interactive Section (Live Balance + Preset Packages + Custom Box + Calculation) */}
         <RechargeClient
           presetPackages={PRESET_PACKAGES}
           quickAmounts={QUICK_AMOUNTS}
