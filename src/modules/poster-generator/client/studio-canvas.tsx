@@ -47,6 +47,7 @@ export function StudioCanvas({
             </p>
 
             <div className="w-32 sm:w-36 h-36 sm:h-40 rounded-2xl overflow-hidden flex items-center justify-center relative border-2 border-amber-300/80 shadow-md bg-slate-900 ring-1 ring-amber-400/50">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photoUrl}
                 alt={candidate.name}
