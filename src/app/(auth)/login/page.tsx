@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import bgFlag from "../../../../public/bgFlag.png";
 import { Card } from "@/components/ui/card";
-import LoginForm from "@/modules/auth/client/login-form";
+import LoginForm from "@/modules/auth/client/login/login-form";
 import { Logo } from "@/components/brand/logo";
 
 export const metadata: Metadata = {
