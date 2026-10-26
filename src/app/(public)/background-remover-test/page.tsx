@@ -67,17 +67,17 @@ export default function BackgroundRemoverTestPage() {
           </div>
 
           <div className="rounded-2xl bg-muted/60 p-4 font-mono text-xs overflow-x-auto border border-border space-y-2 leading-relaxed">
-            <p className="text-muted-foreground">// ১. আমাদের তৈরি করা মডিউল থেকে হুকটি ইমপোর্ট করুন:</p>
+            <p className="text-muted-foreground">{"// ১. আমাদের তৈরি করা মডিউল থেকে হুকটি ইমপোর্ট করুন:"}</p>
             <p className="text-primary font-bold">
               {`import { useBackgroundRemoval } from "@/modules/background-removal";`}
             </p>
             <br />
-            <p className="text-muted-foreground">// ২. আপনার কম্পোনেন্টের ভেতরে হুকটি কল করুন:</p>
+            <p className="text-muted-foreground">{"// ২. আপনার কম্পোনেন্টের ভেতরে হুকটি কল করুন:"}</p>
             <p className="text-foreground">
               {`const { removeBg, isProcessing, progressPercent } = useBackgroundRemoval();`}
             </p>
             <br />
-            <p className="text-muted-foreground">// ৩. যেকোনো ইমেজ ফাইল দিয়ে কল করলেই সাথে সাথে স্বচ্ছ PNG পাওয়া যাবে:</p>
+            <p className="text-muted-foreground">{"// ৩. যেকোনো ইমেজ ফাইল দিয়ে কল করলেই সাথে সাথে স্বচ্ছ PNG পাওয়া যাবে:"}</p>
             <p className="text-foreground">
               {`const transparentUrl = await removeBg(imageFile);`}
             </p>
