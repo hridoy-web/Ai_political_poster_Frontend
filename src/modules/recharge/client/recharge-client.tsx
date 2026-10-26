@@ -45,7 +45,7 @@ export function RechargeClient({
 
   const [selectedPlanId, setSelectedPlanId] = useState<string>("campaign");
   const [displayAmount, setDisplayAmount] = useState<string>("৫০");
-  const [selectedPayment, setSelectedPayment] = useState<string>("bkash");
+  const [selectedPayment, setSelectedPayment] = useState<string>("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const paymentStatus = searchParams?.get("status");
