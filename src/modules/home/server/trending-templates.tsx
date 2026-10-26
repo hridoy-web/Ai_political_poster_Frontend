@@ -1,4 +1,3 @@
-import React from 'react';
 import { Flame, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -108,7 +107,7 @@ export const templates: Template[] = [
 
 export default function TrendingTemplates() {
     return (
-        <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-green/5 to-background py-16 sm:py-24 dark:via-brand-green/10">
+        <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-green/5 to-background py-8 md:py-10 lg:py-12 dark:via-brand-green/10">
             {/* Background Radial Glow Effects */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute -top-20 right-1/4 h-80 w-80 rounded-full bg-brand-green/10 blur-[120px] dark:bg-brand-green/5" />
@@ -136,7 +135,7 @@ export default function TrendingTemplates() {
                 <TrendingTemplateClient templates={templates} categories={categories} />
 
                 {/* View All CTA Button */}
-                <div className="mt-12 text-center sm:mt-16">
+                <div className="mt-6 md:mt-10 text-center sm:mt-8">
                     <Button
                         asChild
                         size="lg"

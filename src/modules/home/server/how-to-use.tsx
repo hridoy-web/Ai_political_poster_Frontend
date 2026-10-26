@@ -1,6 +1,3 @@
-// দায়িত্বে: > Diponkor Roy
-
-import React from "react";
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StepCard, { type StepItem } from "../client/step-card";
@@ -35,7 +32,7 @@ const steps: StepItem[] = [
 
 const HowToUse = () => {
     return (
-        <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-green/5 to-background py-14 sm:py-18 lg:py-20 dark:via-brand-green/10">
+        <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-green/5 to-background py-8 md:py-10 lg:py-12 dark:via-brand-green/10">
             {/* Background Radial Glow Effects */}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute -top-20 left-1/3 h-80 w-80 rounded-full bg-brand-green/10 blur-[120px] dark:bg-brand-green/5" />
