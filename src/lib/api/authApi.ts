@@ -1,4 +1,6 @@
-export const serverURL = process.env.NEXT_PUBLIC_SERVER_URL;
+export const serverURL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
 
 interface ApiEndpoint {
   url: string;
