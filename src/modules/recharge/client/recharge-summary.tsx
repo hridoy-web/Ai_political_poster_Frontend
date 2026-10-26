@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo } from "react";
-import { Gift, ArrowRight } from "lucide-react";
+import { Gift, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PosterBenefits } from "../types";
 import { toBengaliNumber } from "../utils";
@@ -12,6 +12,7 @@ interface RechargeSummaryProps {
   benefits: PosterBenefits;
   isMinimumValid: boolean;
   onProceed?: () => void;
+  isLoading?: boolean;
 }
 
 export const RechargeSummary = memo(function RechargeSummary({
@@ -20,6 +21,7 @@ export const RechargeSummary = memo(function RechargeSummary({
   benefits,
   isMinimumValid,
   onProceed,
+  isLoading = false,
 }: RechargeSummaryProps) {
   return (
     <div
@@ -79,15 +81,24 @@ export const RechargeSummary = memo(function RechargeSummary({
       <div className="pt-2 space-y-2.5">
         <Button
           type="button"
-          disabled={!isMinimumValid}
+          disabled={!isMinimumValid || isLoading}
           onClick={onProceed}
           className="bg-gradient-brand w-full h-12 text-sm sm:text-base font-black rounded-xl shadow-md gap-2 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
         >
-          <span>৳{toBengaliNumber(currentAmount || 0)} রিচার্জ সম্পন্ন করুন</span>
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              পেমেন্ট গেটওয়েতে নিয়ে যাওয়া হচ্ছে...
+            </span>
+          ) : (
+            <>
+              <span>৳{toBengaliNumber(currentAmount || 0)} রিচার্জ সম্পন্ন করুন</span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </>
+          )}
         </Button>
         <p className="text-[11px] text-center text-muted-foreground leading-relaxed font-medium">
-          🔒 ১০০% নিরাপদ পেমেন্টের মাধ্যমে তাৎক্ষণিক ব্যালেন্স যোগ হবে।
+          🔒 SSLCommerz নিরাপদ পেমেন্টের মাধ্যমে তাৎক্ষণিক ক্রেডিট যোগ হবে।
         </p>
       </div>
     </div>
