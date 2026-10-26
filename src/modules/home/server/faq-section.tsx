@@ -53,9 +53,9 @@ export const faqData: FAQItem[] = [
 
 export function FaqSection() {
   return (
-    <section className="max-w-3xl lg:max-w-4xl mx-auto py-12 sm:py-16 px-4 sm:px-6 lg:px-14">
+    <section className="max-w-3xl lg:max-w-4xl mx-auto py-8 md:py-10 lg:py-12 px-4 sm:px-6 lg:px-14">
       {/* Header Section */}
-      <div className="text-center mb-8 sm:mb-10 space-y-2">
+      <div className="text-center mb-8 md:mb-10 space-y-2">
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
           সাধারণ জিজ্ঞাসা (<span className="text-gradient-brand">FAQ</span>)
         </h2>

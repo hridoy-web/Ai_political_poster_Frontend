@@ -45,9 +45,10 @@ const reviewsData: ReviewItem[] = [
     },
 ];
 
+
 export function UserFeedbackSection() {
     return (
-        <section className="w-full py-16 lg:py-24 bg-linear-to-b from-transparent via-muted/20 to-transparent relative overflow-hidden">
+        <section className="w-full py-8 md:py-10 lg:py-12 sm:py-8 bg-linear-to-b from-transparent via-muted/20 to-transparent relative overflow-hidden">
             {/* Background Decorative Glow */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 bg-brand-primary/5 rounded-full blur-3xl pointer-events-none" />
 

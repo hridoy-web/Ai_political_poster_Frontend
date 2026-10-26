@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ export default function HeroSectionClient() {
 
     return (
         <div 
-            className="relative z-10 flex w-full flex-col items-center justify-center py-2 overflow-hidden sm:overflow-visible"
+            className="relative z-10 flex w-full flex-col items-center justify-center overflow-hidden sm:overflow-visible"
             onMouseEnter={() => { isInteractingRef.current = true; }}
             onMouseLeave={() => { isInteractingRef.current = false; }}
             onTouchStart={() => { isInteractingRef.current = true; }}
@@ -156,7 +156,7 @@ export default function HeroSectionClient() {
             </div>
 
             {/* Pagination Bullet Indicators */}
-            <div className="mt-3 sm:mt-5 flex items-center justify-center gap-1.5">
+            <div className="mt-1 flex items-center justify-center gap-1.5">
                 {POSTERS.map((poster, idx) => {
                     const isCurrent = idx === activeIdx;
                     return (

@@ -51,7 +51,7 @@ function TemplateCard({ template, className }: TemplateCardProps) {
     return (
         <Card
             className={cn(
-                "group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-xl hover:shadow-brand-primary/5 py-0! gap-0! [--card-spacing:0px] w-[calc(50%-6px)] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-12px)] max-w-xs shrink-0",
+                "group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-xl hover:shadow-brand-primary/5 py-0! gap-0! [--card-spacing:0px] w-full flex flex-col justify-between",
                 className
             )}
         >
@@ -112,37 +112,37 @@ function TemplateCard({ template, className }: TemplateCardProps) {
                 {badge && BadgeIcon && (
                     <div
                         className={cn(
-                            "absolute left-3 top-3 z-10 flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-md backdrop-blur-md sm:text-xs",
+                            "absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-10 flex items-center gap-1 rounded-full border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-semibold shadow-md backdrop-blur-md",
                             badge.className
                         )}
                     >
-                        <BadgeIcon className="h-3 w-3" />
+                        <BadgeIcon className="h-3 w-3 shrink-0" />
                         <span>{badge.label}</span>
                     </div>
                 )}
 
                 {/* Category Tag */}
-                <div className="absolute right-3 top-3 z-10 rounded-full border border-white/20 bg-black/40 px-2.5 py-1 text-[10px] font-medium text-white backdrop-blur-md sm:text-xs">
+                <div className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3 z-10 rounded-full border border-white/20 bg-black/40 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium text-white backdrop-blur-md">
                     {categoryLabel}
                 </div>
             </div>
 
             {/* Card Information */}
-            <CardContent className="p-3.5 sm:p-4">
+            <CardContent className="p-3 sm:p-4">
                 <Link href={`/templates/${template.id}`} className="block">
-                    <h3 className="truncate text-sm font-bold text-foreground transition-colors group-hover:text-brand-primary sm:text-base">
+                    <h3 className="truncate text-xs sm:text-sm md:text-base font-bold text-foreground transition-colors group-hover:text-brand-primary">
                         {template.title}
                     </h3>
                 </Link>
-                <div className="mt-1 flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
+                <div className="mt-1 flex items-center justify-between gap-1">
+                    <p className="truncate text-[11px] sm:text-xs text-muted-foreground">
                         PNG · সম্পাদনাযোগ্য
                     </p>
                     <Button
                         asChild
                         variant="ghost"
                         size="icon-xs"
-                        className="rounded-full text-brand-primary hover:bg-accent hover:text-accent-foreground transition-transform duration-300 group-hover:translate-x-1"
+                        className="rounded-full text-brand-primary hover:bg-accent hover:text-accent-foreground transition-transform duration-300 group-hover:translate-x-1 shrink-0"
                     >
                         <Link
                             href={`/templates/${template.id}`}
@@ -202,8 +202,8 @@ export default function TrendingTemplateClient({
                 </div>
             </div>
 
-            {/* Templates Centered Container */}
-            <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+            {/* Templates Grid Container */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6">
                 {filteredTemplates.map((template) => (
                     <TemplateCard key={template.id} template={template} />
                 ))}
