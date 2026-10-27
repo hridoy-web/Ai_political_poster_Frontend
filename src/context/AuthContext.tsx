@@ -8,12 +8,16 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  roles?: string[];
+  roleNames?: string[];
 }
 
 interface AuthContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   loading: boolean;
+  isTemplateManager: boolean;
+  isAdmin: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -45,10 +49,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getCurrentUser();
   }, []);
 
+  const roles = user?.roles || user?.roleNames || [];
+  const isTemplateManager =
+    roles.includes("TEMPLATE_MANAGER") ||
+    roles.includes("ADMIN") ||
+    roles.includes("SUPER_ADMIN");
+  const isAdmin = roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
+
   const info = {
     user,
     setUser,
     loading,
+    isTemplateManager,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;

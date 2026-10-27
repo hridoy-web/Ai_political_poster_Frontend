@@ -1,4 +1,5 @@
 import { WalletStatCards } from "@/modules/dashboard/server/wallet-stat-cards";
+import { DashboardHeader } from "@/modules/dashboard/client/dashboard-header";
 
 export const metadata = {
     title: "ড্যাশবোর্ড - PosterAI",
@@ -17,14 +18,7 @@ export default async function DashboardOverviewPage() {
     return (
         <div className="space-y-8">
             {/* Header Section */}
-            <div className="space-y-1 pt-6 lg:pt-0">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                    স্বাগতম, <span className="text-gradient-brand">হৃদয় চৌধুরী</span> 👋
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    আপনার অ্যাকাউন্ট ওয়ালেট ব্যালেন্স ও পোস্টার তৈরির সামারি একনজরে দেখে নিন।
-                </p>
-            </div>
+            <DashboardHeader />
 
             {/* SSR Rendered Wallet & Stats Component */}
             <WalletStatCards stats={mockWalletStats} />

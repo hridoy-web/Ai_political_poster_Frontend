@@ -1,12 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 import {
   LogOut,
   Home,
   Sparkles,
+  Layers,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,9 +25,32 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/brand/logo";
 import { USER_NAV_ITEMS } from "../dashboard.constants";
+import { useAuth } from "@/hooks/get-user-data";
+import authApi, { serverURL } from "@/lib/api/authApi";
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { setUser, isTemplateManager } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await axios({
+        url: `${serverURL}${authApi.logout.url}`,
+        method: authApi.logout.method,
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setUser(null);
+      setIsLoggingOut(false);
+      router.push("/login");
+      router.refresh();
+    }
+  };
 
   return (
     <Sidebar
@@ -33,7 +60,6 @@ export function DashboardSidebar() {
       {/* Sidebar Header: Brand Logo & Collapsed Icon Switch */}
       <SidebarHeader className="h-16 flex flex-row items-center justify-between px-3.5 border-b border-border/40 shrink-0">
         <Link href="/" className="flex items-center justify-center w-full transition-transform active:scale-95">
-
           <div className="group-data-[collapsible=icon]:hidden w-full flex items-center justify-start">
             <Logo />
           </div>
@@ -82,6 +108,32 @@ export function DashboardSidebar() {
               </SidebarMenuItem>
             );
           })}
+
+          {isTemplateManager && (
+            <SidebarMenuItem className="flex justify-center">
+              <SidebarMenuButton
+                asChild
+                tooltip="টেমপ্লেট ম্যানেজার"
+                className={cn(
+                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ease-in-out h-10 w-full",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                  pathname.startsWith("/admin")
+                    ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
+                    : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                )}
+              >
+                <Link
+                  href="/admin/templates"
+                  className="flex items-center justify-start group-data-[collapsible=icon]:justify-center w-full"
+                >
+                  <Layers className="w-5 h-5 shrink-0 text-rose-500" />
+                  <span className="group-data-[collapsible=icon]:hidden truncate">
+                    টেমপ্লেট ম্যানেজার
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarContent>
 
@@ -90,7 +142,7 @@ export function DashboardSidebar() {
         <Link href="/" className="w-full flex justify-center">
           <Button
             variant="outline"
-            className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 border-border/80 text-foreground hover:bg-accent px-3 h-10 rounded-xl transition-all duration-200"
+            className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 border-border/80 text-foreground hover:bg-accent px-3 h-10 rounded-xl transition-all duration-200 cursor-pointer"
           >
             <Home className="w-4.5 h-4.5 shrink-0" />
             <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
@@ -101,11 +153,17 @@ export function DashboardSidebar() {
 
         <Button
           variant="ghost"
-          className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive px-3 h-10 rounded-xl transition-all duration-200"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive px-3 h-10 rounded-xl transition-all duration-200 cursor-pointer"
         >
-          <LogOut className="w-4.5 h-4.5 shrink-0" />
+          {isLoggingOut ? (
+            <Loader2 className="w-4.5 h-4.5 shrink-0 animate-spin" />
+          ) : (
+            <LogOut className="w-4.5 h-4.5 shrink-0" />
+          )}
           <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
-            লগআউট
+            {isLoggingOut ? "লগআউট হচ্ছে..." : "লগআউট"}
           </span>
         </Button>
       </SidebarFooter>

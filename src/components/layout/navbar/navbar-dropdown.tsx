@@ -12,6 +12,7 @@ import {
   LogIn,
   UserPlus,
   User,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ const userDropdownLinks = [
 export function NavbarDropdown() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, setUser, isTemplateManager } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -116,6 +117,23 @@ export function NavbarDropdown() {
                   </DropdownMenuItem>
                 );
               })}
+
+              {isTemplateManager && (
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                  <Link
+                    href="/admin/templates"
+                    className={cn(
+                      "flex items-center w-full px-2.5 py-2 text-xs font-semibold transition-colors rounded-xl",
+                      pathname.startsWith("/admin")
+                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
+                        : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                    )}
+                  >
+                    <Layers className="mr-2 h-4 w-4 text-rose-500" />
+                    <span>টেমপ্লেট ম্যানেজার</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator className="bg-border" />
