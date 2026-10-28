@@ -96,54 +96,122 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
 ];
 
 
+import { serverURL } from "@/lib/api/authApi";
+
 export class TemplateService {
-  // Fetch all templates (supports future backend API with caching)
+  // Fetch all templates with live backend integration and graceful fallback
   static async getAllTemplates(): Promise<PosterTemplate[]> {
-    /* When backend API is ready, uncomment the block below:
     try {
-      const response = await fetch("API_URL_HERE", {
-        next: { revalidate: 60 },
+      const res = await fetch(`${serverURL}/api/v1/template?limit=50`, {
+        cache: "no-store",
       });
-      if (!response.ok) throw new Error("API Network response was not ok");
-      const data: PosterTemplate[] = await response.json();
-      return data;
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.success && Array.isArray(data.data?.items)) {
+          const liveTemplates: PosterTemplate[] = data.data.items.map((item: any) => {
+            const cfg = item.config || {};
+            const preview =
+              cfg.previewUrl ||
+              cfg.blankTemplateUrl ||
+              "/image/images26.jpg";
+
+            return {
+              id: item.id,
+              title: item.title,
+              category: item.category?.slug || item.category?.id || "political-posters",
+              categoryLabel: item.category?.name || "রাজনৈতিক পোস্টার",
+              thumbnailUrl: preview,
+              previewUrl: preview,
+              isPremium: item.accessLevel === "PREMIUM",
+              tags: Array.isArray(item.tags) && item.tags.length > 0
+                ? item.tags
+                : [item.category?.name || "রাজনৈতিক", "পোস্টার", item.title],
+              createdAt: item.createdAt || new Date().toISOString(),
+            };
+          });
+
+          // Show newly published live templates first, followed by default mock templates
+          const liveIds = new Set(liveTemplates.map((t) => t.id));
+          const remainingMocks = MOCK_TEMPLATES.filter((m) => !liveIds.has(m.id));
+          return [...liveTemplates, ...remainingMocks];
+        }
+      }
     } catch (error) {
-      console.error("API Fetch Failed, falling back to mock:", error);
-      return MOCK_TEMPLATES;
+      console.error("API Fetch Failed, falling back to mock templates:", error);
     }
-    */
 
     return MOCK_TEMPLATES;
   }
 
-  // Find a specific template by ID
+  // Find a specific template by ID (checks live API first, then mocks)
   static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
-    /* When single template detail API is ready, uncomment the block below:
     try {
-      const response = await fetch("API_URL_HERE", {
-        next: { revalidate: 60 },
+      const res = await fetch(`${serverURL}/api/v1/template/${id}`, {
+        cache: "no-store",
       });
-      if (!response.ok) throw new Error("Single template API response was not ok");
-      const data: PosterTemplate = await response.json();
-      return data;
+
+      if (res.ok) {
+        const data = await res.json();
+        const item = data?.data;
+        if (item) {
+          const cfg = item.config || {};
+          const preview =
+            cfg.previewUrl ||
+            cfg.blankTemplateUrl ||
+            "/image/images26.jpg";
+
+          return {
+            id: item.id,
+            title: item.title,
+            category: item.category?.slug || item.category?.id || "political-posters",
+            categoryLabel: item.category?.name || "রাজনৈতিক পোস্টার",
+            thumbnailUrl: preview,
+            previewUrl: preview,
+            isPremium: item.accessLevel === "PREMIUM",
+            tags: Array.isArray(item.tags) && item.tags.length > 0
+              ? item.tags
+              : [item.category?.name || "রাজনৈতিক", "পোস্টার", item.title],
+            createdAt: item.createdAt || new Date().toISOString(),
+          };
+        }
+      }
     } catch (error) {
-      console.error("Single Template Fetch Failed, falling back to mock:", error);
-      return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
+      console.error("Single Template Fetch Failed, searching mock:", error);
     }
-    */
 
     return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
   }
 
-  // Get categories with dynamic template count
-  static getCategories(): CategoryOption[] {
-    return TEMPLATE_CATEGORIES.map((cat) => {
-      if (cat.id === "all") {
-        return { ...cat, count: MOCK_TEMPLATES.length };
+  // Get categories with dynamic template count based on available templates
+  static getCategories(templates: PosterTemplate[] = MOCK_TEMPLATES): CategoryOption[] {
+    const categoryMap = new Map<string, { label: string; count: number }>();
+
+    templates.forEach((tpl) => {
+      const key = tpl.category || "political-posters";
+      const existing = categoryMap.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        categoryMap.set(key, {
+          label: tpl.categoryLabel || "রাজনৈতিক পোস্টার",
+          count: 1,
+        });
       }
-      const count = MOCK_TEMPLATES.filter((tpl) => tpl.category === cat.id).length;
-      return { ...cat, count };
     });
+
+    const dynamicCategories: CategoryOption[] = Array.from(categoryMap.entries()).map(
+      ([id, data]) => ({
+        id,
+        label: data.label,
+        count: data.count,
+      })
+    );
+
+    return [
+      { id: "all", label: "সকল টেমপ্লেট", count: templates.length },
+      ...dynamicCategories,
+    ];
   }
 
   // Search and filtering engine

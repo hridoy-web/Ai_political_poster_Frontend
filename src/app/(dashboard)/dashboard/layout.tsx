@@ -1,8 +1,7 @@
 import React from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { TooltipProvider } from "@/components/ui/tooltip"; 
-import { DashboardSidebar } from "@/modules/dashboard/client/dashboard-sidebar";
 import { DashboardNavbar } from "@/modules/dashboard/client/dashboard-navbar";
+import { DashboardAuthGuard } from "@/modules/dashboard/client/dashboard-auth-guard";
+import { MainFooter } from "@/components/layout/footer/main-footer";
 
 export default function DashboardLayout({
   children,
@@ -10,23 +9,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-   
-    <TooltipProvider>
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex min-h-screen w-full bg-background text-foreground">
-          {/* Collapsible Sidebar */}
-          <DashboardSidebar />
+    <DashboardAuthGuard>
+      <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
+        {/* Centered Dashboard Top Header matching max-w-7xl mx-auto */}
+        <DashboardNavbar />
 
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-w-0">
-            <DashboardNavbar />
+        {/* Centered Main Content Area */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          {children}
+        </main>
 
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
-              {children}
-            </main>
-          </div>
-        </div>
-      </SidebarProvider>
-    </TooltipProvider>
+        {/* Footer */}
+        <MainFooter />
+      </div>
+    </DashboardAuthGuard>
   );
 }

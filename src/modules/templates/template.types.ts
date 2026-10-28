@@ -1,4 +1,4 @@
-export type TemplateCategory = "all" | "election" | "national-day" | "greetings" | "birthday" | "religious"
+export type TemplateCategory = "all" | "election" | "national-day" | "greetings" | "birthday" | "religious" | (string & {});
 
 export type TemplateSort = "trending" | "popular" | "latest" | "premium"
 

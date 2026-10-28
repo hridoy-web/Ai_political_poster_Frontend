@@ -24,6 +24,13 @@ export interface AdminTemplate {
   imageUrl: string;
   isPremium: boolean;
   isActive: boolean;
+  aspectRatio?: string;
+  width?: number;
+  height?: number;
+  description?: string;
+  photoSlotsCount?: number;
+  textSlotsCount?: number;
+  createdAt?: string;
 }
 
 export interface AdminPoster {

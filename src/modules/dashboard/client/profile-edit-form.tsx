@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,27 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
     phone: user.phone,
   });
 
+  useEffect(() => {
+    setFormData({
+      name: user.name,
+      phone: user.phone,
+    });
+  }, [user.name, user.phone]);
+
+  const getInitials = (name?: string, email?: string) => {
+    if (name && name.trim()) {
+      const parts = name.trim().split(" ");
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.slice(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return "ইউ";
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Profile Summary Header with Toggle Button */}
@@ -35,7 +56,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             <Avatar className="h-16 w-16 border-2 border-brand-primary shadow-md">
               <AvatarImage src={user.avatarUrl || ""} alt={user.name} />
               <AvatarFallback className="bg-gradient-brand text-white font-bold text-lg">
-                HC
+                {getInitials(user.name, user.email)}
               </AvatarFallback>
             </Avatar>
             <Button
