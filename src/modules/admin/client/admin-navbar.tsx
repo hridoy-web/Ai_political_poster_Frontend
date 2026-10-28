@@ -15,13 +15,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, LayoutDashboard, ShieldCheck, LogOut, Loader2 } from "lucide-react";
+import { Home, LayoutDashboard, ShieldCheck, Crown, LogOut, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/get-user-data";
 import authApi, { serverURL } from "@/lib/api/authApi";
 
 export function AdminNavbar() {
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, setUser, isSuperAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const getInitials = (name?: string, email?: string) => {
@@ -61,12 +61,18 @@ export function AdminNavbar() {
 
   return (
     <header className="h-16 border-b border-border/60 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
-      {/* Left: Sidebar Toggle & Admin Panel Badge */}
+      {/* Left: Sidebar Toggle & Admin/SuperAdmin Panel Badge */}
       <div className="flex items-center gap-3">
         <SidebarTrigger className="hover:bg-accent hover:text-foreground border border-border/60 rounded-lg p-1.5 cursor-pointer" />
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-destructive/10 text-destructive border border-destructive/20 flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5" /> অ্যাডমিন প্যানেল
-        </span>
+        {isSuperAdmin ? (
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center gap-1.5 shadow-2xs">
+            <Crown className="w-3.5 h-3.5" /> সুপার অ্যাডমিন প্যানেল
+          </span>
+        ) : (
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5" /> অ্যাডমিন প্যানেল
+          </span>
+        )}
       </div>
 
       {/* Right: Theme Toggle & Admin Profile Dropdown */}
@@ -75,9 +81,13 @@ export function AdminNavbar() {
 
         <DropdownMenu>
           <DropdownMenuTrigger className="focus:outline-none cursor-pointer">
-            <Avatar className="h-9 w-9 border border-destructive/40 hover:ring-2 hover:ring-destructive/40 transition-all">
+            <Avatar className={`h-9 w-9 border transition-all ${
+              isSuperAdmin ? "border-amber-500/40 hover:ring-2 hover:ring-amber-500/30" : "border-brand-primary/40 hover:ring-2 hover:ring-brand-primary/30"
+            }`}>
               <AvatarImage src={(user as any)?.avatar?.url || ""} alt={displayName} />
-              <AvatarFallback className="bg-destructive text-white font-bold text-xs">
+              <AvatarFallback className={`${
+                isSuperAdmin ? "bg-amber-500" : "bg-brand-primary"
+              } text-white font-bold text-xs`}>
                 {getInitials(user?.name, user?.email)}
               </AvatarFallback>
             </Avatar>

@@ -70,7 +70,13 @@ export function AdminPostersContent({}: AdminPostersContentProps) {
       ) : (
         <>
           {/* Optimized Posters Grid */}
-          <AdminPostersGrid posters={posters} />
+          <AdminPostersGrid
+            posters={posters}
+            onPosterDeleted={(deletedId) => {
+              setPosters((prev) => prev.filter((p) => p.id !== deletedId));
+              setTotalCount((prev) => Math.max(0, prev - 1));
+            }}
+          />
 
           {/* Pagination Footer */}
           <div className="flex items-center justify-between px-2 pt-2">

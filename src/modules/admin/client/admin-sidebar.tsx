@@ -30,7 +30,7 @@ import authApi, { serverURL } from "@/lib/api/authApi";
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAdmin, setUser } = useAuth();
+  const { isAdmin, isSuperAdmin, setUser } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -69,8 +69,20 @@ export function AdminSidebar() {
         >
           <div className="group-data-[collapsible=icon]:hidden w-full flex items-center justify-between">
             <Logo />
-            <span className="px-2 py-0.5 text-[9px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-full tracking-wide">
-              {isAdmin ? "ADMIN" : "TEMPLATE MANAGER"}
+            <span
+              className={`px-2.5 py-0.5 text-[9.5px] font-bold border rounded-full tracking-wide ${
+                isSuperAdmin
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                  : isAdmin
+                  ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
+                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+              }`}
+            >
+              {isSuperAdmin
+                ? "SUPER ADMIN"
+                : isAdmin
+                ? "ADMIN"
+                : "TEMPLATE MANAGER"}
             </span>
           </div>
 
