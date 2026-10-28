@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BannerTheme, CandidateInfo } from "../generator.types";
+import { BannerTheme, CandidateInfo, GeneratedSloganItem } from "../generator.types";
 import { PosterGeneratorService, SLOGAN_TOPICS } from "../generator.service";
 import { Crop, Edit3, ImageIcon, Loader2, RotateCcw, Sparkles, UploadCloud, User, Wand2, RefreshCw, Undo2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -34,19 +34,41 @@ export function StudioInputPanel({
   const [activeTab, setActiveTab] = useState<"candidate" | "photo" | "slogan">("candidate");
   const [sloganTopic, setSloganTopic] = useState("তারুণ্য ও কর্মসংস্থান");
   const [isGeneratingSlogans, setIsGeneratingSlogans] = useState(false);
-  const [suggestedSlogans, setSuggestedSlogans] = useState<string[]>(() =>
-    PosterGeneratorService.getSlogansByTopic("তারুণ্য ও কর্মসংস্থান")
+  const [suggestedSlogans, setSuggestedSlogans] = useState<GeneratedSloganItem[]>(() =>
+    PosterGeneratorService.getSlogansByTopic("তারুণ্য ও কর্মসংস্থান").map((s) => ({
+      slogan: s,
+      subText: "আসন্ন নির্বাচনে আপনার মূল্যবান ভোট ও দোয়া প্রার্থনা করছি।",
+    }))
   );
 
-  // Handler for AI slogans
-  const handleGenerateSlogans = (topicTouse?: string) => {
+  // Live Handler for AI slogans connecting to backend
+  const handleGenerateSlogans = async (topicTouse?: string) => {
     const topic = topicTouse || sloganTopic;
     setIsGeneratingSlogans(true);
-    setTimeout(() => {
-      const results = PosterGeneratorService.getSlogansByTopic(topic);
+    try {
+      const results = await PosterGeneratorService.generateAiSlogans({
+        topic,
+        candidateName: candidate.name,
+        designation: candidate.designation,
+        area: candidate.area,
+        partyOrIdeology: candidate.courtesy?.includes("বিএনপি")
+          ? "বিএনপি"
+          : candidate.courtesy?.includes("জামায়াত")
+          ? "জামায়াতে ইসলামী"
+          : "স্বতন্ত্র / সর্বদলীয়",
+        count: 4,
+      });
       setSuggestedSlogans(results);
+    } catch (err) {
+      console.error("AI Slogan generation error:", err);
+      const fallback = PosterGeneratorService.getSlogansByTopic(topic).map((s) => ({
+        slogan: s,
+        subText: "আসন্ন নির্বাচনে আপনার মূল্যবান ভোট ও দোয়া প্রার্থনা করছি।",
+      }));
+      setSuggestedSlogans(fallback);
+    } finally {
       setIsGeneratingSlogans(false);
-    }, 700);
+    }
   };
 
   // Background removal hook
@@ -386,31 +408,45 @@ export function StudioInputPanel({
               এআই সাজেস্টেড স্লোগান (ক্লিক করলেই ব্যানারে বসবে):
             </span>
             <div className="flex flex-col gap-1.5">
-              {suggestedSlogans.map((slogan, idx) => {
-                const isActive = candidate.slogan === slogan;
+              {suggestedSlogans.map((item, idx) => {
+                const text = typeof item === "string" ? item : item.slogan;
+                const sub = typeof item === "object" ? item.subText : undefined;
+                const isActive = candidate.slogan === text;
                 return (
                   <div
                     key={idx}
-                    onClick={() => onCandidateChange("slogan", slogan)}
-                    className={`p-2 rounded-lg border text-left cursor-pointer transition-all flex items-start justify-between gap-2 text-[11px] leading-snug ${
+                    onClick={() => {
+                      onCandidateChange("slogan", text);
+                      if (sub && !candidate.bannerTitle) {
+                        onCandidateChange("bannerTitle", sub);
+                      }
+                    }}
+                    className={`p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col gap-1 text-[11px] leading-snug ${
                       isActive
-                        ? "bg-emerald-500/10 border-emerald-500 text-foreground font-bold shadow-xs"
+                        ? "bg-emerald-500/10 border-emerald-500 text-foreground font-bold shadow-xs ring-1 ring-emerald-500/30"
                         : "bg-card border-border hover:border-emerald-500/50 hover:bg-muted/40"
                     }`}
                   >
-                    <div className="flex items-start gap-1.5 flex-1">
-                      <span className="text-emerald-600 font-bold mt-0.5">#{idx + 1}</span>
-                      <span>&ldquo;{slogan}&rdquo;</span>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-1.5 flex-1">
+                        <span className="text-emerald-600 font-bold mt-0.5 shrink-0">#{idx + 1}</span>
+                        <span className="text-foreground font-semibold">&ldquo;{text}&rdquo;</span>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[9px] px-2 py-0.5 rounded font-semibold ${
+                          isActive
+                            ? "bg-emerald-600 text-white"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isActive ? "✓ সক্রিয়" : "বসাতে ক্লিক"}
+                      </span>
                     </div>
-                    <span
-                      className={`shrink-0 text-[9px] px-1.5 py-0.5 rounded font-semibold ${
-                        isActive
-                          ? "bg-emerald-600 text-white"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {isActive ? "✓ সক্রিয়" : "বসাতে ক্লিক"}
-                    </span>
+                    {sub && (
+                      <p className="text-[10px] text-muted-foreground pl-4 font-normal italic">
+                        {sub}
+                      </p>
+                    )}
                   </div>
                 );
               })}

@@ -12,19 +12,39 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Lock, Ban, CheckCircle } from "lucide-react";
 
+import { useRouter } from "next/navigation";
+import { AdminService } from "../admin.service";
+import { toast } from "sonner";
+
 interface UserActionsDropdownProps {
   userId: string;
   currentStatus: "ACTIVE" | "BLOCKED" | "BANNED" | string;
 }
 
 export function UserActionsDropdown({ userId, currentStatus }: UserActionsDropdownProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleAction = async (actionType: "BLOCK" | "BAN" | "UNBLOCK") => {
-    setLoading(true);
-    console.log(`Action: ${actionType} for User ID:`, userId);
-    // Server action or API call logic
-    setTimeout(() => setLoading(false), 500);
+    try {
+      setLoading(true);
+      const newStatus = actionType === "UNBLOCK" ? "ACTIVE" : "BLOCKED";
+      const success = await AdminService.updateUserStatus(userId, newStatus);
+      if (success) {
+        toast.success(
+          actionType === "UNBLOCK"
+            ? "ইউজার সফলভাবে সক্রিয় করা হয়েছে!"
+            : "ইউজার সফলভাবে ব্লক করা হয়েছে!"
+        );
+        router.refresh();
+      } else {
+        toast.error("ইউজার স্ট্যাটাস পরিবর্তন করতে সমস্যা হয়েছে।");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "স্ট্যাটাস পরিবর্তন ব্যর্থ হয়েছে।");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

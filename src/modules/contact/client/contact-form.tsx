@@ -4,6 +4,8 @@
 import React, { useState } from "react";
 import { Send, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
+import { serverURL } from "@/lib/api/authApi";
+
 export default function ContactForm() {
     const [formData, setFormData] = useState({
         name: "",
@@ -20,23 +22,18 @@ export default function ContactForm() {
         setStatus(null);
 
         try {
-            // Web3Forms-এর জন্য ডাটা রেডি করা
-            const data = {
-                access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY,
-                name: formData.name,
-                email: formData.email,
-                subject: `[Political Poster App] ${formData.subject}`,
-                message: formData.message,
-                from_name: "AI Political Poster Maker",
-            };
-
-            const res = await fetch("https://api.web3forms.com/submit", {
+            const baseUrl = serverURL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+            const res = await fetch(`${baseUrl}/api/v1/contact`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Accept: "application/json",
                 },
-                body: JSON.stringify(data),
+                body: JSON.stringify({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    subject: formData.subject.trim(),
+                    message: formData.message.trim(),
+                }),
             });
 
             const result = await res.json();
@@ -44,7 +41,7 @@ export default function ContactForm() {
             if (result.success) {
                 setStatus({
                     type: "success",
-                    msg: "আপনার বার্তাটি সফলভাবে আমাদের কাছে পৌঁছেছে! ধন্যবাদ।",
+                    msg: result.message || "আপনার বার্তাটি সফলভাবে আমাদের কাছে পৌঁছেছে! ধন্যবাদ।",
                 });
                 setFormData({ name: "", email: "", subject: "", message: "" });
             } else {
@@ -56,7 +53,7 @@ export default function ContactForm() {
         } catch (error) {
             setStatus({
                 type: "error",
-                msg: "ইন্টারনেট বা সার্ভারে সংযোগে সমস্যা হয়েছে।",
+                msg: "সার্ভারে সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।",
             });
         } finally {
             setLoading(false);

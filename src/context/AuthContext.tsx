@@ -8,6 +8,11 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  title?: string;
+  area?: string;
+  avatar?: { url?: string } | any;
+  avatarAssetId?: string;
   roles?: string[];
   roleNames?: string[];
 }

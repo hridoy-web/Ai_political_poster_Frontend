@@ -21,3 +21,18 @@ export interface PosterStudioState{
      imageScale:number;
      isAiProcessing: boolean;
 }
+
+export interface GeneratedSloganItem {
+  slogan: string;
+  subText?: string;
+  tone?: string;
+  category?: string;
+}
+
+export interface PosterRenderResult {
+  id: string;
+  status: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+  outputUrl?: string | null;
+  previewUrl?: string | null;
+  errorMessage?: string | null;
+}

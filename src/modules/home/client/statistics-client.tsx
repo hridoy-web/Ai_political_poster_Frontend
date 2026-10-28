@@ -5,6 +5,8 @@ import { motion, useInView } from "framer-motion";
 import { Users, Image as ImageIcon, LayoutGrid, Star, type LucideIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 
+import { serverURL } from "@/lib/api/authApi";
+
 export interface StatItem {
     id: string;
     icon: LucideIcon;
@@ -14,25 +16,25 @@ export interface StatItem {
     decimals?: number;
 }
 
-const statsData: StatItem[] = [
+const DEFAULT_STATS: StatItem[] = [
     {
         id: "users",
         icon: Users,
-        value: 10000,
+        value: 10,
         suffix: "+",
         label: "সক্রিয় ব্যবহারকারী",
     },
     {
         id: "posters",
         icon: ImageIcon,
-        value: 50000,
+        value: 5,
         suffix: "+",
         label: "তৈরি পোস্টার",
     },
     {
         id: "templates",
         icon: LayoutGrid,
-        value: 50,
+        value: 4,
         suffix: "+",
         label: "অনুমোদিত টেমপ্লেট",
     },
@@ -144,10 +146,62 @@ function StatCard({ stat, index, start }: StatCardProps) {
 export default function StatisticsClient() {
     const containerRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+    const [stats, setStats] = useState<StatItem[]>(DEFAULT_STATS);
+
+    useEffect(() => {
+        let isMounted = true;
+        const baseUrl = serverURL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+        fetch(`${baseUrl}/api/v1/public/stats`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (isMounted && data?.success && data?.data) {
+                    const d = data.data;
+                    setStats([
+                        {
+                            id: "users",
+                            icon: Users,
+                            value: Number(d.totalUsers || 0),
+                            suffix: "+",
+                            label: "সক্রিয় ব্যবহারকারী",
+                        },
+                        {
+                            id: "posters",
+                            icon: ImageIcon,
+                            value: Number(d.totalPosters || 0),
+                            suffix: "+",
+                            label: "তৈরি পোস্টার",
+                        },
+                        {
+                            id: "templates",
+                            icon: LayoutGrid,
+                            value: Number(d.totalTemplates || 0),
+                            suffix: "+",
+                            label: "অনুমোদিত টেমপ্লেট",
+                        },
+                        {
+                            id: "rating",
+                            icon: Star,
+                            value: Number(d.rating || 4.9),
+                            suffix: "/৫",
+                            label: "গড় রেটিং",
+                            decimals: 1,
+                        },
+                    ]);
+                }
+            })
+            .catch((err) => {
+                console.warn("Failed to fetch public stats:", err);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return (
         <div ref={containerRef} className="grid w-full grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-            {statsData.map((stat, i) => (
+            {stats.map((stat, i) => (
                 <StatCard
                     key={stat.id}
                     stat={stat}

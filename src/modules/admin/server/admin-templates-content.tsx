@@ -50,27 +50,7 @@ export async function AdminTemplatesContent({ searchParams }: AdminTemplatesCont
   const itemsPerPage = 8;
 
   const realTemplates = await fetchTemplates();
-
-  const fallbackTemplates: AdminTemplate[] = [
-    {
-      id: "tpl-1",
-      title: "চেয়ারম্যান পদপ্রার্থী ক্যানভাস ফ্রেম",
-      category: "ইউনিয়ন পরিষদ",
-      imageUrl: "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80",
-      isPremium: true,
-      isActive: true,
-    },
-    {
-      id: "tpl-2",
-      title: "মেয়র পদপ্রার্থী পোস্টার",
-      category: "পৌরসভা",
-      imageUrl: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=600&q=80",
-      isPremium: false,
-      isActive: true,
-    },
-  ];
-
-  const templatesList = realTemplates.length > 0 ? realTemplates : fallbackTemplates;
+  const templatesList = realTemplates;
 
   // Server-side Filter Logic
   const filtered = templatesList.filter(

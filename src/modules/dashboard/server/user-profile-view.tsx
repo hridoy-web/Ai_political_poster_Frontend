@@ -26,7 +26,7 @@ export function UserProfileView() {
 
   const userProfileData = {
     name: user?.name || "ইউজার",
-    phone: "01800000000",
+    phone: user?.phone || "",
     email: user?.email || "",
     avatarUrl: (user as any)?.avatar?.url || "",
     role: roleLabel,

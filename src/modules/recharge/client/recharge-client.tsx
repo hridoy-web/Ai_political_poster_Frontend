@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "cn";
 import { useAuth } from "@/hooks/get-user-data";
-import { initiateRechargePayment } from "../recharge.service";
+import { initiateRechargePayment, fetchPackagesFromApi } from "../recharge.service";
 
 import type { PackagePlan } from "../types";
 import {
@@ -44,6 +44,7 @@ export function RechargeClient({
   const { user } = useAuth();
   const inputId = useId();
 
+  const [packages, setPackages] = useState<PackagePlan[]>(presetPackages);
   const [selectedPlanId, setSelectedPlanId] = useState<string>("campaign");
   const [displayAmount, setDisplayAmount] = useState<string>("৫০");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,6 +52,19 @@ export function RechargeClient({
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const paymentStatus = searchParams?.get("status");
   const [isStatusDismissed, setIsStatusDismissed] = useState(false);
+
+  // Fetch live packages from PostgreSQL database
+  useEffect(() => {
+    let isMounted = true;
+    fetchPackagesFromApi().then((live) => {
+      if (isMounted && live && live.length > 0) {
+        setPackages(live);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Derive status banner cleanly without setState inside useEffect
   const statusBanner = isStatusDismissed ? null : paymentStatus;
@@ -86,9 +100,9 @@ export function RechargeClient({
   );
 
   const selectedPlanTitle = useMemo(() => {
-    const matched = presetPackages.find((p) => p.id === selectedPlanId);
+    const matched = packages.find((p) => p.id === selectedPlanId);
     return matched?.nameBangla || "কাস্টম রিচার্জ";
-  }, [presetPackages, selectedPlanId]);
+  }, [packages, selectedPlanId]);
 
   // Handlers memoized with useCallback
   const handleSelectPlan = useCallback((plan: PackagePlan) => {
@@ -112,20 +126,20 @@ export function RechargeClient({
 
       const num = parseInt(toEnglishNumber(bengaliConverted), 10);
       if (!isNaN(num)) {
-        const matched = presetPackages.find((p) => p.amount === num);
+        const matched = packages.find((p) => p.amount === num);
         setSelectedPlanId(matched ? matched.id : "custom");
       }
     },
-    [presetPackages]
+    [packages]
   );
 
   const handleQuickAmountSelect = useCallback(
     (amt: number) => {
       setDisplayAmount(toBengaliNumber(amt));
-      const matched = presetPackages.find((p) => p.amount === amt);
+      const matched = packages.find((p) => p.amount === amt);
       setSelectedPlanId(matched ? matched.id : "custom");
     },
-    [presetPackages]
+    [packages]
   );
 
   const handleProceedToPayment = useCallback(async () => {
@@ -268,7 +282,7 @@ export function RechargeClient({
           aria-label="জনপ্রিয় প্রি-সেট প্ল্যানসমূহ"
           className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-stretch"
         >
-          {presetPackages.map((pkg) => (
+          {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
               plan={pkg}
