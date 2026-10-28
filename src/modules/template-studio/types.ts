@@ -73,6 +73,8 @@ export interface SampleCandidateData {
   symbol: string;
   photoUrl: string;
   imageScale?: number;
+  imageOffsetX?: number;
+  imageOffsetY?: number;
 }
 
 

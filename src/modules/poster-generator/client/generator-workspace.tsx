@@ -12,8 +12,9 @@ import {
 import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
-import { Check, Layers, Loader2, Sparkles } from "lucide-react";
+import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 // Type of data coming from the server component
 interface GeneratorWorkspaceProps {
@@ -36,7 +37,15 @@ export function GeneratorWorkspace({
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
   );
   const [imageScale, setImageScale] = useState(100);
+  const [imageOffsetX, setImageOffsetX] = useState(0);
+  const [imageOffsetY, setImageOffsetY] = useState(0);
+  const [isComparing, setIsComparing] = useState(false);
+  const [comparePhotoUrl, setComparePhotoUrl] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Template selection flow state:
+  // If user visits /create-poster without templateId, show template picker first
+  const [isSelectingTemplate, setIsSelectingTemplate] = useState(!queryTemplateId);
 
   // Template states
   const [templates, setTemplates] = useState<PublishedTemplate[]>([]);
@@ -103,10 +112,8 @@ export function GeneratorWorkspace({
     };
   }, [queryTemplateId]);
 
-  // Handler to switch template from switcher UI
+  // Handler to switch template from switcher UI or template picker
   const handleSelectTemplate = async (tmpl: PublishedTemplate) => {
-    if (activeTemplate?.id === tmpl.id) return;
-
     // If template doesn't have full blankTemplateUrl, fetch full details
     if (!tmpl.config?.blankTemplateUrl) {
       const detailed = await PosterGeneratorService.getTemplateById(tmpl.id);
@@ -114,6 +121,9 @@ export function GeneratorWorkspace({
     } else {
       setActiveTemplate(tmpl);
     }
+
+    // Smoothly transition from template picker to editor studio
+    setIsSelectingTemplate(false);
 
     // Update URL query parameter smoothly
     try {
@@ -125,6 +135,7 @@ export function GeneratorWorkspace({
     }
 
     toast.success(`টেমপ্লেট সিলেক্ট করা হয়েছে: ${tmpl.title}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // 2. Logic to update the canvas instantly when input changes
@@ -150,6 +161,10 @@ export function GeneratorWorkspace({
     setCandidate(initialCandidate);
     setTheme("emerald");
     setImageScale(100);
+    setImageOffsetX(0);
+    setImageOffsetY(0);
+    setIsComparing(false);
+    setComparePhotoUrl(null);
     toast.info("ইনপুট তথ্য রিসেট করা হয়েছে।");
   };
 
@@ -220,129 +235,197 @@ export function GeneratorWorkspace({
     }
   };
 
-  return (
-    <div className="w-full space-y-4">
-      {/* Template Switcher Bar */}
-      <div className="w-full rounded-2xl border border-border bg-card p-3 sm:p-4 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-border/60">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0">
-              <Layers className="size-4" />
-            </div>
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
-                <span>পোস্টার টেমপ্লেট নির্বাচন করুন</span>
-                {isLoadingTemplates && <Loader2 className="size-3 animate-spin text-muted-foreground" />}
-              </h2>
-              <p className="text-[11px] text-muted-foreground">
-                টেমপ্লেট ম্যানেজারদের তৈরি ডিজাইন সিলেক্ট করুন
-              </p>
-            </div>
+  // STEP 1: If user hasn't selected a template, show the template picker first
+  if (isSelectingTemplate) {
+    return (
+      <div className="w-full space-y-8 py-2">
+        {/* Step Progress Indicator */}
+        <div className="flex items-center justify-center gap-2 max-w-lg mx-auto">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-xs font-bold shadow-2xs">
+            <span className="w-5 h-5 rounded-full bg-brand-primary text-white flex items-center justify-center text-[11px]">১</span>
+            <span>টেমপ্লেট নির্বাচন</span>
           </div>
-
-          {activeTemplate && (
-            <Badge
-              variant="outline"
-              className="w-fit text-xs border-brand-primary/30 bg-brand-primary/10 text-brand-primary font-bold px-2.5 py-1 flex items-center gap-1.5"
-            >
-              <Sparkles className="size-3" />
-              <span>বর্তমান: {activeTemplate.title}</span>
-            </Badge>
-          )}
+          <div className="w-8 h-0.5 bg-border" />
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 text-muted-foreground text-xs font-medium">
+            <span className="w-5 h-5 rounded-full bg-muted-foreground/20 text-muted-foreground flex items-center justify-center text-[11px]">২</span>
+            <span>তথ্য ও কাস্টমাইজেশন</span>
+          </div>
+          <div className="w-8 h-0.5 bg-border" />
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted/60 text-muted-foreground text-xs font-medium">
+            <span className="w-5 h-5 rounded-full bg-muted-foreground/20 text-muted-foreground flex items-center justify-center text-[11px]">৩</span>
+            <span>ডাউনলোড</span>
+          </div>
         </div>
 
-        {/* Templates quick selector chips / cards */}
+        {/* Hero Header Banner */}
+        <div className="text-center max-w-2xl mx-auto space-y-2.5">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+            পছন্দের রাজনৈতিক <span className="text-gradient-brand">পোস্টার টেমপ্লেট</span> বেছে নিন
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            প্রথমে একটি আকর্ষণীয় ডিজাইন ফ্রেম বা টেমপ্লেট নির্বাচন করুন। এরপর আপনার নাম, পদবি, স্লোগান ও ছবি বসিয়ে লাইভ পোস্টার তৈরি করুন।
+          </p>
+        </div>
+
+        {/* Templates Grid */}
         {isLoadingTemplates ? (
-          <div className="py-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="size-4 animate-spin text-brand-primary" />
-            <span>টেমপ্লেট তালিকা লোড হচ্ছে...</span>
+          <div className="py-24 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+            <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+            <p className="text-sm font-semibold">টেমপ্লেট লোড হচ্ছে...</p>
           </div>
         ) : templates.length === 0 ? (
-          <div className="py-3 text-xs text-muted-foreground text-center">
-            কোনো পাবলিশ করা টেমপ্লেট পাওয়া যায়নি।
+          <div className="py-20 text-center rounded-3xl border border-dashed border-border p-8 max-w-md mx-auto bg-card/40">
+            <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-base font-bold text-foreground">কোনো টেমপ্লেট পাওয়া যায়নি</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              টেমপ্লেট ম্যানেজার কর্তৃক নতুন ফ্রেম পাবলিশ হওয়া পর্যন্ত অপেক্ষা করুন।
+            </p>
           </div>
         ) : (
-          <div className="flex items-center gap-2.5 overflow-x-auto pt-3 pb-1 scrollbar-none">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {templates.map((tmpl) => {
-              const isSelected = activeTemplate?.id === tmpl.id;
-              const hasCanvas = Boolean(tmpl.config?.blankTemplateUrl);
+              const previewImg =
+                tmpl.config?.previewUrl ||
+                tmpl.config?.blankTemplateUrl ||
+                "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80";
+
               return (
-                <button
+                <div
                   key={tmpl.id}
-                  type="button"
-                  onClick={() => handleSelectTemplate(tmpl)}
-                  className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-xl border text-left shrink-0 transition-all cursor-pointer ${
-                    isSelected
-                      ? "border-brand-primary bg-brand-primary/5 shadow-xs ring-2 ring-brand-primary/20"
-                      : "border-border hover:border-brand-primary/40 bg-muted/30 hover:bg-muted/60"
-                  }`}
+                  className="group relative flex flex-col rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:border-brand-primary/50 flex-1"
                 >
-                  <div
-                    className={`w-7 h-9 rounded-md overflow-hidden bg-slate-900 border flex items-center justify-center shrink-0 relative ${
-                      isSelected ? "border-brand-primary" : "border-border"
-                    }`}
-                  >
-                    {tmpl.config?.previewUrl || tmpl.config?.blankTemplateUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={tmpl.config.previewUrl || tmpl.config.blankTemplateUrl}
-                        alt={tmpl.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Layers className="size-3 text-muted-foreground" />
-                    )}
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-brand-primary/30 backdrop-blur-xs flex items-center justify-center">
-                        <Check className="size-3 text-white stroke-[3]" />
-                      </div>
-                    )}
+                  <div className="relative aspect-3/4 w-full bg-muted/60 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={previewImg}
+                      alt={tmpl.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 z-10">
+                      <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-background/90 backdrop-blur-md text-foreground border border-border/60 shadow-xs">
+                        {tmpl.aspectRatio || "৪:৫"} • ডিজিটাল ক্যানভাস
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-foreground group-hover:text-brand-primary transition-colors line-clamp-1">
-                      {tmpl.title}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {tmpl.aspectRatio || "৪:৫"} {hasCanvas ? "• ডিজিটাল ক্যানভাস" : ""}
-                    </span>
+                  <div className="p-4 space-y-3 flex flex-col justify-between flex-1">
+                    <div>
+                      <h3 className="font-bold text-foreground text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
+                        {tmpl.title}
+                      </h3>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                        {tmpl.description || "রাজনৈতিক নির্বাচনী ও সাংগঠনিক পোস্টার ফ্রেম"}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      onClick={() => handleSelectTemplate(tmpl)}
+                      className="w-full bg-gradient-brand text-white font-bold text-xs h-10 rounded-2xl shadow-md gap-2 cursor-pointer transition-transform active:scale-95"
+                    >
+                      <Wand2 className="w-3.5 h-3.5" />
+                      <span>এই টেমপ্লেট দিয়ে তৈরি করুন</span>
+                    </Button>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+    );
+  }
 
-      {/* Main Studio Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left side: Input panel */}
-        <div className="lg:col-span-6 w-full">
+  // STEP 2: Main Studio Editor (User has picked a template)
+  return (
+    <div className="w-full space-y-4">
+      {/* Header bar with Active Template info & Change Template button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xl shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center shrink-0">
+            <Layers className="size-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold text-muted-foreground">সিলেক্টেড টেমপ্লেট:</span>
+              <span className="text-sm font-bold text-foreground">{activeTemplate?.title || "ডিজিটাল ক্যানভাস"}</span>
+              <Badge variant="outline" className="border-brand-primary/30 bg-brand-primary/10 text-brand-primary font-bold text-[10.5px] px-2 py-0.5">
+                {activeTemplate?.aspectRatio || "৪:৫"}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              বামপাশের ইনপুটে তথ্য ও ছবি পরিবর্তন করলে ক্যানভাসে রিয়েল-টাইম প্রিভিউ দেখতে পাবেন
+            </p>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setIsSelectingTemplate(true)}
+          className="rounded-xl border-border/80 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 font-semibold text-xs gap-1.5 cursor-pointer shrink-0"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>অন্য টেমপ্লেট বেছে নিন</span>
+        </Button>
+      </div>
+
+      {/* Main Studio Grid - Input Panel is wider & bigger */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+        {/* Left side: Bigger input panel */}
+        <div className="lg:col-span-7 w-full">
           <StudioInputPanel
             candidate={candidate}
             onCandidateChange={handleCandidateChange}
             theme={theme}
             onThemeChange={setTheme}
             photoUrl={photoUrl}
-            onPhotoChange={setPhotoUrl}
+            onPhotoChange={(url) => {
+              setPhotoUrl(url);
+              setComparePhotoUrl(null);
+              setIsComparing(false);
+            }}
             onPhotoUpload={handlePhotoUpload}
             onOpenCropModal={() =>
-              toast.info("ছবি ক্যানভাসে স্বয়ংক্রিয়ভাবে সেন্টার ও স্কেল করা রয়েছে।")
+              toast.info("ছবি ক্যানভাসে ড্র্যাগ করে ৩০% পর্যন্ত পজিশন পরিবর্তন করতে পারেন।")
             }
             onReset={handleReset}
+            imageScale={imageScale}
+            onImageScaleChange={setImageScale}
+            imageOffsetX={imageOffsetX}
+            imageOffsetY={imageOffsetY}
+            onImageOffsetChange={(x, y) => {
+              setImageOffsetX(x);
+              setImageOffsetY(y);
+            }}
+            onCompareStart={(originalUrl) => {
+              setComparePhotoUrl(originalUrl);
+              setIsComparing(true);
+            }}
+            onCompareEnd={() => {
+              setIsComparing(false);
+            }}
           />
         </div>
 
         {/* Right side: Live banner with dynamic template */}
-        <div className="lg:col-span-6 w-full sticky top-6">
+        <div className="lg:col-span-5 w-full sticky top-6">
           <StudioCanvas
             candidate={candidate}
-            photoUrl={photoUrl}
+            photoUrl={isComparing && comparePhotoUrl ? comparePhotoUrl : photoUrl}
             theme={theme}
             imageScale={imageScale}
+            imageOffsetX={imageOffsetX}
+            imageOffsetY={imageOffsetY}
+            onImageOffsetChange={(x, y) => {
+              setImageOffsetX(x);
+              setImageOffsetY(y);
+            }}
             template={activeTemplate}
             onDownload={handleDownload}
             isDownloading={isDownloading}
+            isComparing={isComparing}
           />
         </div>
       </div>

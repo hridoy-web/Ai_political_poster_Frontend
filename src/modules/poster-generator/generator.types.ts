@@ -14,12 +14,14 @@ export interface SloganTopicOption{
     label:string;
     icon:string;
 }
-export interface PosterStudioState{
-    candidate: CandidateInfo;
-     photoUrl: string;
-     theme: BannerTheme;
-     imageScale:number;
-     isAiProcessing: boolean;
+export interface PosterStudioState {
+  candidate: CandidateInfo;
+  photoUrl: string;
+  theme: BannerTheme;
+  imageScale: number;
+  imageOffsetX?: number;
+  imageOffsetY?: number;
+  isAiProcessing: boolean;
 }
 
 export interface GeneratedSloganItem {

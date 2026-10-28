@@ -71,7 +71,7 @@ export function TemplateStudioWorkspace() {
       height: 380,
       shape: "rounded",
       borderRadius: 24,
-      borderWidth: 4,
+      borderWidth: 0,
       borderColor: "#fbbf24",
       zIndex: 1,
     },
@@ -239,7 +239,7 @@ export function TemplateStudioWorkspace() {
       height: 300,
       shape: "rounded",
       borderRadius: 16,
-      borderWidth: 2,
+      borderWidth: 0,
       borderColor: "#ffffff",
       zIndex: photoSlots.length + 1,
     };
