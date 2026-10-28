@@ -2,32 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Logo } from "@/components/brand/logo";
 import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
-import {
-  LayoutDashboard,
-  Image as ImageIcon,
-  Bookmark,
-  ReceiptText,
-  User,
-  Home,
-  Sparkles,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DASHBOARD_NAV_TABS = [
-  { name: "ওভারভিউ", href: "/dashboard", icon: LayoutDashboard },
-  { name: "আমার পোস্টার্স", href: "/dashboard/posters", icon: ImageIcon },
-  { name: "সংরক্ষিত", href: "/dashboard/saved", icon: Bookmark },
-  { name: "ট্রানজেকশন", href: "/dashboard/history", icon: ReceiptText },
-  { name: "প্রোফাইল", href: "/dashboard/profile", icon: User },
-];
-
 export function DashboardNavbar() {
-  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -78,46 +59,8 @@ export function DashboardNavbar() {
           </span>
         </div>
 
-        {/* Center: Horizontal Navigation Tabs (Pills) */}
-        <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 px-1 bg-muted/50 rounded-2xl border border-border/60 text-xs font-semibold">
-          {DASHBOARD_NAV_TABS.map((item) => {
-            const isActive =
-              item.href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap ${
-                  isActive
-                    ? "bg-card text-foreground shadow-xs font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className={`size-3.5 ${isActive ? "text-brand-primary" : "text-muted-foreground"}`} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right: Actions, Theme Toggle & Unified Profile Picture Dropdown */}
+        {/* Right: Theme Toggle & Unified Profile Picture Dropdown */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="hidden md:flex rounded-xl h-9 text-xs gap-1.5"
-          >
-            <Link href="/">
-              <Home className="size-3.5 text-muted-foreground" />
-              <span>মূল ওয়েবসাইট</span>
-            </Link>
-          </Button>
-
           <ThemeToggle />
 
           {/* Unified Profile Picture Dropdown - 100% Identical across all pages */}

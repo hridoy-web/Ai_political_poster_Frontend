@@ -15,6 +15,8 @@ import {
   UserPlus,
   User,
   Layers,
+  Bookmark,
+  ReceiptText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,8 @@ const userDropdownLinks = [
   { name: "হোম পেজ", href: "/", icon: Home },
   { name: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
   { name: "আমার পোস্টারসমূহ", href: "/dashboard/posters", icon: FileText },
+  { name: "সংরক্ষিত পোস্টার", href: "/dashboard/saved", icon: Bookmark },
+  { name: "লেনদেনের ইতিহাস", href: "/dashboard/history", icon: ReceiptText },
   { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: Settings },
   { name: "রিচার্জ ওয়ালেট", href: "/recharge", icon: Wallet },
 ];
