@@ -143,15 +143,14 @@ export function RechargeClient({
   );
 
   const handleProceedToPayment = useCallback(
-    async (overrideUser?: any) => {
-      const activeUser = overrideUser || user;
-      if (!isMinimumValid || isSubmitting) return;
-
-      // 1. Auth Guard: Show simple modal if user is not logged in
-      if (!activeUser) {
+    async () => {
+      // 1. Auth Guard: If guest user, immediately open registration modal and do not attempt payment
+      if (!user) {
         setIsAuthModalOpen(true);
         return;
       }
+
+      if (!isMinimumValid || isSubmitting) return;
 
       try {
         setIsSubmitting(true);
@@ -434,16 +433,12 @@ export function RechargeClient({
         </div>
       </section>
 
-      {/* Clean Simple Guest Auth Guard Modal */}
+      {/* Simple Guest Registration Guard Modal */}
       <GuestAuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         planTitle={selectedPlanTitle}
         amount={currentAmount}
-        onSuccessLogin={(loggedInUser) => {
-          setIsAuthModalOpen(false);
-          handleProceedToPayment(loggedInUser);
-        }}
       />
     </div>
   );
