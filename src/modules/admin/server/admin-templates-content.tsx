@@ -28,6 +28,13 @@ async function fetchTemplates(): Promise<AdminTemplate[]> {
           "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80",
         isPremium: item.accessLevel === "PREMIUM",
         isActive: item.status === "PUBLISHED",
+        aspectRatio: item.aspectRatio || "4:5",
+        width: item.width || 1080,
+        height: item.height || 1350,
+        description: item.description || "",
+        createdAt: item.createdAt,
+        photoSlotsCount: Array.isArray(item.config?.photoSlots) ? item.config.photoSlots.length : 1,
+        textSlotsCount: Array.isArray(item.config?.textSlots) ? item.config.textSlots.length : 4,
       }));
     }
   } catch (e) {

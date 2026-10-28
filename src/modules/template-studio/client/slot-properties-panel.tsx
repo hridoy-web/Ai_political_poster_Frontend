@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 interface SlotPropertiesPanelProps {
@@ -466,12 +467,52 @@ export function SlotPropertiesPanel({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">ডিফল্ট টেক্সট</Label>
-                  <Input
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[11px]">ডিফল্ট টেক্সট (একাধিক লাইন সমর্থিত)</Label>
+                    <span className="text-[10px] text-muted-foreground">Enter = নতুন লাইন</span>
+                  </div>
+                  <Textarea
                     value={selectedText.defaultText}
                     onChange={(e) => onUpdateTextSlot({ ...selectedText, defaultText: e.target.value })}
-                    className="h-8 rounded-xl text-xs font-bengali"
+                    className="min-h-[58px] rounded-xl text-xs font-bengali resize-y py-1.5"
+                    placeholder="এখানে টেক্সট লিখুন..."
+                    rows={2}
                   />
+                </div>
+
+                {/* Text Box Dimensions (Width x Height) */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">প্রস্থ (Width)</Label>
+                    <Input
+                      type="number"
+                      value={selectedText.width || selectedText.maxWidth || 800}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        onUpdateTextSlot({
+                          ...selectedText,
+                          width: val,
+                          maxWidth: val,
+                        });
+                      }}
+                      className="h-8 rounded-xl text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">উচ্চতা (Height)</Label>
+                    <Input
+                      type="number"
+                      value={selectedText.height || 60}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        onUpdateTextSlot({
+                          ...selectedText,
+                          height: val,
+                        });
+                      }}
+                      className="h-8 rounded-xl text-xs"
+                    />
+                  </div>
                 </div>
 
                 {/* Position Coordinates */}
@@ -515,16 +556,19 @@ export function SlotPropertiesPanel({
                 {/* Max Width for Wrapping */}
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span>সর্বোচ্চ প্রস্থ (Max Width Wrapping)</span>
-                    <span className="font-bold">{selectedText.maxWidth || 800}px</span>
+                    <span>সর্বোচ্চ র‍্যাপিং প্রস্থ (Max Width)</span>
+                    <span className="font-bold">{selectedText.width || selectedText.maxWidth || 800}px</span>
                   </div>
                   <input
                     type="range"
                     min={100}
                     max={1080}
                     step={10}
-                    value={selectedText.maxWidth || 800}
-                    onChange={(e) => onUpdateTextSlot({ ...selectedText, maxWidth: Number(e.target.value) })}
+                    value={selectedText.width || selectedText.maxWidth || 800}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      onUpdateTextSlot({ ...selectedText, width: val, maxWidth: val });
+                    }}
                     className="w-full accent-brand-primary"
                   />
                 </div>
@@ -658,24 +702,26 @@ export function SlotPropertiesPanel({
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px]">রাজনৈতিক স্লোগান</Label>
-                <Input
+                <Label className="text-[11px]">রাজনৈতিক স্লোগান (একাধিক লাইন সমর্থিত)</Label>
+                <Textarea
                   value={sampleCandidate.slogan}
                   onChange={(e) =>
                     onUpdateSampleCandidate({ ...sampleCandidate, slogan: e.target.value })
                   }
-                  className="h-8 rounded-xl text-xs font-bengali"
+                  className="min-h-[50px] rounded-xl text-xs font-bengali resize-y py-1.5"
+                  rows={2}
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[11px]">সৌজন্যে</Label>
-                <Input
+                <Label className="text-[11px]">সৌজন্যে ও প্রচারে</Label>
+                <Textarea
                   value={sampleCandidate.courtesy}
                   onChange={(e) =>
                     onUpdateSampleCandidate({ ...sampleCandidate, courtesy: e.target.value })
                   }
-                  className="h-8 rounded-xl text-xs font-bengali"
+                  className="min-h-[50px] rounded-xl text-xs font-bengali resize-y py-1.5"
+                  rows={2}
                 />
               </div>
             </div>

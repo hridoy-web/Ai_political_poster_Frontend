@@ -8,6 +8,8 @@ export const metadata = {
   title: "টেমপ্লেট ম্যানেজার - PosterAI",
 };
 
+export const instant = false;
+
 interface AdminTemplatesPageProps {
   searchParams: Promise<{
     page?: string;

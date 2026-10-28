@@ -29,27 +29,35 @@ export function wrapCanvasText(
   text: string,
   maxWidth: number
 ): string[] {
-  if (!maxWidth || maxWidth <= 0) return [text];
+  if (!text) return [];
+  if (!maxWidth || maxWidth <= 0) return text.split("\n");
 
-  const words = text.split(" ");
+  const rawParagraphs = text.split("\n");
   const lines: string[] = [];
-  let currentLine = "";
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    const testLine = currentLine.length === 0 ? word : currentLine + " " + word;
-    const testWidth = ctx.measureText(testLine).width;
-
-    if (testWidth > maxWidth && currentLine.length > 0) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = testLine;
+  for (const para of rawParagraphs) {
+    if (para.trim().length === 0) {
+      lines.push("");
+      continue;
     }
-  }
+    const words = para.split(" ");
+    let currentLine = "";
 
-  if (currentLine.length > 0) {
-    lines.push(currentLine);
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine.length === 0 ? word : currentLine + " " + word;
+      const testWidth = ctx.measureText(testLine).width;
+
+      if (testWidth > maxWidth && currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine.length > 0) {
+      lines.push(currentLine);
+    }
   }
 
   return lines.length > 0 ? lines : [text];
@@ -166,7 +174,8 @@ export async function renderTemplateCanvas({
         ctx.shadowOffsetY = 2;
       }
 
-      const lines = wrapCanvasText(ctx, textToRender, slot.maxWidth || width - 100);
+      const boxW = slot.width || slot.maxWidth || width - 100;
+      const lines = wrapCanvasText(ctx, textToRender, boxW);
       const lineHeight = slot.fontSize * (slot.lineHeight || 1.25);
       const startY = slot.y - ((lines.length - 1) * lineHeight) / 2;
 
@@ -217,22 +226,15 @@ export async function renderTemplateCanvas({
       ctx.textBaseline = "middle";
 
       const sampleText = slot.defaultText || slot.label;
-      const lines = wrapCanvasText(ctx, sampleText, slot.maxWidth || width - 100);
+      const boxW = slot.width || slot.maxWidth || 300;
+      const lines = wrapCanvasText(ctx, sampleText, boxW);
       const lineHeight = slot.fontSize * (slot.lineHeight || 1.25);
-      const textHeight = lines.length * lineHeight;
-
-      // Approximate text width bounding box
-      let maxLineWidth = 0;
-      for (const line of lines) {
-        const lw = ctx.measureText(line).width;
-        if (lw > maxLineWidth) maxLineWidth = lw;
-      }
-      const boxW = Math.max(maxLineWidth + 30, slot.maxWidth || 200);
-      const boxH = Math.max(textHeight + 16, slot.fontSize + 16);
+      const textTotalHeight = lines.length * lineHeight;
+      const boxH = slot.height || Math.max(textTotalHeight + 20, slot.fontSize + 24);
 
       let boxX = slot.x - boxW / 2;
-      if (slot.align === "left") boxX = slot.x - 10;
-      if (slot.align === "right") boxX = slot.x - boxW + 10;
+      if (slot.align === "left") boxX = slot.x;
+      if (slot.align === "right") boxX = slot.x - boxW;
       const boxY = slot.y - boxH / 2;
 
       // Background selection highlight
@@ -260,7 +262,7 @@ export async function renderTemplateCanvas({
       ctx.restore();
 
       // Label badge
-      drawSlotLabel(ctx, boxX, boxY - 14, `${slot.label} [{{${slot.key}}}]`, isSelected ? "#e11d48" : "#3b82f6");
+      drawSlotLabel(ctx, boxX, boxY, `${slot.label} (${Math.round(boxW)}×${Math.round(boxH)})`, isSelected ? "#e11d48" : "#3b82f6");
 
       // Draw resize/position handles if selected
       if (isSelected) {
@@ -361,7 +363,7 @@ function drawSlotPlaceholder(ctx: CanvasRenderingContext2D, slot: PhotoSlot, lab
 }
 
 function drawResizeHandles(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  const handleSize = 10;
+  const handleSize = 12;
   const corners = [
     { x, y }, // top-left
     { x: x + w, y }, // top-right
@@ -376,7 +378,9 @@ function drawResizeHandles(ctx: CanvasRenderingContext2D, x: number, y: number, 
   ctx.save();
   ctx.fillStyle = "#ffffff";
   ctx.strokeStyle = "#e11d48";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = "rgba(0,0,0,0.35)";
+  ctx.shadowBlur = 4;
 
   for (const c of corners) {
     ctx.beginPath();

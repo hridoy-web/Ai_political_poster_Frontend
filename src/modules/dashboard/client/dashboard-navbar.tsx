@@ -1,146 +1,128 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Logo } from "@/components/brand/logo";
+import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, User, Wallet, LogOut, Layers, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/get-user-data";
-import authApi, { serverURL } from "@/lib/api/authApi";
+  LayoutDashboard,
+  Image as ImageIcon,
+  Bookmark,
+  ReceiptText,
+  User,
+  Home,
+  Sparkles,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const DASHBOARD_NAV_TABS = [
+  { name: "ওভারভিউ", href: "/dashboard", icon: LayoutDashboard },
+  { name: "আমার পোস্টার্স", href: "/dashboard/posters", icon: ImageIcon },
+  { name: "সংরক্ষিত", href: "/dashboard/saved", icon: Bookmark },
+  { name: "ট্রানজেকশন", href: "/dashboard/history", icon: ReceiptText },
+  { name: "প্রোফাইল", href: "/dashboard/profile", icon: User },
+];
 
 export function DashboardNavbar() {
-  const router = useRouter();
-  const { user, setUser, isTemplateManager } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  const getInitials = (name?: string, email?: string) => {
-    if (name && name.trim()) {
-      const parts = name.trim().split(" ");
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[1][0]).toUpperCase();
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          setIsScrolled((prev) => {
+            if (!prev && currentScrollY > 25) return true;
+            if (prev && currentScrollY < 10) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
       }
-      return name.slice(0, 2).toUpperCase();
-    }
-    if (email) {
-      return email.slice(0, 2).toUpperCase();
-    }
-    return "ইউ";
-  };
+    };
 
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await axios({
-        url: `${serverURL}${authApi.logout.url}`,
-        method: authApi.logout.method,
-        withCredentials: true,
-      });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setUser(null);
-      setIsLoggingOut(false);
-      router.push("/login");
-      router.refresh();
-    }
-  };
-
-  const displayName = user?.name || "ব্যবহারকারী";
-  const displayEmail = user?.email || "";
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="h-16 border-b border-border/60 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
-      {/* Left: Sidebar Collapse/Expand Toggle Button */}
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="hover:bg-accent hover:text-foreground border border-border/60 rounded-lg p-1.5 cursor-pointer" />
-        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-brand-green/10 text-brand-mint border border-brand-green/20">
-          ইউজার প্যানেল
-        </span>
-      </div>
+    <header
+      className={cn(
+        "sticky z-50 w-full inset-x-0 mx-auto max-w-7xl transition-all duration-300 ease-in-out px-4 sm:px-6 lg:px-8",
+        isScrolled ? "top-2 sm:top-3" : "top-0 pt-2 sm:pt-4"
+      )}
+    >
+      <div
+        className={cn(
+          "h-16 flex items-center justify-between gap-4 transition-all duration-300 ease-in-out px-4 sm:px-6",
+          isScrolled
+            ? "rounded-full backdrop-blur-2xl shadow-lg bg-white/85 dark:bg-card/85 border border-brand-green/25 dark:border-brand-mint/20 shadow-brand-green/5 dark:shadow-2xl dark:shadow-black/70"
+            : "rounded-2xl border border-border/60 bg-card/75 backdrop-blur-xl shadow-xs"
+        )}
+      >
+        {/* Left: Brand Logo & Title */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/" className="hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
+          <div className="hidden sm:block h-5 w-px bg-border" />
+          <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-green/10 text-brand-mint border border-brand-green/20 items-center gap-1">
+            <Sparkles className="size-3" /> ড্যাশবোর্ড
+          </span>
+        </div>
 
-      {/* Right: Theme Toggle & User Profile Dropdown */}
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
+        {/* Center: Horizontal Navigation Tabs (Pills) */}
+        <nav className="flex items-center gap-1 overflow-x-auto no-scrollbar py-1 px-1 bg-muted/50 rounded-2xl border border-border/60 text-xs font-semibold">
+          {DASHBOARD_NAV_TABS.map((item) => {
+            const isActive =
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
+                : pathname.startsWith(item.href);
+            const Icon = item.icon;
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="focus:outline-none cursor-pointer">
-            <Avatar className="h-9 w-9 border border-brand-primary/30 hover:ring-2 hover:ring-brand-primary/40 transition-all">
-              <AvatarImage src={(user as any)?.avatar?.url || ""} alt={displayName} />
-              <AvatarFallback className="bg-gradient-brand text-white font-bold text-xs">
-                {getInitials(user?.name, user?.email)}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-60 mt-2 bg-card/95 backdrop-blur-xl border-border p-1.5 rounded-2xl shadow-xl">
-            <DropdownMenuLabel className="font-normal p-2.5">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-semibold text-foreground font-heading truncate">{displayName}</p>
-                <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-border" />
-            <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-              <Link href="/" className="flex items-center gap-2">
-                <Home className="w-4 h-4 text-muted-foreground" />
-                <span>হোম পেজ</span>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all whitespace-nowrap ${
+                  isActive
+                    ? "bg-card text-foreground shadow-xs font-bold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className={`size-3.5 ${isActive ? "text-brand-primary" : "text-muted-foreground"}`} />
+                <span>{item.name}</span>
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-              <Link href="/dashboard/profile" className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span>প্রোফাইল সেটিংস</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-              <Link href="/recharge" className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-muted-foreground" />
-                <span>রিচার্জ ওয়ালেট</span>
-              </Link>
-            </DropdownMenuItem>
+            );
+          })}
+        </nav>
 
-            {isTemplateManager && (
-              <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
-                <Link
-                  href="/admin/templates"
-                  className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-medium"
-                >
-                  <Layers className="w-4 h-4 text-rose-500" />
-                  <span>টেমপ্লেট ম্যানেজার</span>
-                </Link>
-              </DropdownMenuItem>
-            )}
+        {/* Right: Actions, Theme Toggle & Unified Profile Picture Dropdown */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden md:flex rounded-xl h-9 text-xs gap-1.5"
+          >
+            <Link href="/">
+              <Home className="size-3.5 text-muted-foreground" />
+              <span>মূল ওয়েবসাইট</span>
+            </Link>
+          </Button>
 
-            <DropdownMenuSeparator className="bg-border" />
-            <DropdownMenuItem
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="rounded-xl cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 flex items-center gap-2"
-            >
-              {isLoggingOut ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>লগআউট হচ্ছে...</span>
-                </>
-              ) : (
-                <>
-                  <LogOut className="w-4 h-4" />
-                  <span>লগআউট</span>
-                </>
-              )}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <ThemeToggle />
+
+          {/* Unified Profile Picture Dropdown - 100% Identical across all pages */}
+          <NavbarDropdown />
+        </div>
       </div>
     </header>
   );

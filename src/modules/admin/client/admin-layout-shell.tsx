@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -8,10 +8,9 @@ import { AdminSidebar } from "./admin-sidebar";
 import { AdminNavbar } from "./admin-navbar";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { NavbarAvatar } from "@/components/layout/navbar/navbar-avatar";
-import { Layers, Plus, Sparkles, Home, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/get-user-data";
+import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
+import { Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AdminLayoutShellProps {
   children: React.ReactNode;
@@ -19,7 +18,29 @@ interface AdminLayoutShellProps {
 
 export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          setIsScrolled((prev) => {
+            if (!prev && currentScrollY > 25) return true;
+            if (prev && currentScrollY < 10) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // If user is on the templates manager pages (/admin/templates or /admin/templates/create)
   // Hide the left sidebar and use a centered mx-auto layout matching the main website.
@@ -28,9 +49,21 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
   if (isTemplatesPage) {
     return (
       <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
-        {/* Top Navbar for Template Manager */}
-        <header className="sticky top-0 z-30 w-full border-b border-border/80 bg-card/85 backdrop-blur-xl shadow-xs">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Floating Glassmorphic Navbar matching website body (max-w-7xl mx-auto) */}
+        <header
+          className={cn(
+            "sticky z-50 w-full inset-x-0 mx-auto max-w-7xl transition-all duration-300 ease-in-out px-4 sm:px-6 lg:px-8",
+            isScrolled ? "top-2 sm:top-3" : "top-0 pt-2 sm:pt-4"
+          )}
+        >
+          <div
+            className={cn(
+              "h-16 flex items-center justify-between gap-4 transition-all duration-300 ease-in-out px-4 sm:px-6",
+              isScrolled
+                ? "rounded-full backdrop-blur-2xl shadow-lg bg-white/85 dark:bg-card/85 border border-brand-green/25 dark:border-brand-mint/20 shadow-brand-green/5 dark:shadow-2xl dark:shadow-black/70"
+                : "rounded-2xl border border-border/60 bg-card/75 backdrop-blur-xl shadow-xs"
+            )}
+          >
             {/* Left: Brand Logo & Title */}
             <div className="flex items-center gap-3">
               <Link href="/" className="hover:opacity-90 transition-opacity">
@@ -44,49 +77,12 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
               </div>
             </div>
 
-            {/* Center: Navigation Links */}
-            <div className="hidden md:flex items-center gap-1 bg-muted/50 p-1 rounded-2xl border border-border/60 text-xs font-semibold">
-              <Link
-                href="/admin/templates"
-                className={`px-3.5 py-1.5 rounded-xl transition-all ${
-                  pathname === "/admin/templates"
-                    ? "bg-card text-foreground shadow-xs font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                টেমপ্লেট তালিকা
-              </Link>
-              <Link
-                href="/admin/templates/create"
-                className={`px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 transition-all ${
-                  pathname === "/admin/templates/create"
-                    ? "bg-brand-primary text-white shadow-xs font-bold"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Sparkles className="size-3" />
-                <span>নতুন ক্যানভাস তৈরি</span>
-              </Link>
-            </div>
-
-            {/* Right: Actions, Theme Toggle & Profile */}
+            {/* Right: Theme Toggle & Unified Profile Dropdown */}
             <div className="flex items-center gap-2.5">
-              <Button asChild variant="ghost" size="sm" className="hidden sm:flex rounded-xl h-9 text-xs gap-1.5">
-                <Link href="/">
-                  <Home className="size-3.5 text-muted-foreground" /> মূল ওয়েবসাইট
-                </Link>
-              </Button>
-
               <ThemeToggle />
 
-              {/* User Avatar & Info */}
-              <Link
-                href="/dashboard/profile"
-                className="size-9 rounded-full ring-2 ring-brand-primary/20 hover:ring-brand-primary transition-all p-0.5 flex items-center justify-center shrink-0"
-                title={user?.name || "ইউজার প্রোফাইল"}
-              >
-                <NavbarAvatar />
-              </Link>
+              {/* User Avatar Dropdown - 100% Identical Across Site */}
+              <NavbarDropdown />
             </div>
           </div>
         </header>

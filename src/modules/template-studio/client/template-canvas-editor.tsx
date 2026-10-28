@@ -25,7 +25,63 @@ interface TemplateCanvasEditorProps {
   onUpdateTextSlot: (slot: TextSlot) => void;
 }
 
-type DragMode = "none" | "move" | "resize-se" | "resize-sw" | "resize-ne" | "resize-nw";
+type DragMode =
+  | "none"
+  | "move"
+  | "resize-nw"
+  | "resize-ne"
+  | "resize-se"
+  | "resize-sw"
+  | "resize-n"
+  | "resize-s"
+  | "resize-w"
+  | "resize-e";
+
+// Check hit on any of 8 resize handles
+function getHitHandle(
+  x: number,
+  y: number,
+  boxX: number,
+  boxY: number,
+  boxW: number,
+  boxH: number,
+  handleRadius = 24
+): DragMode {
+  // Corners
+  if (Math.hypot(x - boxX, y - boxY) < handleRadius) return "resize-nw";
+  if (Math.hypot(x - (boxX + boxW), y - boxY) < handleRadius) return "resize-ne";
+  if (Math.hypot(x - boxX, y - (boxY + boxH)) < handleRadius) return "resize-sw";
+  if (Math.hypot(x - (boxX + boxW), y - (boxY + boxH)) < handleRadius) return "resize-se";
+
+  // Mid-edges
+  if (Math.hypot(x - (boxX + boxW / 2), y - boxY) < handleRadius) return "resize-n";
+  if (Math.hypot(x - (boxX + boxW / 2), y - (boxY + boxH)) < handleRadius) return "resize-s";
+  if (Math.hypot(x - boxX, y - (boxY + boxH / 2)) < handleRadius) return "resize-w";
+  if (Math.hypot(x - (boxX + boxW), y - (boxY + boxH / 2)) < handleRadius) return "resize-e";
+
+  return "none";
+}
+
+function getCursorForMode(mode: DragMode): string {
+  switch (mode) {
+    case "resize-nw":
+    case "resize-se":
+      return "nwse-resize";
+    case "resize-ne":
+    case "resize-sw":
+      return "nesw-resize";
+    case "resize-n":
+    case "resize-s":
+      return "ns-resize";
+    case "resize-w":
+    case "resize-e":
+      return "ew-resize";
+    case "move":
+      return "grab";
+    default:
+      return "default";
+  }
+}
 
 export function TemplateCanvasEditor({
   width,
@@ -49,6 +105,7 @@ export function TemplateCanvasEditor({
   const [dragMode, setDragMode] = useState<DragMode>("none");
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [initialSlotState, setInitialSlotState] = useState<any>(null);
+  const [hoverCursor, setHoverCursor] = useState<string>("crosshair");
 
   // Re-render canvas whenever any data changes
   useEffect(() => {
@@ -79,7 +136,7 @@ export function TemplateCanvasEditor({
     sampleCandidate,
   ]);
 
-  // Convert client viewport coordinates to canvas 2D space (1080x1350)
+  // Convert client viewport coordinates to canvas 2D space (e.g. 1080x1350)
   const getCanvasCoordinates = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -95,19 +152,32 @@ export function TemplateCanvasEditor({
     [width, height]
   );
 
-  // Pointer Down (Slot Selection & Start Drag/Resize)
+  // Helper to get text bounding box
+  const getTextSlotBoundingBox = (slot: TextSlot) => {
+    const boxW = slot.width || slot.maxWidth || 300;
+    const boxH = slot.height || Math.max(slot.fontSize * 2 + 10, 50);
+    const boxX =
+      slot.align === "left"
+        ? slot.x
+        : slot.align === "right"
+        ? slot.x - boxW
+        : slot.x - boxW / 2;
+    const boxY = slot.y - boxH / 2;
+    return { boxX, boxY, boxW, boxH };
+  };
+
+  // Pointer Down (Slot Selection & Start Drag/Resize from ANY corner/edge)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isTestPreviewMode) return;
     const { x, y } = getCanvasCoordinates(e);
 
-    // 1. Check if clicking on Selected Slot's Resize Handles first
+    // 1. Check if clicking on Selected Photo Slot's 8 Resize Handles first
     if (selectedSlotId && selectedSlotType === "photo") {
       const slot = photoSlots.find((p) => p.id === selectedSlotId);
       if (slot) {
-        const handleRadius = 20;
-        // Bottom-Right handle
-        if (Math.hypot(x - (slot.x + slot.width), y - (slot.y + slot.height)) < handleRadius) {
-          setDragMode("resize-se");
+        const handle = getHitHandle(x, y, slot.x, slot.y, slot.width, slot.height, 28);
+        if (handle !== "none") {
+          setDragMode(handle);
           setDragStart({ x, y });
           setInitialSlotState({ ...slot });
           (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -116,7 +186,23 @@ export function TemplateCanvasEditor({
       }
     }
 
-    // 2. Check Hit on Photo Slots (bounding box check)
+    // 2. Check if clicking on Selected Text Slot's 8 Resize Handles
+    if (selectedSlotId && selectedSlotType === "text") {
+      const slot = textSlots.find((t) => t.id === selectedSlotId);
+      if (slot) {
+        const { boxX, boxY, boxW, boxH } = getTextSlotBoundingBox(slot);
+        const handle = getHitHandle(x, y, boxX, boxY, boxW, boxH, 28);
+        if (handle !== "none") {
+          setDragMode(handle);
+          setDragStart({ x, y });
+          setInitialSlotState({ ...slot, boxX, boxY, boxW, boxH });
+          (e.target as HTMLElement).setPointerCapture(e.pointerId);
+          return;
+        }
+      }
+    }
+
+    // 3. Check Hit on Photo Slots (for repositioning / selection)
     for (let i = photoSlots.length - 1; i >= 0; i--) {
       const slot = photoSlots[i];
       if (x >= slot.x && x <= slot.x + slot.width && y >= slot.y && y <= slot.y + slot.height) {
@@ -129,65 +215,253 @@ export function TemplateCanvasEditor({
       }
     }
 
-    // 3. Check Hit on Text Slots (approximate box)
+    // 4. Check Hit on Text Slots (for repositioning / selection)
     for (let i = textSlots.length - 1; i >= 0; i--) {
       const slot = textSlots[i];
-      const boxW = slot.maxWidth || 300;
-      const boxH = slot.fontSize * 2;
-      const boxX = slot.align === "left" ? slot.x : slot.align === "right" ? slot.x - boxW : slot.x - boxW / 2;
-      const boxY = slot.y - boxH / 2;
+      const { boxX, boxY, boxW, boxH } = getTextSlotBoundingBox(slot);
 
       if (x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH) {
         onSelectSlot(slot.id, "text");
         setDragMode("move");
         setDragStart({ x, y });
-        setInitialSlotState({ ...slot });
+        setInitialSlotState({ ...slot, boxX, boxY, boxW, boxH });
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
         return;
       }
     }
 
-    // 4. Clicked empty space
+    // 5. Clicked on empty space: deselect
     onSelectSlot(null, null);
     setDragMode("none");
   };
 
-  // Pointer Move (Dragging & Resizing)
+  // Pointer Move (Dragging, Resizing & Dynamic Cursor Updates)
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (isTestPreviewMode || dragMode === "none" || !dragStart || !initialSlotState) return;
+    if (isTestPreviewMode) return;
     const { x, y } = getCanvasCoordinates(e);
-    const dx = x - dragStart.x;
-    const dy = y - dragStart.y;
 
-    if (selectedSlotType === "photo") {
-      const slot = photoSlots.find((p) => p.id === selectedSlotId);
-      if (!slot) return;
+    // If currently dragging or resizing
+    if (dragMode !== "none" && dragStart && initialSlotState) {
+      const dx = x - dragStart.x;
+      const dy = y - dragStart.y;
+      const minSize = 40;
 
-      if (dragMode === "move") {
-        onUpdatePhotoSlot({
-          ...slot,
-          x: Math.round(Math.max(0, Math.min(width - slot.width, initialSlotState.x + dx))),
-          y: Math.round(Math.max(0, Math.min(height - slot.height, initialSlotState.y + dy))),
-        });
-      } else if (dragMode === "resize-se") {
-        onUpdatePhotoSlot({
-          ...slot,
-          width: Math.round(Math.max(60, initialSlotState.width + dx)),
-          height: Math.round(Math.max(60, initialSlotState.height + dy)),
-        });
+      // Handle Photo Slot resizing and moving
+      if (selectedSlotType === "photo") {
+        const slot = photoSlots.find((p) => p.id === selectedSlotId);
+        if (!slot) return;
+
+        if (dragMode === "move") {
+          // Reposition anywhere on canvas
+          onUpdatePhotoSlot({
+            ...slot,
+            x: Math.round(initialSlotState.x + dx),
+            y: Math.round(initialSlotState.y + dy),
+          });
+        } else if (dragMode === "resize-se") {
+          // Bottom-Right Corner
+          onUpdatePhotoSlot({
+            ...slot,
+            width: Math.round(Math.max(minSize, initialSlotState.width + dx)),
+            height: Math.round(Math.max(minSize, initialSlotState.height + dy)),
+          });
+        } else if (dragMode === "resize-sw") {
+          // Bottom-Left Corner
+          const newW = Math.round(Math.max(minSize, initialSlotState.width - dx));
+          const newX = Math.round(initialSlotState.x + (initialSlotState.width - newW));
+          const newH = Math.round(Math.max(minSize, initialSlotState.height + dy));
+          onUpdatePhotoSlot({
+            ...slot,
+            x: newX,
+            width: newW,
+            height: newH,
+          });
+        } else if (dragMode === "resize-ne") {
+          // Top-Right Corner
+          const newW = Math.round(Math.max(minSize, initialSlotState.width + dx));
+          const newH = Math.round(Math.max(minSize, initialSlotState.height - dy));
+          const newY = Math.round(initialSlotState.y + (initialSlotState.height - newH));
+          onUpdatePhotoSlot({
+            ...slot,
+            y: newY,
+            width: newW,
+            height: newH,
+          });
+        } else if (dragMode === "resize-nw") {
+          // Top-Left Corner
+          const newW = Math.round(Math.max(minSize, initialSlotState.width - dx));
+          const newX = Math.round(initialSlotState.x + (initialSlotState.width - newW));
+          const newH = Math.round(Math.max(minSize, initialSlotState.height - dy));
+          const newY = Math.round(initialSlotState.y + (initialSlotState.height - newH));
+          onUpdatePhotoSlot({
+            ...slot,
+            x: newX,
+            y: newY,
+            width: newW,
+            height: newH,
+          });
+        } else if (dragMode === "resize-e") {
+          // Right-Center Edge
+          onUpdatePhotoSlot({
+            ...slot,
+            width: Math.round(Math.max(minSize, initialSlotState.width + dx)),
+          });
+        } else if (dragMode === "resize-w") {
+          // Left-Center Edge
+          const newW = Math.round(Math.max(minSize, initialSlotState.width - dx));
+          const newX = Math.round(initialSlotState.x + (initialSlotState.width - newW));
+          onUpdatePhotoSlot({
+            ...slot,
+            x: newX,
+            width: newW,
+          });
+        } else if (dragMode === "resize-s") {
+          // Bottom-Center Edge
+          onUpdatePhotoSlot({
+            ...slot,
+            height: Math.round(Math.max(minSize, initialSlotState.height + dy)),
+          });
+        } else if (dragMode === "resize-n") {
+          // Top-Center Edge
+          const newH = Math.round(Math.max(minSize, initialSlotState.height - dy));
+          const newY = Math.round(initialSlotState.y + (initialSlotState.height - newH));
+          onUpdatePhotoSlot({
+            ...slot,
+            y: newY,
+            height: newH,
+          });
+        }
+      } else if (selectedSlotType === "text") {
+        const slot = textSlots.find((t) => t.id === selectedSlotId);
+        if (!slot) return;
+
+        if (dragMode === "move") {
+          // Reposition text anywhere on canvas
+          onUpdateTextSlot({
+            ...slot,
+            x: Math.round(initialSlotState.x + dx),
+            y: Math.round(initialSlotState.y + dy),
+          });
+        } else {
+          // 8-directional corner & edge reshaping for text slot
+          const initialBoxX = initialSlotState.boxX;
+          const initialBoxY = initialSlotState.boxY;
+          const initialBoxW = initialSlotState.boxW;
+          const initialBoxH = initialSlotState.boxH;
+          const minW = 60;
+          const minH = 30;
+
+          let newBoxX = initialBoxX;
+          let newBoxY = initialBoxY;
+          let newBoxW = initialBoxW;
+          let newBoxH = initialBoxH;
+
+          if (dragMode === "resize-se") {
+            newBoxW = Math.max(minW, initialBoxW + dx);
+            newBoxH = Math.max(minH, initialBoxH + dy);
+          } else if (dragMode === "resize-sw") {
+            newBoxW = Math.max(minW, initialBoxW - dx);
+            newBoxH = Math.max(minH, initialBoxH + dy);
+            newBoxX = initialBoxX + (initialBoxW - newBoxW);
+          } else if (dragMode === "resize-ne") {
+            newBoxW = Math.max(minW, initialBoxW + dx);
+            newBoxH = Math.max(minH, initialBoxH - dy);
+            newBoxY = initialBoxY + (initialBoxH - newBoxH);
+          } else if (dragMode === "resize-nw") {
+            newBoxW = Math.max(minW, initialBoxW - dx);
+            newBoxH = Math.max(minH, initialBoxH - dy);
+            newBoxX = initialBoxX + (initialBoxW - newBoxW);
+            newBoxY = initialBoxY + (initialBoxH - newBoxH);
+          } else if (dragMode === "resize-e") {
+            newBoxW = Math.max(minW, initialBoxW + dx);
+          } else if (dragMode === "resize-w") {
+            newBoxW = Math.max(minW, initialBoxW - dx);
+            newBoxX = initialBoxX + (initialBoxW - newBoxW);
+          } else if (dragMode === "resize-s") {
+            newBoxH = Math.max(minH, initialBoxH + dy);
+          } else if (dragMode === "resize-n") {
+            newBoxH = Math.max(minH, initialBoxH - dy);
+            newBoxY = initialBoxY + (initialBoxH - newBoxH);
+          }
+
+          // Map bounding box origin back to slot anchor (x, y)
+          const newX =
+            slot.align === "left"
+              ? newBoxX
+              : slot.align === "right"
+              ? newBoxX + newBoxW
+              : newBoxX + newBoxW / 2;
+          const newY = newBoxY + newBoxH / 2;
+
+          onUpdateTextSlot({
+            ...slot,
+            x: Math.round(newX),
+            y: Math.round(newY),
+            width: Math.round(newBoxW),
+            height: Math.round(newBoxH),
+            maxWidth: Math.round(newBoxW),
+          });
+        }
       }
-    } else if (selectedSlotType === "text") {
-      const slot = textSlots.find((t) => t.id === selectedSlotId);
-      if (!slot) return;
+      return;
+    }
 
-      if (dragMode === "move") {
-        onUpdateTextSlot({
-          ...slot,
-          x: Math.round(Math.max(20, Math.min(width - 20, initialSlotState.x + dx))),
-          y: Math.round(Math.max(20, Math.min(height - 20, initialSlotState.y + dy))),
-        });
+    // When hovering without dragging, update cursor style dynamically
+    updateHoverCursor(x, y);
+  };
+
+  const updateHoverCursor = (x: number, y: number) => {
+    // 1. If photo slot selected, check handles & box
+    if (selectedSlotId && selectedSlotType === "photo") {
+      const slot = photoSlots.find((p) => p.id === selectedSlotId);
+      if (slot) {
+        const handle = getHitHandle(x, y, slot.x, slot.y, slot.width, slot.height, 28);
+        if (handle !== "none") {
+          setHoverCursor(getCursorForMode(handle));
+          return;
+        }
+        if (x >= slot.x && x <= slot.x + slot.width && y >= slot.y && y <= slot.y + slot.height) {
+          setHoverCursor("move");
+          return;
+        }
       }
     }
+
+    // 2. If text slot selected, check handles & box
+    if (selectedSlotId && selectedSlotType === "text") {
+      const slot = textSlots.find((t) => t.id === selectedSlotId);
+      if (slot) {
+        const { boxX, boxY, boxW, boxH } = getTextSlotBoundingBox(slot);
+        const handle = getHitHandle(x, y, boxX, boxY, boxW, boxH, 28);
+        if (handle !== "none") {
+          setHoverCursor(getCursorForMode(handle));
+          return;
+        }
+        if (x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH) {
+          setHoverCursor("move");
+          return;
+        }
+      }
+    }
+
+    // 3. Check hover over any unselected photo slot
+    for (const slot of photoSlots) {
+      if (x >= slot.x && x <= slot.x + slot.width && y >= slot.y && y <= slot.y + slot.height) {
+        setHoverCursor("pointer");
+        return;
+      }
+    }
+
+    // 4. Check hover over any unselected text slot
+    for (const slot of textSlots) {
+      const { boxX, boxY, boxW, boxH } = getTextSlotBoundingBox(slot);
+      if (x >= boxX && x <= boxX + boxW && y >= boxY && y <= boxY + boxH) {
+        setHoverCursor("pointer");
+        return;
+      }
+    }
+
+    setHoverCursor("crosshair");
   };
 
   // Pointer Up
@@ -204,6 +478,13 @@ export function TemplateCanvasEditor({
     }
   };
 
+  const activeCursor =
+    dragMode === "move"
+      ? "grabbing"
+      : dragMode !== "none"
+      ? getCursorForMode(dragMode)
+      : hoverCursor;
+
   return (
     <div className="flex flex-col items-center w-full select-none">
       {/* Canvas Top Control Bar */}
@@ -218,10 +499,14 @@ export function TemplateCanvasEditor({
           <span className="hidden sm:inline-block text-[11px]">
             {isTestPreviewMode ? (
               <span className="text-emerald-500 font-bold flex items-center gap-1">
-                <Sparkles className="size-3" /> লাইভ প্রিভিউ সক্রিয়
+                <Sparkles className="size-3" /> লাইভ প্রিভিউ মোড সক্রিয়
+              </span>
+            ) : selectedSlotId ? (
+              <span className="text-brand-primary font-bold">
+                স্লট সিলেক্টেড (যে কোনো কোণা টেনে রিশেপ বা মাঝখানে ধরে পজিশন করুন)
               </span>
             ) : (
-              "স্লট ক্লিক করে ড্র্যাগ ও ড্রপ করুন"
+              <span>স্লটে ক্লিক করে রিশেপ ও রিপজিশন করুন</span>
             )}
           </span>
         </div>
@@ -232,7 +517,7 @@ export function TemplateCanvasEditor({
             type="button"
             variant="outline"
             size="icon"
-            onClick={() => setZoom((z) => Math.max(0.5, Number((z - 0.1).toFixed(1))))}
+            onClick={() => setZoom((z) => Math.max(0.4, Number((z - 0.1).toFixed(1))))}
             className="size-7 rounded-lg"
             title="জুম আউট"
           >
@@ -284,17 +569,13 @@ export function TemplateCanvasEditor({
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            className={`max-w-full h-auto cursor-crosshair touch-none ${
-              dragMode === "move"
-                ? "cursor-grabbing"
-                : dragMode.startsWith("resize")
-                ? "cursor-nwse-resize"
-                : "cursor-crosshair"
-            }`}
+            onPointerLeave={handlePointerUp}
+            className="max-w-full h-auto touch-none"
             style={{
               maxHeight: "min(680px, calc(100vh - 250px))",
               width: "auto",
               aspectRatio: `${width} / ${height}`,
+              cursor: activeCursor,
             }}
           />
         </div>

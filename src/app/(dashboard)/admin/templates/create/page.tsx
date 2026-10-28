@@ -6,6 +6,8 @@ export const metadata = {
   description: "HTML5 Canvas 2D ড্র্যাগ-এন্ড-ড্রপ ভিজ্যুয়াল টেমপ্লেট বিল্ডার",
 };
 
+export const instant = false;
+
 export default function CreateTemplatePage() {
   return <TemplateStudioWorkspace />;
 }

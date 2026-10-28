@@ -21,6 +21,8 @@ export interface TextSlot {
   defaultText: string;
   x: number;
   y: number;
+  width?: number;
+  height?: number;
   maxWidth?: number;
   fontSize: number;
   fontFamily: string;

@@ -5,10 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import {
+  Home,
   LayoutDashboard,
   Settings,
   LogOut,
   FileText,
+  Wallet,
   LogIn,
   UserPlus,
   User,
@@ -31,9 +33,11 @@ import authApi, { serverURL } from "@/lib/api/authApi";
 import { loginBtnStyle, registerBtnStyle } from "./navbar-actions";
 
 const userDropdownLinks = [
+  { name: "হোম পেজ", href: "/", icon: Home },
   { name: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
   { name: "আমার পোস্টারসমূহ", href: "/dashboard/posters", icon: FileText },
   { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: Settings },
+  { name: "রিচার্জ ওয়ালেট", href: "/recharge", icon: Wallet },
 ];
 
 export function NavbarDropdown() {

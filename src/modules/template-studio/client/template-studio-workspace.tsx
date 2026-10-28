@@ -85,6 +85,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "গণতন্ত্র ও জনগণের অধিকার আদায়ে",
       x: 540,
       y: 280,
+      width: 900,
+      height: 50,
       maxWidth: 900,
       fontSize: 26,
       fontFamily: "Noto Serif Bengali",
@@ -101,6 +103,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "জনাব মোঃ আরিফুল ইসলাম",
       x: 540,
       y: 770,
+      width: 900,
+      height: 70,
       maxWidth: 900,
       fontSize: 48,
       fontFamily: "Noto Serif Bengali",
@@ -117,6 +121,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "সাধারণ সম্পাদক পদপ্রার্থী • মার্কা: ধানের শীষ",
       x: 540,
       y: 840,
+      width: 900,
+      height: 50,
       maxWidth: 900,
       fontSize: 26,
       fontFamily: "Noto Serif Bengali",
@@ -133,6 +139,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "ঢাকা-১০ সংসদীয় আসন",
       x: 540,
       y: 895,
+      width: 800,
+      height: 45,
       maxWidth: 800,
       fontSize: 22,
       fontFamily: "Noto Serif Bengali",
@@ -149,6 +157,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "জনগণের সেবায় নিবেদিতপ্রাণ, দুর্নীতির বিরুদ্ধে আপোষহীন কণ্ঠস্বর",
       x: 540,
       y: 980,
+      width: 780,
+      height: 55,
       maxWidth: 780,
       fontSize: 20,
       fontFamily: "Noto Serif Bengali",
@@ -165,6 +175,8 @@ export function TemplateStudioWorkspace() {
       defaultText: "সৌজন্যে ও প্রচারে: সর্বস্তরের জনতা ও দলীয় নেতাকর্মী",
       x: 540,
       y: 1280,
+      width: 850,
+      height: 45,
       maxWidth: 850,
       fontSize: 18,
       fontFamily: "Noto Serif Bengali",
@@ -244,6 +256,8 @@ export function TemplateStudioWorkspace() {
       defaultText: preset ? preset.defaultText : "এখানে আপনার কাস্টম লেখা লিখুন",
       x: Math.round(canvasWidth / 2),
       y: Math.round(canvasHeight / 2),
+      width: 750,
+      height: 60,
       maxWidth: 750,
       fontSize: preset ? preset.fontSize : 28,
       fontFamily: "Noto Serif Bengali",
@@ -278,8 +292,61 @@ export function TemplateStudioWorkspace() {
     }
   };
 
-  // Image Upload handler (supports raw file via FileReader)
-  const handleLocalImageUpload = (file: File, target: "preview" | "blank") => {
+  // Helper to optimize/compress raw device images to high-quality lightweight WebP/JPEG
+  const compressImageFile = (file: File, maxDim = 1920, quality = 0.85): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawUrl = e.target?.result as string;
+        if (!rawUrl) return resolve("");
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve(rawUrl);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            const optimized = canvas.toDataURL("image/webp", quality);
+            resolve(optimized);
+          } catch {
+            resolve(rawUrl);
+          }
+        };
+        img.onerror = () => resolve(rawUrl);
+        img.src = rawUrl;
+      };
+      reader.onerror = () => resolve("");
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Image Upload handler (with instant client compression)
+  const handleLocalImageUpload = async (file: File, target: "preview" | "blank") => {
+    try {
+      const optimizedUrl = await compressImageFile(file);
+      if (optimizedUrl) {
+        if (target === "preview") {
+          setPreviewUrl(optimizedUrl);
+        } else {
+          setBlankTemplateUrl(optimizedUrl);
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn("Client compression failed, falling back to direct data URL", err);
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
@@ -291,6 +358,46 @@ export function TemplateStudioWorkspace() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  // Ensure any base64 data URL is compressed before transmission
+  const ensureOptimizedDataUrl = (
+    dataUrl: string,
+    maxDim = 1600,
+    quality = 0.82
+  ): Promise<string> => {
+    if (!dataUrl || !dataUrl.startsWith("data:image/")) {
+      return Promise.resolve(dataUrl);
+    }
+    // If already lightweight (< 400KB string length), don't re-compress
+    if (dataUrl.length < 400 * 1024) {
+      return Promise.resolve(dataUrl);
+    }
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(dataUrl);
+        ctx.drawImage(img, 0, 0, width, height);
+        try {
+          const webp = canvas.toDataURL("image/webp", quality);
+          resolve(webp);
+        } catch {
+          resolve(dataUrl);
+        }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   };
 
   // Publish Template to Backend
@@ -311,6 +418,17 @@ export function TemplateStudioWorkspace() {
     try {
       setIsPublishing(true);
 
+      // 1. Optimize blank template URL
+      const finalBlankUrl = await ensureOptimizedDataUrl(blankTemplateUrl, 1600, 0.82);
+
+      // 2. Prepare lightweight preview URL (max 600px width if generated from blank)
+      let finalPreviewUrl = previewUrl;
+      if (finalPreviewUrl) {
+        finalPreviewUrl = await ensureOptimizedDataUrl(finalPreviewUrl, 1000, 0.8);
+      } else {
+        finalPreviewUrl = await ensureOptimizedDataUrl(finalBlankUrl, 600, 0.75);
+      }
+
       const templatePayload = {
         title: title.trim(),
         categoryId,
@@ -320,8 +438,8 @@ export function TemplateStudioWorkspace() {
         height: canvasHeight,
         config: {
           type: "canvas",
-          blankTemplateUrl,
-          previewUrl: previewUrl || blankTemplateUrl,
+          blankTemplateUrl: finalBlankUrl,
+          previewUrl: finalPreviewUrl,
           width: canvasWidth,
           height: canvasHeight,
           photoSlots,
@@ -329,30 +447,33 @@ export function TemplateStudioWorkspace() {
         },
       };
 
-      // 1. Create Template (DRAFT)
+      // 1. Create Template (DRAFT) with timeout
       const res = await axios.post(`${serverURL}/api/v1/template`, templatePayload, {
         withCredentials: true,
+        timeout: 20000,
       });
 
       const createdTemplate = res.data?.data;
       if (!createdTemplate?.id) {
-        throw new Error("Failed to create template");
+        throw new Error("টমপ্লেট তৈরি করতে ব্যর্থ হয়েছে।");
       }
 
-      // 2. Publish Template
+      // 2. Publish Template with timeout
       await axios.post(
         `${serverURL}/api/v1/template/${createdTemplate.id}/publish`,
         {},
-        { withCredentials: true }
+        { withCredentials: true, timeout: 20000 }
       );
 
       toast.success("টেমপ্লেট সফলভাবে তৈরি এবং পাবলিশ করা হয়েছে!");
-      router.push("/admin/templates");
-      router.refresh();
+      setIsPublishing(false);
+      // Hard navigation to guarantee fresh catalog state
+      window.location.href = "/admin/templates";
     } catch (err: any) {
       console.error("Failed to publish template:", err);
       const msg = err.response?.data?.message || err.message || "টেমপ্লেট সেভ হতে ব্যর্থ হয়েছে।";
       toast.error(msg);
+      setIsPublishing(false);
     } finally {
       setIsPublishing(false);
     }

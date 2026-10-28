@@ -11,14 +11,6 @@ interface TemplateDetailsPageProps {
   params: Promise<{ id: string }>
 }
 
-export async function generateStaticParams() {
-  return [
-    { id: "1" },
-    { id: "2" },
-    { id: "3" },
-  ]
-}
-
 export async function generateMetadata({
   params,
 }: TemplateDetailsPageProps): Promise<Metadata> {

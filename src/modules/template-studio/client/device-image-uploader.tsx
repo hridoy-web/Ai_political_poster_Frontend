@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ExternalLink,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,25 +41,88 @@ export function DeviceImageUploader({
 
   const isPrimary = accent === "primary";
 
-  const handleFileProcess = (file: File) => {
+  const [isOptimizing, setIsOptimizing] = useState(false);
+
+  const compressImage = (file: File, maxDim = 1920, quality = 0.82): Promise<{ dataUrl: string; sizeKb: number }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const raw = e.target?.result as string;
+        if (!raw) {
+          resolve({ dataUrl: "", sizeKb: 0 });
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const ratio = Math.min(maxDim / width, maxDim / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            resolve({ dataUrl: raw, sizeKb: Math.round(file.size / 1024) });
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          try {
+            const webpUrl = canvas.toDataURL("image/webp", quality);
+            const sizeKb = Math.round((webpUrl.length * 3) / 4 / 1024);
+            resolve({ dataUrl: webpUrl, sizeKb });
+          } catch {
+            const jpegUrl = canvas.toDataURL("image/jpeg", quality);
+            const sizeKb = Math.round((jpegUrl.length * 3) / 4 / 1024);
+            resolve({ dataUrl: jpegUrl, sizeKb });
+          }
+        };
+        img.onerror = () => resolve({ dataUrl: raw, sizeKb: Math.round(file.size / 1024) });
+        img.src = raw;
+      };
+      reader.onerror = () => resolve({ dataUrl: "", sizeKb: 0 });
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileProcess = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       alert("অনুগ্রহ করে একটি ইমেজ ফাইল নির্বাচন করুন (JPEG, PNG, WebP)");
       return;
     }
 
-    const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
-    setFileMeta({
-      name: file.name,
-      size: `${sizeInMb} MB`,
-    });
+    try {
+      setIsOptimizing(true);
+      const originalMb = (file.size / (1024 * 1024)).toFixed(2);
+      const { dataUrl, sizeKb } = await compressImage(file);
+      
+      const formattedSize = sizeKb > 1024 
+        ? `${(sizeKb / 1024).toFixed(2)} MB (অপ্টিমাইজড)`
+        : `${sizeKb} KB (অপ্টিমাইজড)`;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        onImageSelected(e.target.result as string, file);
+      setFileMeta({
+        name: file.name,
+        size: `${formattedSize} — মূল সাইজ: ${originalMb} MB`,
+      });
+
+      if (dataUrl) {
+        onImageSelected(dataUrl, file);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Compression error:", err);
+      // Fallback to uncompressed dataUrl
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          onImageSelected(e.target.result as string, file);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsOptimizing(false);
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,36 +252,57 @@ export function DeviceImageUploader({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => !isOptimizing && fileInputRef.current?.click()}
           className={`cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-200 p-6 flex flex-col items-center justify-center text-center gap-2.5 ${
-            isDragging
+            isOptimizing
+              ? "border-amber-500/50 bg-amber-500/5 cursor-wait"
+              : isDragging
               ? isPrimary
                 ? "border-brand-primary bg-brand-primary/10 scale-[1.01]"
                 : "border-emerald-500 bg-emerald-500/10 scale-[1.01]"
               : "border-border/80 bg-background/50 hover:bg-background/90 hover:border-border"
           }`}
         >
-          <div
-            className={`size-12 rounded-2xl flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105 ${
-              isPrimary
-                ? "bg-brand-primary/15 text-brand-primary"
-                : "bg-emerald-500/15 text-emerald-500"
-            }`}
-          >
-            <UploadCloud className="size-6 animate-pulse" />
-          </div>
+          {isOptimizing ? (
+            <>
+              <div className="size-12 rounded-2xl flex items-center justify-center shadow-xs bg-amber-500/15 text-amber-500">
+                <Loader2 className="size-6 animate-spin" />
+              </div>
 
-          <div className="space-y-1">
-            <p className="text-xs sm:text-sm font-bold text-foreground">
-              ডিভাইস থেকে ছবি আপলোড করুন
-            </p>
-            <p className="text-[11px] text-muted-foreground">
-              ফাইল সিলেক্ট করতে এখানে ক্লিক করুন বা ড্র্যাগ করে ড্রপ করুন
-            </p>
-            <p className="text-[10px] text-muted-foreground/70">
-              (PNG, JPG, WebP — সর্বোচ্চ 10MB)
-            </p>
-          </div>
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm font-bold text-foreground">
+                  ছবি অপ্টিমাইজ হচ্ছে...
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  দ্রুত পাবলিশ ও ক্যানভাস পারফরম্যান্সের জন্য ছবি কম্প্রেস করা হচ্ছে
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className={`size-12 rounded-2xl flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105 ${
+                  isPrimary
+                    ? "bg-brand-primary/15 text-brand-primary"
+                    : "bg-emerald-500/15 text-emerald-500"
+                }`}
+              >
+                <UploadCloud className="size-6 animate-pulse" />
+              </div>
+
+              <div className="space-y-1">
+                <p className="text-xs sm:text-sm font-bold text-foreground">
+                  ডিভাইস থেকে ছবি আপলোড করুন
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  ফাইল সিলেক্ট করতে এখানে ক্লিক করুন বা ড্র্যাগ করে ড্রপ করুন
+                </p>
+                <p className="text-[10px] text-muted-foreground/70">
+                  (PNG, JPG, WebP — সর্বোচ্চ 10MB)
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
 
