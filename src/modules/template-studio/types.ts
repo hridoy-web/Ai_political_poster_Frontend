@@ -72,7 +72,9 @@ export interface SampleCandidateData {
   courtesy: string;
   symbol: string;
   photoUrl: string;
+  imageScale?: number;
 }
+
 
 export const ASPECT_RATIO_PRESETS: Record<
   AspectRatioType,

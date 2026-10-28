@@ -10,13 +10,33 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
   }
 
   return new Promise((resolve, reject) => {
+    if (url.startsWith("data:") || url.startsWith("blob:")) {
+      const img = new Image();
+      img.onload = () => {
+        imageCache.set(url, img);
+        resolve(img);
+      };
+      img.onerror = (e) => reject(e);
+      img.src = url;
+      return;
+    }
+
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
       imageCache.set(url, img);
       resolve(img);
     };
-    img.onerror = (e) => reject(e);
+    img.onerror = () => {
+      // If CORS anonymous request fails, retry without crossOrigin
+      const fallback = new Image();
+      fallback.onload = () => {
+        imageCache.set(url, fallback);
+        resolve(fallback);
+      };
+      fallback.onerror = (err) => reject(err);
+      fallback.src = url;
+    };
     img.src = url;
   });
 }
@@ -126,16 +146,18 @@ export async function renderTemplateCanvas({
           const slotAspect = slot.width / slot.height;
           let renderW = slot.width;
           let renderH = slot.height;
-          let offsetX = slot.x;
-          let offsetY = slot.y;
 
           if (imgAspect > slotAspect) {
             renderW = slot.height * imgAspect;
-            offsetX = slot.x - (renderW - slot.width) / 2;
           } else {
             renderH = slot.width / imgAspect;
-            offsetY = slot.y - (renderH - slot.height) / 2;
           }
+
+          const scale = (sampleCandidate.imageScale || 100) / 100;
+          renderW = renderW * scale;
+          renderH = renderH * scale;
+          const offsetX = slot.x + slot.width / 2 - renderW / 2;
+          const offsetY = slot.y + slot.height / 2 - renderH / 2;
 
           ctx.drawImage(photoImg, offsetX, offsetY, renderW, renderH);
           ctx.restore();
@@ -392,22 +414,27 @@ function drawResizeHandles(ctx: CanvasRenderingContext2D, x: number, y: number, 
 }
 
 function getCandidateTextForSlot(key: string, defaultText: string, c: SampleCandidateData): string {
-  switch (key) {
-    case "candidate_name":
-      return c.name || defaultText;
-    case "designation":
-      return c.designation || defaultText;
-    case "area":
-      return c.area || defaultText;
-    case "banner_title":
-      return c.bannerTitle || defaultText;
-    case "slogan":
-      return c.slogan || defaultText;
-    case "courtesy":
-      return c.courtesy || defaultText;
-    case "symbol":
-      return `মার্কা: ${c.symbol || "ধানের শীষ"}`;
-    default:
-      return defaultText || key;
+  const norm = (key || "").toLowerCase().replace(/[-_\s]/g, "");
+  if (norm.includes("name") || norm === "candidate") {
+    return c.name || defaultText;
   }
+  if (norm.includes("designation") || norm.includes("padabi") || norm.includes("post")) {
+    return c.designation || defaultText;
+  }
+  if (norm.includes("area") || norm.includes("elaka") || norm.includes("seat") || norm.includes("constituency")) {
+    return c.area || defaultText;
+  }
+  if (norm.includes("bannertitle") || norm.includes("title") || norm.includes("headline") || norm.includes("topmessage")) {
+    return c.bannerTitle || defaultText;
+  }
+  if (norm.includes("slogan")) {
+    return c.slogan || defaultText;
+  }
+  if (norm.includes("courtesy") || norm.includes("prochare") || norm.includes("soujonne")) {
+    return c.courtesy || defaultText;
+  }
+  if (norm.includes("symbol") || norm.includes("marka")) {
+    return `মার্কা: ${c.symbol || "ধানের শীষ"}`;
+  }
+  return defaultText || key;
 }
