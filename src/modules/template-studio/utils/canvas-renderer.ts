@@ -137,11 +137,11 @@ export async function renderTemplateCanvas({
           const photoImg = await loadImage(sampleCandidate.photoUrl);
           ctx.save();
 
-          // Clip to slot shape
-          clipSlotShape(ctx, slot);
+          // Clip to slot shape with 30% overflow margin for flexible positioning
+          clipSlotShape(ctx, slot, 0.30);
           ctx.clip();
 
-          // Draw image centered and covering the slot
+          // Draw image centered and covering the slot with user offsets
           const imgAspect = photoImg.width / photoImg.height;
           const slotAspect = slot.width / slot.height;
           let renderW = slot.width;
@@ -156,21 +156,20 @@ export async function renderTemplateCanvas({
           const scale = (sampleCandidate.imageScale || 100) / 100;
           renderW = renderW * scale;
           renderH = renderH * scale;
-          const offsetX = slot.x + slot.width / 2 - renderW / 2;
-          const offsetY = slot.y + slot.height / 2 - renderH / 2;
+
+          // Repositioning offset clamped up to 30% area of the slot
+          const maxOffsetX = slot.width * 0.30;
+          const maxOffsetY = slot.height * 0.30;
+          const userOffsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, sampleCandidate.imageOffsetX || 0));
+          const userOffsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, sampleCandidate.imageOffsetY || 0));
+
+          const offsetX = slot.x + slot.width / 2 - renderW / 2 + userOffsetX;
+          const offsetY = slot.y + slot.height / 2 - renderH / 2 + userOffsetY;
 
           ctx.drawImage(photoImg, offsetX, offsetY, renderW, renderH);
           ctx.restore();
 
-          // Optional Border Ring
-          if (slot.borderWidth && slot.borderWidth > 0) {
-            ctx.save();
-            ctx.lineWidth = slot.borderWidth;
-            ctx.strokeStyle = slot.borderColor || "#ffffff";
-            clipSlotShape(ctx, slot);
-            ctx.stroke();
-            ctx.restore();
-          }
+          // NOTE: Do not draw any outline/border ring over the candidate's photo
         } catch {
           drawSlotPlaceholder(ctx, slot, "ফটো লোড হতে পারেনি");
         }
@@ -294,25 +293,33 @@ export async function renderTemplateCanvas({
   }
 }
 
-function clipSlotShape(ctx: CanvasRenderingContext2D, slot: PhotoSlot) {
+function clipSlotShape(ctx: CanvasRenderingContext2D, slot: PhotoSlot, overflowRatio: number = 0) {
   ctx.beginPath();
+  const extraW = slot.width * overflowRatio;
+  const extraH = slot.height * overflowRatio;
+  const x = slot.x - extraW / 2;
+  const y = slot.y - extraH / 2;
+  const w = slot.width + extraW;
+  const h = slot.height + extraH;
+
   if (slot.shape === "circle") {
-    const radius = Math.min(slot.width, slot.height) / 2;
-    ctx.arc(slot.x + slot.width / 2, slot.y + slot.height / 2, radius, 0, Math.PI * 2);
+    const radius = Math.min(w, h) / 2;
+    ctx.arc(x + w / 2, y + h / 2, radius, 0, Math.PI * 2);
   } else if (slot.shape === "oval") {
     ctx.ellipse(
-      slot.x + slot.width / 2,
-      slot.y + slot.height / 2,
-      slot.width / 2,
-      slot.height / 2,
+      x + w / 2,
+      y + h / 2,
+      w / 2,
+      h / 2,
       0,
       0,
       Math.PI * 2
     );
   } else {
     // rounded or rectangle
-    const radius = slot.shape === "rounded" ? (slot.borderRadius ?? 20) : 0;
-    ctx.roundRect(slot.x, slot.y, slot.width, slot.height, radius);
+    const baseRadius = slot.shape === "rounded" ? (slot.borderRadius ?? 20) : 0;
+    const radius = baseRadius > 0 ? baseRadius + Math.min(extraW, extraH) / 2 : 0;
+    ctx.roundRect(x, y, w, h, radius);
   }
 }
 
