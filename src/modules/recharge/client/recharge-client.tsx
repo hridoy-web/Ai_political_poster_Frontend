@@ -142,41 +142,71 @@ export function RechargeClient({
     [packages]
   );
 
-  const handleProceedToPayment = useCallback(async () => {
-    if (!isMinimumValid || isSubmitting) return;
+  const handleProceedToPayment = useCallback(
+    async (overrideUser?: any) => {
+      const activeUser = overrideUser || user;
+      if (!isMinimumValid || isSubmitting) return;
 
-    // 1. Auth Guard: Show beautiful modal if user is not logged in
-    if (!user) {
-      setIsAuthModalOpen(true);
-      return;
-    }
+      // 1. Auth Guard: Show simple modal if user is not logged in
+      if (!activeUser) {
+        setIsAuthModalOpen(true);
+        return;
+      }
 
-    try {
-      setIsSubmitting(true);
-      setErrorMessage(null);
+      try {
+        setIsSubmitting(true);
+        setErrorMessage(null);
 
-      const response = await initiateRechargePayment({
-        customAmount: currentAmount,
-        packageId: selectedPlanId && selectedPlanId !== "custom" ? selectedPlanId : undefined,
-      });
+        const response = await initiateRechargePayment({
+          customAmount: currentAmount,
+          packageId:
+            selectedPlanId && selectedPlanId !== "custom"
+              ? selectedPlanId
+              : undefined,
+        });
 
-      if (response.success && response.data?.GatewayPageURL) {
-        window.location.href = response.data.GatewayPageURL;
-      } else {
-        const msg = response.message || "পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।";
+        if (response.success && response.data?.GatewayPageURL) {
+          window.location.href = response.data.GatewayPageURL;
+        } else {
+          const msg =
+            response.message ||
+            "পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।";
+          setErrorMessage(msg);
+          toast.error(msg);
+        }
+      } catch (err: unknown) {
+        console.error("Payment initiation error:", err);
+        const errorObj = err as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        const msg =
+          errorObj.response?.data?.message ||
+          errorObj.message ||
+          "পেমেন্ট সেশন শুরু করতে সমস্যা হয়েছে।";
         setErrorMessage(msg);
         toast.error(msg);
+      } finally {
+        setIsSubmitting(false);
       }
-    } catch (err: unknown) {
-      console.error("Payment initiation error:", err);
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const msg = errorObj.response?.data?.message || errorObj.message || "পেমেন্ট সেশন শুরু করতে সমস্যা হয়েছে।";
-      setErrorMessage(msg);
-      toast.error(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId]);
+    },
+    [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId]
+  );
+
+  const handleBuyPackage = useCallback(
+    (plan: PackagePlan) => {
+      setSelectedPlanId(plan.id);
+      setDisplayAmount(toBengaliNumber(plan.amount));
+
+      if (!user) {
+        setIsAuthModalOpen(true);
+        return;
+      }
+
+      handleProceedToPayment();
+    },
+    [user, handleProceedToPayment]
+  );
 
   return (
     <div className="space-y-12">
@@ -288,6 +318,7 @@ export function RechargeClient({
               plan={pkg}
               isSelected={selectedPlanId === pkg.id}
               onSelect={() => handleSelectPlan(pkg)}
+              onBuy={() => handleBuyPackage(pkg)}
             />
           ))}
         </div>
@@ -403,12 +434,16 @@ export function RechargeClient({
         </div>
       </section>
 
-      {/* Beautiful Guest Auth Guard Modal */}
+      {/* Clean Simple Guest Auth Guard Modal */}
       <GuestAuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         planTitle={selectedPlanTitle}
         amount={currentAmount}
+        onSuccessLogin={(loggedInUser) => {
+          setIsAuthModalOpen(false);
+          handleProceedToPayment(loggedInUser);
+        }}
       />
     </div>
   );
