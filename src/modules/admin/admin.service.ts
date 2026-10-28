@@ -61,12 +61,17 @@ export class AdminService {
         const meta = res.data.data.meta || {};
 
         const users: AdminUser[] = items.map((u: any) => {
-          let role: "USER" | "ADMIN" = "USER";
-          const roleNames = (u.roles || []).map((r: any) =>
+          const roleNames: string[] = (u.roles || []).map((r: any) =>
             typeof r === "string" ? r : r.name
           );
-          if (roleNames.includes("ADMIN") || roleNames.includes("SUPER_ADMIN")) {
-            role = "ADMIN";
+
+          let primaryRole: any = "USER";
+          if (roleNames.includes("SUPER_ADMIN")) {
+            primaryRole = "SUPER_ADMIN";
+          } else if (roleNames.includes("ADMIN")) {
+            primaryRole = "ADMIN";
+          } else if (roleNames.includes("TEMPLATE_MANAGER")) {
+            primaryRole = "TEMPLATE_MANAGER";
           }
 
           let formattedDate = "তারিখ অনুপলব্ধ";
@@ -87,10 +92,12 @@ export class AdminService {
             name: u.name,
             email: u.email,
             phone: u.phone || "ফোন অনুপলব্ধ",
-            balance: 0,
-            totalPosters: 0,
-            role,
-            status: u.status === "ACTIVE" ? "ACTIVE" : "BANNED",
+            balance: Number(u.balance || 0),
+            credits: Number(u.credits || 0),
+            totalPosters: Number(u.totalPosters || 0),
+            role: primaryRole,
+            roles: roleNames,
+            status: u.status === "ACTIVE" ? "ACTIVE" : u.status || "BLOCKED",
             createdAt: formattedDate,
           };
         });
@@ -106,6 +113,25 @@ export class AdminService {
     }
 
     return { users: [], totalCount: 0, totalPages: 1 };
+  }
+
+  static async getRoles(): Promise<any[]> {
+    try {
+      const res = await axios.get(`${this.getBaseUrl()}/api/v1/admin/roles`, {
+        withCredentials: true,
+      });
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        return res.data.data;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch system roles:", err);
+    }
+    return [
+      { id: "1", name: "SUPER_ADMIN", description: "সকল সিস্টেম পারমিশন নিয়ন্ত্রণ", isSystem: true },
+      { id: "2", name: "ADMIN", description: "ইউজার, ক্যাটাগরি ও টেমপ্লেট পরিচালনা", isSystem: true },
+      { id: "3", name: "TEMPLATE_MANAGER", description: "ক্যানভাস টেমপ্লেট ডিজাইন ও পাবলিশ", isSystem: true },
+      { id: "4", name: "USER", description: "সাধারণ ব্যবহারকারী সুবিধা", isSystem: true },
+    ];
   }
 
   static async updateUserStatus(
@@ -164,6 +190,19 @@ export class AdminService {
       console.error("Failed to fetch admin posters:", err);
     }
     return { posters: [], totalCount: 0, totalPages: 1 };
+  }
+
+  static async deletePoster(posterId: string): Promise<boolean> {
+    try {
+      const res = await axios.delete(
+        `${this.getBaseUrl()}/api/v1/admin/posters/${posterId}`,
+        { withCredentials: true }
+      );
+      return Boolean(res.data?.success);
+    } catch (err) {
+      console.error("Failed to delete poster:", err);
+      return false;
+    }
   }
 
   static async getTransactions(

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { TransactionHistoryTable } from "@/modules/dashboard/server/transaction-history-table";
-import { TransactionHistory } from "@/modules/dashboard/dashboard.types";
+import { AdminTransactionTable } from "./admin-transaction-table";
+import { AdminTransaction } from "../admin.types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Wallet, CalendarDays, TrendingUp, DollarSign, Loader2 } from "lucide-react";
 import { AdminService, OverviewAnalyticsData } from "../admin.service";
@@ -22,7 +22,7 @@ export function AdminRevenueContent({}: AdminRevenueContentProps) {
   const itemsPerPage = 10;
 
   const [overview, setOverview] = useState<OverviewAnalyticsData | null>(null);
-  const [transactions, setTransactions] = useState<TransactionHistory[]>([]);
+  const [transactions, setTransactions] = useState<AdminTransaction[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -116,13 +116,14 @@ export function AdminRevenueContent({}: AdminRevenueContentProps) {
         </Card>
 
         {/* Card 3: Lifetime Total Income */}
-        <Card className="border border-border/80 bg-card/80 backdrop-blur-xl rounded-3xl p-5 shadow-xs">
-          <CardContent className="p-0 space-y-3">
+        <Card className="border border-amber-500/20 bg-card/80 backdrop-blur-xl rounded-3xl p-5 shadow-xs relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          <CardContent className="p-0 space-y-3 relative z-10">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-muted-foreground">
                 সর্বমোট আয় (Lifetime)
               </span>
-              <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-500">
+              <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-500">
                 <Wallet className="w-5 h-5" />
               </div>
             </div>
@@ -145,7 +146,7 @@ export function AdminRevenueContent({}: AdminRevenueContentProps) {
           <p className="text-xs text-muted-foreground">ট্রানজেকশন তালিকা লোড হচ্ছে...</p>
         </div>
       ) : (
-        <TransactionHistoryTable
+        <AdminTransactionTable
           transactions={transactions}
           totalCount={totalCount}
           currentPage={currentPage}

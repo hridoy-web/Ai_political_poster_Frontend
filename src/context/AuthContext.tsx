@@ -23,6 +23,7 @@ interface AuthContextType {
   loading: boolean;
   isTemplateManager: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles.includes("ADMIN") ||
     roles.includes("SUPER_ADMIN");
   const isAdmin = roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
+  const isSuperAdmin = roles.includes("SUPER_ADMIN");
 
   const info = {
     user,
@@ -67,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     isTemplateManager,
     isAdmin,
+    isSuperAdmin,
   };
 
   return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;
