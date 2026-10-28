@@ -4,6 +4,7 @@ import {
   CandidateInfo,
   GeneratedSloganItem,
   PosterRenderResult,
+  PublishedTemplate,
   SloganTopicOption,
 } from "./generator.types";
 
@@ -125,9 +126,9 @@ export class PosterGeneratorService {
   /**
    * Fetches published templates from live database.
    */
-  static async fetchPublishedTemplates(): Promise<Array<{ id: string; title: string; width: number; height: number }>> {
+  static async fetchPublishedTemplates(): Promise<PublishedTemplate[]> {
     try {
-      const res = await axios.get(`${serverURL}/api/v1/template?limit=20`, {
+      const res = await axios.get(`${serverURL}/api/v1/template?limit=50`, {
         withCredentials: true,
       });
       if (res.data?.success && Array.isArray(res.data.data?.items)) {
@@ -136,14 +137,24 @@ export class PosterGeneratorService {
     } catch (err) {
       console.error("Failed to load templates:", err);
     }
-    return [
-      {
-        id: "447130b7-5eea-41d9-b6cf-ae5f3145ac66",
-        title: "জাতীয় সংসদ নির্বাচন ক্যানভাস ২০২৬",
-        width: 1080,
-        height: 1350,
-      },
-    ];
+    return [];
+  }
+
+  /**
+   * Fetches single full template details by ID from live database.
+   */
+  static async getTemplateById(id: string): Promise<PublishedTemplate | null> {
+    try {
+      const res = await axios.get(`${serverURL}/api/v1/template/${id}`, {
+        withCredentials: true,
+      });
+      if (res.data?.success && res.data.data) {
+        return res.data.data;
+      }
+    } catch (err) {
+      console.error(`Failed to load template ${id}:`, err);
+    }
+    return null;
   }
 
   /**
