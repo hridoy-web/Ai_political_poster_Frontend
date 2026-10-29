@@ -10,6 +10,7 @@ import {
   Home,
   Sparkles,
   Layers,
+  ShieldCheck,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,7 @@ import authApi, { serverURL } from "@/lib/api/authApi";
 export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { setUser, isTemplateManager } = useAuth();
+  const { setUser, isTemplateManager, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -109,6 +110,34 @@ export function DashboardSidebar() {
             );
           })}
 
+          {isAdmin && (
+            <SidebarMenuItem className="flex justify-center">
+              <SidebarMenuButton
+                asChild
+                tooltip="অ্যাডমিন প্যানেল"
+                className={cn(
+                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ease-in-out h-10 w-full",
+                  "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                  pathname === "/admin" ||
+                    (pathname.startsWith("/admin") &&
+                      !pathname.startsWith("/admin/templates"))
+                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold"
+                    : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                )}
+              >
+                <Link
+                  href="/admin"
+                  className="flex items-center justify-start group-data-[collapsible=icon]:justify-center w-full"
+                >
+                  <ShieldCheck className="w-5 h-5 shrink-0 text-amber-500" />
+                  <span className="group-data-[collapsible=icon]:hidden truncate">
+                    অ্যাডমিন প্যানেল
+                  </span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+
           {isTemplateManager && (
             <SidebarMenuItem className="flex justify-center">
               <SidebarMenuButton
@@ -117,7 +146,7 @@ export function DashboardSidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ease-in-out h-10 w-full",
                   "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
-                  pathname.startsWith("/admin")
+                  pathname.startsWith("/admin/templates")
                     ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
                     : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
                 )}
