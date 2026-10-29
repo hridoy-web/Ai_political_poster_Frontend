@@ -12,6 +12,11 @@ export interface PosterTemplate {
   isPremium: boolean
   tags: string[]
   createdAt: string
+  width?: number
+  height?: number
+  aspectRatio?: string
+  previewAssetId?: string | null
+  config?: any
 }
 
 export interface CategoryOption {

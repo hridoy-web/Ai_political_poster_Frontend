@@ -19,7 +19,6 @@ const SORT_OPTIONS: { id: TemplateSort; label: string; icon: React.ReactNode }[]
   { id: "trending", label: "ট্রেন্ডিং", icon: <Flame className="size-3.5" /> },
   { id: "popular", label: "জনপ্রিয়", icon: <Sparkles className="size-3.5" /> },
   { id: "latest", label: "নতুন", icon: <Clock className="size-3.5" /> },
-  { id: "premium", label: "প্রিমিয়াম", icon: <Crown className="size-3.5" /> },
 ]
 
 export function TemplateSearchBar({

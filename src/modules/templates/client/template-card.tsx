@@ -31,25 +31,12 @@ export function TemplateCard({
           fill
           unoptimized
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-108"
+          className="object-cover transition-transform duration-500 group-hover:scale-109"
         />
 
         {/* Top Badges & Bookmark */}
         <div className="absolute top-3 inset-x-3 flex items-center justify-between z-20 pointer-events-none">
-          <div className="pointer-events-auto">
-            {template.isPremium ? (
-              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-md backdrop-blur-md flex items-center gap-1 font-bold">
-                <Crown className="size-3" />
-                <span>প্রিমিয়াম</span>
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-md backdrop-blur-md flex items-center gap-1 font-medium">
-                <Sparkles className="size-3" />
-                <span>ফ্রি</span>
-              </Badge>
-            )}
-          </div>
-
+         
           <button
             type="button"
             onClick={(e) => {
@@ -75,7 +62,7 @@ export function TemplateCard({
         </div>
 
         {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 gap-2 z-10 pointer-events-none group-hover:pointer-events-auto">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent backdrop-blur-[0.8px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4 gap-2 z-10 pointer-events-none group-hover:pointer-events-auto">
 
           <Button
             type="button"

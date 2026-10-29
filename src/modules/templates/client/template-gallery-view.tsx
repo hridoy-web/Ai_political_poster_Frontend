@@ -9,6 +9,8 @@ import { TemplateCard } from "./template-card"
 import { TemplatePreviewDialog } from "./template-preview-dialog"
 import { Sparkles, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/get-user-data"
+import { toast } from "sonner"
 
 interface TemplateGalleryViewProps {
   initialTemplates: PosterTemplate[]
@@ -25,6 +27,17 @@ export function TemplateGalleryView({
   const [previewTemplate, setPreviewTemplate] = React.useState<PosterTemplate | null>(null)
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [bookmarkedIds, setBookmarkedIds] = React.useState<Set<string>>(new Set(["tpl-101", "tpl-102"]))
+  const { user } = useAuth();
+  React.useEffect(() => {
+    if (user){
+      TemplateService.getBookmarks().then((ids) => {
+        setBookmarkedIds(new Set (ids));
+      })
+    }
+    else {
+       setBookmarkedIds(new Set());
+    }
+  },[user]);
 
   // Filter & sort templates interactively
   const filteredTemplates = React.useMemo(() => {
@@ -41,29 +54,30 @@ export function TemplateGalleryView({
     setDialogOpen(true)
   }
 
-  const handleToggleBookmark = (id: string) => {
-    // Optimistic local state update for instant bookmark toggle
-    setBookmarkedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else {
-        next.add(id)
-      }
-      return next
-    })
-
-    /* When bookmark API is ready, uncomment the block below:
-    try {
-      fetch("API_URL_HERE", {
-        method: "POST",
-      })
-    } catch (error) {
-      console.error("Bookmark API Failed:", error)
+  const handleToggleBookmark =async (id: string) => {
+    if (!user){
+      toast.error("বুকমার্ক করতে অনুগ্রহ করে প্রথমে লগইন করুন!");
+      return;
     }
-    */
-  }
+       const isBookmarked = bookmarkedIds.has(id);
+       setBookmarkedIds( (prev) => {
+        const next = new Set(prev);
+        if(isBookmarked) next.delete(id);
+        else next.add(id);
+        return next;
+       })
 
+       try{
+        if (isBookmarked) {
+        await TemplateService.removeBookmark(id);
+      } else {
+        await TemplateService.addBookmark(id);
+      }
+    } catch (error) {
+      console.error("Bookmark error:", error);
+    }
+       }
+  
   return (
     <div className="space-y-6">
       {/* Search & Sort Bar */}

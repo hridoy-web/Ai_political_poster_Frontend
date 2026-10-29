@@ -69,19 +69,6 @@ export default async function TemplateDetailsPage({
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
           />
-          <div className="absolute top-4 left-4">
-            {template.isPremium ? (
-              <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-lg backdrop-blur-md flex items-center gap-1 font-bold">
-                <Crown className="size-3.5" />
-                <span>প্রিমিয়াম টেমপ্লেট</span>
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-lg backdrop-blur-md flex items-center gap-1 font-medium">
-                <CheckCircle2 className="size-3.5" />
-                <span>সম্পূর্ণ ফ্রি</span>
-              </Badge>
-            )}
-          </div>
         </div>
 
         {/* Info & Customization */}
