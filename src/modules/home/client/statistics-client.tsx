@@ -1,52 +1,12 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Users, Image as ImageIcon, LayoutGrid, Star, type LucideIcon } from "lucide-react";
+import { Users, Image as ImageIcon, LayoutGrid, Star } from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 
 import { serverURL } from "@/lib/api/authApi";
-
-export interface StatItem {
-    id: string;
-    icon: LucideIcon;
-    value: number;
-    suffix: string;
-    label: string;
-    decimals?: number;
-}
-
-const DEFAULT_STATS: StatItem[] = [
-    {
-        id: "users",
-        icon: Users,
-        value: 10,
-        suffix: "+",
-        label: "সক্রিয় ব্যবহারকারী",
-    },
-    {
-        id: "posters",
-        icon: ImageIcon,
-        value: 5,
-        suffix: "+",
-        label: "তৈরি পোস্টার",
-    },
-    {
-        id: "templates",
-        icon: LayoutGrid,
-        value: 4,
-        suffix: "+",
-        label: "অনুমোদিত টেমপ্লেট",
-    },
-    {
-        id: "rating",
-        icon: Star,
-        value: 4.9,
-        suffix: "/৫",
-        label: "গড় রেটিং",
-        decimals: 1,
-    },
-];
+import { StatCardProps, StatItem } from "../home.types";
+import { DEFAULT_STATS } from "../home.service";
 
 // Reusable helper to format
 function formatBengaliNumber(val: number, decimals = 0): string {
@@ -83,12 +43,6 @@ function useCountUp(target: number, duration = 2000, start = false) {
     }, [start, target, duration]);
 
     return count;
-}
-
-interface StatCardProps {
-    stat: StatItem;
-    index: number;
-    start: boolean;
 }
 
 function StatCard({ stat, index, start }: StatCardProps) {
