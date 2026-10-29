@@ -1,46 +1,14 @@
 "use client";
-
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Eye, Flame, Sparkles, Star, type LucideIcon } from "lucide-react";
+import { ArrowRight, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import {
-    CATEGORY_MAP,
-    type Template,
-    type TemplateCategory,
-} from "../server/trending-templates";
 import { Button } from "@/components/ui/button";
+import { CATEGORY_MAP, TemplateCardProps, TemplateCategory, TrendingTemplateClientProps } from "../home.types";
+import { BADGE_CONFIG } from "../home.service";
 
-interface BadgeConfigItem {
-    icon: LucideIcon;
-    label: string;
-    className: string;
-}
-
-const BADGE_CONFIG: Record<"trending" | "new" | "popular", BadgeConfigItem> = {
-    trending: {
-        icon: Flame,
-        label: "ট্রেন্ডিং",
-        className: "bg-brand-primary/90 text-white border-brand-secondary/40 shadow-xs",
-    },
-    new: {
-        icon: Sparkles,
-        label: "নতুন",
-        className: "bg-brand-green/90 text-white border-brand-mint/40 shadow-xs",
-    },
-    popular: {
-        icon: Star,
-        label: "জনপ্রিয়",
-        className: "bg-amber-500/90 text-white border-amber-400/50 shadow-xs",
-    },
-};
-
-interface TemplateCardProps {
-    template: Template;
-    className?: string;
-}
 
 function TemplateCard({ template, className }: TemplateCardProps) {
     const [imageError, setImageError] = useState(false);
@@ -157,10 +125,6 @@ function TemplateCard({ template, className }: TemplateCardProps) {
     );
 }
 
-interface TrendingTemplateClientProps {
-    templates: Template[];
-    categories: { id: TemplateCategory; label: string }[];
-}
 
 export default function TrendingTemplateClient({
     templates,

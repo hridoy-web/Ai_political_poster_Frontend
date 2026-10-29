@@ -11,20 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Star, CheckCircle2 } from "lucide-react";
-
-export interface ReviewItem {
-    id: string;
-    name: string;
-    role: string;
-    party: string;
-    comment: string;
-    rating: number;
-    avatarText: string;
-}
-
-interface UserFeedbackCarouselProps {
-    reviews: ReviewItem[];
-}
+import { UserFeedbackCarouselProps } from "../home.types";
 
 export function UserFeedbackCarousel({ reviews }: UserFeedbackCarouselProps) {
     // 3.0-second auto slide
