@@ -47,7 +47,7 @@ const userDropdownLinks = [
 export function NavbarDropdown() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setUser, isTemplateManager } = useAuth();
+  const { user, setUser, isTemplateManager, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -126,13 +126,32 @@ export function NavbarDropdown() {
                 );
               })}
 
+              {isAdmin && (
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "flex items-center w-full px-2.5 py-2 text-xs font-semibold transition-colors rounded-xl",
+                      pathname === "/admin" ||
+                        (pathname.startsWith("/admin") &&
+                          !pathname.startsWith("/admin/templates"))
+                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold"
+                        : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                    )}
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4 text-amber-500" />
+                    <span>অ্যাডমিন প্যানেল</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
               {isTemplateManager && (
                 <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
                   <Link
                     href="/admin/templates"
                     className={cn(
                       "flex items-center w-full px-2.5 py-2 text-xs font-semibold transition-colors rounded-xl",
-                      pathname.startsWith("/admin")
+                      pathname.startsWith("/admin/templates")
                         ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
                         : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
                     )}

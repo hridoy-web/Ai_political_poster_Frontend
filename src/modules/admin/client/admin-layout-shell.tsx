@@ -9,8 +9,9 @@ import { AdminNavbar } from "./admin-navbar";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
-import { Layers } from "lucide-react";
+import { Layers, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/get-user-data";
 
 interface AdminLayoutShellProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ interface AdminLayoutShellProps {
 
 export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
   const pathname = usePathname();
+  const { isAdmin } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -72,8 +74,32 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
               <div className="hidden sm:block h-5 w-px bg-border" />
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1">
-                  <Layers className="size-3" /> টেমপ্লেট ম্যানেজার
+                  <Layers className="size-3" /> টেমপ্লেট
                 </span>
+
+                {isAdmin && (
+                  <div className="flex items-center gap-1.5 ml-1">
+                    <Link
+                      href="/admin"
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition-colors flex items-center gap-1 border border-amber-500/30"
+                    >
+                      <LayoutDashboard className="size-3" />
+                      <span>ওভারভিউ</span>
+                    </Link>
+                    <Link
+                      href="/admin/posters"
+                      className="text-xs font-medium px-2.5 py-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors hidden md:inline-block"
+                    >
+                      পোস্টার মডারেশন
+                    </Link>
+                    <Link
+                      href="/admin/users"
+                      className="text-xs font-medium px-2.5 py-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors hidden md:inline-block"
+                    >
+                      ইউজার লিস্ট
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
 
