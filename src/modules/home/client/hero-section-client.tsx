@@ -3,40 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-export interface PosterCardItem {
-    id: string;
-    src: string;
-    title: string;
-}
-
-const POSTERS: PosterCardItem[] = [
-    {
-        id: "poster-1",
-        src: "/image/images11.jpg",
-        title: "নির্বাচনী প্রচারণা",
-    },
-    {
-        id: "poster-2",
-        src: "/image/images26.jpg",
-        title: "দলীয় সমাবেশ",
-    },
-    {
-        id: "poster-3",
-        src: "/image/images21.jpg",
-        title: "প্রতিষ্ঠাবার্ষিকী",
-    },
-    {
-        id: "poster-4",
-        src: "/image/image6.jpg",
-        title: "বিজয় দিবস",
-    },
-    {
-        id: "poster-5",
-        src: "/image/images24.jpg",
-        title: "শুভ জন্মদিন",
-    },
-];
+import { POSTERS } from "../home.service";
 
 export default function HeroSectionClient() {
     const [activeIdx, setActiveIdx] = useState(0);
