@@ -26,8 +26,6 @@ export default function LoginPage() {
           className="scale-110 object-cover blur-md"
         />
         <div className="absolute inset-0 bg-linear-to-br from-black/80 via-black/65 to-emerald-950/85" />
-        <div className="absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-emerald-400/15 blur-3xl" />
-        <div className="absolute -left-16 -top-24 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
       </div>
 
       {/* CENTERED FORM */}

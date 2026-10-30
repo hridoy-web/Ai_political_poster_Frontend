@@ -16,6 +16,7 @@
     "embla-carousel-auto-scroll": "^8.6.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
+    "firebase": "^13.1.0",
     "framer-motion": "^14.3.0",
     "lucide-react": "^1.55.0",
     "motion": "^14.3.0",

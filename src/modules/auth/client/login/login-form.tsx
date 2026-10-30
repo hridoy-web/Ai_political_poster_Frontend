@@ -17,6 +17,8 @@ import { Label } from "@/components/ui/label";
 import authApi, { serverURL } from "@/lib/api/authApi";
 import { FcGoogle } from "react-icons/fc";
 import { AuthContext } from "@/context/AuthContext";
+import { signInWithPopup, signOut } from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase";
 
 /* ---------------- Validation (Zod) ---------------- */
 
@@ -137,16 +139,66 @@ export default function LoginForm() {
 
   /* ---------------- Google Login ---------------- */
 
-  const handleGoogleLogin = () => {
-    if (busy) return;
+const handleGoogleLogin = async () => {
+  if (busy) return;
 
-    setError("");
-    setGoogleLoading(true);
+  setError("");
+  setGoogleLoading(true);
 
-    // Full-page redirect: the backend handles the OAuth flow and
-    // redirects back to the frontend after success.
-  };
+  try {
+    console.log("[google] 1: popup শুরু");
+    const credential = await signInWithPopup(auth, googleProvider);
+    console.log("[google] 2: popup সফল", credential.user.email);
 
+    const idToken = await credential.user.getIdToken();
+    console.log("[google] 3: idToken পেয়েছি, দৈর্ঘ্য:", idToken.length);
+
+    // আমাদের নিজের cookie-ই session, Firebase session লাগবে না।
+    await signOut(auth).catch(() => {});
+
+    console.log("[google] 4: backend-এ পাঠাচ্ছি", serverURL, authApi.googleLogin.url);
+    const res = await axios.request({
+      baseURL: serverURL,
+      url: authApi.googleLogin.url,
+      method: authApi.googleLogin.method,
+      data: { idToken },
+      withCredentials: true,
+    });
+    console.log("[google] 5: backend সফল", res.status);
+
+    setUser(res?.data?.data?.user);
+    router.push("/");
+    router.refresh();
+  } catch (err: unknown) {
+    console.error("[google] ব্যর্থ:", err);
+
+    const code =
+      typeof err === "object" && err !== null && "code" in err
+        ? String((err as { code: unknown }).code)
+        : "";
+
+    // নিজে popup বন্ধ করলে error দেখাই না
+    if (
+      code === "auth/popup-closed-by-user" ||
+      code === "auth/cancelled-popup-request"
+    ) {
+      return;
+    }
+
+    if (axios.isAxiosError(err)) {
+      setError(
+        err.response?.data?.message ??
+          "Google দিয়ে লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো।",
+      );
+    } else if (code.startsWith("auth/")) {
+      setError(`Google দিয়ে লগইন করা যায়নি (${code})।`);
+    } else {
+      setError("একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করো।");
+    }
+  } finally {
+    setGoogleLoading(false);
+  }
+};
   /* ---------------- Login Form ---------------- */
 
   return (
@@ -270,7 +322,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
+          className="flex cursor-pointer w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
@@ -291,7 +343,7 @@ export default function LoginForm() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={busy}
-          className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-background/80 px-5 py-2.5 text-sm font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
+          className="flex cursor-pointer w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-background/80 px-5 py-2.5 text-sm font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
         >
           <FcGoogle className="h-4 w-4" />
           {googleLoading ? "Redirecting..." : "Continue with Google"}
