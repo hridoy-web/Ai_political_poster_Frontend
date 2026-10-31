@@ -19,13 +19,17 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, type ChangeEvent, type SyntheticEvent } from "react";
+import { AuthContext } from "@/context/AuthContext";
 import { ALLOWED_IMAGE_TYPES, fieldErrorClass, FieldErrors, FormData_, inputClass, labelClass, MAX_IMAGE_SIZE, PASSWORD_REQUIREMENTS, registerSchema, STRENGTH_BAR_COLORS, STRENGTH_TEXTS, StrengthScore } from "../../auth.schema";
 
 /* ---------------- Component ---------------- */
 
 export default function RegisterForm() {
   const router = useRouter();
+  const authContext = useContext(AuthContext);
+  const setUser = authContext?.setUser;
+
   const [form, setForm] = useState<FormData_>({
     name: "",
     email: "",
@@ -158,7 +162,7 @@ export default function RegisterForm() {
     try {
       setLoading(true);
 
-      await axios.request({
+      const res = await axios.request({
         baseURL: serverURL,
         url: authApi.register.url,
         method: authApi.register.method,
@@ -166,8 +170,14 @@ export default function RegisterForm() {
         withCredentials: true,
       });
 
-      // Redirect directly to home on successful registration
+      const registeredUser = res?.data?.data?.user;
+      if (registeredUser && setUser) {
+        setUser(registeredUser);
+      }
+
+      // Redirect directly to home on successful registration and refresh session
       router.push("/");
+      router.refresh();
       return;
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
