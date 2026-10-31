@@ -6,8 +6,6 @@ export const metadata = {
   description: "HTML5 Canvas 2D ভিজ্যুয়াল টেমপ্লেট এডিটর ও কাস্টমাইজেশন",
 };
 
-export const dynamic = "force-dynamic";
-
 interface EditTemplatePageProps {
   params: Promise<{
     id: string;
