@@ -13,6 +13,7 @@ interface PosterSuccessModalProps {
   onDownload: () => void;
   creditsLeft?: number | null;
   onStartNewPoster?: () => void;
+  isPro?: boolean;
 }
 
 export function PosterSuccessModal({
@@ -23,6 +24,7 @@ export function PosterSuccessModal({
   onDownload,
   creditsLeft,
   onStartNewPoster,
+  isPro = false,
 }: PosterSuccessModalProps) {
   if (!isOpen) return null;
 
@@ -58,15 +60,27 @@ export function PosterSuccessModal({
           </p>
         </div>
 
-        {/* Live Remaining Credits Badge */}
-        {creditsLeft !== undefined && creditsLeft !== null && (
-          <div className="w-full py-2 px-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
-            <div className="flex items-center gap-1.5">
-              <Coins className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
+        {/* Live Credits Status Badge */}
+        {isPro ? (
+          creditsLeft !== undefined && creditsLeft !== null ? (
+            <div className="w-full py-2 px-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
+              <div className="flex items-center gap-1.5">
+                <Coins className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
+              </div>
+              <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
+                {creditsLeft}টি
+              </span>
             </div>
-            <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
-              {creditsLeft}টি
+          ) : null
+        ) : (
+          <div className="w-full py-2 px-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-2xs">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>ফ্রি ফ্রেম ব্যবহার হয়েছে:</span>
+            </div>
+            <span className="font-bold text-xs bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60 text-emerald-600 dark:text-emerald-400">
+              ০ ক্রেডিট খরচ
             </span>
           </div>
         )}

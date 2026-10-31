@@ -13,7 +13,7 @@ import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
 import { PosterSuccessModal } from "./poster-success-modal";
-import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins } from "lucide-react";
+import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins, Crown, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchWalletBalance } from "@/modules/recharge/recharge.service";
@@ -240,17 +240,18 @@ export function GeneratorWorkspace({
       return;
     }
 
-    // 2. Credits check
-    if (credits !== null && credits <= 0) {
+    const currentTemplateId = activeTemplate?.id || "4c8057b1-35fb-4dad-83a3-32ecd314a0a3";
+    const isProTemplate = activeTemplate?.accessLevel === "PREMIUM";
+
+    // 2. Credits check ONLY for PRO templates! Free templates are 100% complimentary.
+    if (isProTemplate && credits !== null && credits <= 0) {
       toast.error(
         isGuest
-          ? "ফ্রি ৩টি পোস্টার তৈরির কোটা শেষ হয়ে গেছে! পরবর্তী পোস্টার তৈরি করতে অনুগ্রহ করে সাইন-আপ বা লগইন করুন।"
-          : "আপনার অ্যাকাউন্টে কোনো পোস্টার ক্রেডিট অবশিষ্ট নেই। অনুগ্রহ করে রিচার্জ করুন।"
+          ? "ফ্রি ৩টি প্রো পোস্টার তৈরির কোটা শেষ হয়ে গেছে! পরবর্তী প্রো পোস্টার তৈরি করতে অনুগ্রহ করে সাইন-আপ বা লগইন করুন।"
+          : "আপনার অ্যাকাউন্টে কোনো পোস্টার ক্রেডিট অবশিষ্ট নেই। প্রো পোস্টার তৈরি করতে অনুগ্রহ করে রিচার্জ করুন।"
       );
       return;
     }
-
-    const currentTemplateId = activeTemplate?.id || "4c8057b1-35fb-4dad-83a3-32ecd314a0a3";
 
     // Pre-capture high-res canvas image directly before async operations
     let canvasDataUrl = "";
@@ -327,18 +328,20 @@ export function GeneratorWorkspace({
         completedStatus?.previewUrl ||
         photoUrl;
 
-      // Real-time credit deduction
-      if (isGuest) {
-        const nextUsed = parseInt(localStorage.getItem("guest_posters_created") || "0", 10) + 1;
-        localStorage.setItem("guest_posters_created", nextUsed.toString());
-        setCredits(Math.max(0, 3 - nextUsed));
-      } else {
-        setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
-        fetchWalletBalance().then((bal) => {
-          if (bal && typeof bal.credits === "number") {
-            setCredits(bal.credits);
-          }
-        });
+      // Real-time credit deduction ONLY for PRO templates!
+      if (isProTemplate) {
+        if (isGuest) {
+          const nextUsed = parseInt(localStorage.getItem("guest_posters_created") || "0", 10) + 1;
+          localStorage.setItem("guest_posters_created", nextUsed.toString());
+          setCredits(Math.max(0, 3 - nextUsed));
+        } else {
+          setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+          fetchWalletBalance().then((bal) => {
+            if (bal && typeof bal.credits === "number") {
+              setCredits(bal.credits);
+            }
+          });
+        }
       }
 
       setCreatedPosterUrl(finalUrl);
@@ -443,10 +446,16 @@ export function GeneratorWorkspace({
                 tmpl.config?.blankTemplateUrl ||
                 "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80";
 
+              const isPro = tmpl.accessLevel === "PREMIUM";
+
               return (
                 <div
                   key={tmpl.id}
-                  className="group relative flex flex-col rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:border-brand-primary/50 flex-1"
+                  className={`group relative flex flex-col rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex-1 ${
+                    isPro
+                      ? "border-2 border-amber-500/50 bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-card/90 shadow-amber-500/10 hover:border-amber-500 hover:shadow-amber-500/20"
+                      : "border border-border/80 bg-card/80 backdrop-blur-xl hover:border-brand-primary/50"
+                  }`}
                 >
                   <div className="relative aspect-3/4 w-full bg-muted/60 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -460,25 +469,52 @@ export function GeneratorWorkspace({
                         {tmpl.aspectRatio || "৪:৫"} • ডিজিটাল ক্যানভাস
                       </span>
                     </div>
+
+                    <div className="absolute top-3 right-3 z-10">
+                      {isPro ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full shadow-md">
+                          <Crown className="size-3 fill-slate-950" /> প্রো ফ্রেম
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-emerald-600/90 text-white rounded-full shadow-xs backdrop-blur-md">
+                          ফ্রি ফ্রেম
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="p-4 space-y-3 flex flex-col justify-between flex-1">
-                    <div>
+                  <div className={`p-4 space-y-3 flex flex-col justify-between flex-1 ${isPro ? "bg-amber-500/5" : ""}`}>
+                    <div className="space-y-1">
                       <h3 className="font-bold text-foreground text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
                         {tmpl.title}
                       </h3>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                      <p className="text-[11px] text-muted-foreground line-clamp-1">
                         {tmpl.description || "রাজনৈতিক নির্বাচনী ও সাংগঠনিক পোস্টার ফ্রেম"}
                       </p>
+                      <div className="pt-1.5 flex items-center justify-between text-[11px] font-bold">
+                        {isPro ? (
+                          <span className="text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                            <Sparkles className="size-3 text-amber-500" /> ১টি ক্রেডিট কাটবে
+                          </span>
+                        ) : (
+                          <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="size-3 text-emerald-500" /> সম্পূর্ণ ফ্রি (০ ক্রেডিট)
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <Button
                       type="button"
                       onClick={() => handleSelectTemplate(tmpl)}
-                      className="w-full bg-gradient-brand text-white font-bold text-xs h-10 rounded-2xl shadow-md gap-2 cursor-pointer transition-transform active:scale-95"
+                      className={`w-full font-bold text-xs h-10 rounded-2xl shadow-md gap-2 cursor-pointer transition-transform active:scale-95 ${
+                        isPro
+                          ? "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-amber-500/20 hover:opacity-95"
+                          : "bg-gradient-brand text-white"
+                      }`}
                     >
                       <Wand2 className="w-3.5 h-3.5" />
-                      <span>এই টেমপ্লেট দিয়ে তৈরি করুন</span>
+                      <span>{isPro ? "প্রো টেমপ্লেট দিয়ে তৈরি করুন" : "ফ্রি টেমপ্লেট দিয়ে তৈরি করুন"}</span>
                     </Button>
                   </div>
                 </div>
@@ -514,6 +550,19 @@ export function GeneratorWorkspace({
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Template Tier Badge */}
+          {activeTemplate?.accessLevel === "PREMIUM" ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-400 font-bold text-xs shadow-2xs">
+              <Crown className="size-3.5 fill-amber-500 text-amber-500" />
+              <span>প্রো ফ্রেম (১ ক্রেডিট)</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 font-bold text-xs shadow-2xs">
+              <CheckCircle2 className="size-3.5 text-emerald-500" />
+              <span>ফ্রি ফ্রেম (০ ক্রেডিট)</span>
+            </div>
+          )}
+
           {/* Live Remaining Credits Badge */}
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
             <Coins className="size-4 text-amber-500 shrink-0" />
@@ -614,6 +663,7 @@ export function GeneratorWorkspace({
         onDownload={handleDownloadFile}
         creditsLeft={credits}
         onStartNewPoster={handleStartNewPoster}
+        isPro={activeTemplate?.accessLevel === "PREMIUM"}
       />
     </div>
   );

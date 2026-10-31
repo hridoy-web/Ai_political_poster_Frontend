@@ -21,8 +21,17 @@ export function TemplateCard({
   onToggleBookmark,
   isBookmarked,
 }: TemplateCardProps) {
+  const isPro = template.isPremium;
+
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div
+      className={cn(
+        "group relative flex flex-col rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1",
+        isPro
+          ? "border-2 border-amber-500/50 bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-card shadow-amber-500/10 hover:border-amber-500 hover:shadow-amber-500/20"
+          : "border border-border bg-card"
+      )}
+    >
       {/* Thumbnail Aspect Container */}
       <div className="relative aspect-[4/5] w-full bg-muted overflow-hidden">
         <Image
@@ -36,7 +45,16 @@ export function TemplateCard({
 
         {/* Top Badges & Bookmark */}
         <div className="absolute top-3 inset-x-3 flex items-center justify-between z-20 pointer-events-none">
-         
+          {isPro ? (
+            <span className="pointer-events-auto inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full shadow-md">
+              <Crown className="size-3 fill-slate-950" /> প্রো
+            </span>
+          ) : (
+            <span className="pointer-events-auto inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-emerald-600/90 text-white rounded-full shadow-xs backdrop-blur-md">
+              ফ্রি
+            </span>
+          )}
+
           <button
             type="button"
             onClick={(e) => {
@@ -91,14 +109,31 @@ export function TemplateCard({
         </div>
       </div>
 
-           {/* Card Info Footer */}
-      <div className="p-3.5 flex flex-col gap-1.5 flex-1 justify-between bg-card">
+      {/* Card Info Footer */}
+      <div
+        className={cn(
+          "p-3.5 flex flex-col gap-1.5 flex-1 justify-between",
+          isPro ? "bg-amber-500/5" : "bg-card"
+        )}
+      >
         <h3
           onClick={() => onPreview(template)}
           className="text-sm font-semibold text-foreground line-clamp-1 hover:text-brand-primary cursor-pointer transition-colors"
         >
           {template.title}
         </h3>
+        <div className="flex items-center justify-between text-[11px] font-medium pt-1">
+          <span className="text-muted-foreground">{template.categoryLabel}</span>
+          {isPro ? (
+            <span className="text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1">
+              <Sparkles className="size-3 text-amber-500" /> ১ ক্রেডিট
+            </span>
+          ) : (
+            <span className="text-emerald-700 dark:text-emerald-400 font-bold">
+              ফ্রি ফ্রেম
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )
