@@ -1,50 +1,12 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Users, Image as ImageIcon, LayoutGrid, Star, type LucideIcon } from "lucide-react";
+import { Users, Image as ImageIcon, LayoutGrid, Star } from "lucide-react";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 
-export interface StatItem {
-    id: string;
-    icon: LucideIcon;
-    value: number;
-    suffix: string;
-    label: string;
-    decimals?: number;
-}
-
-const statsData: StatItem[] = [
-    {
-        id: "users",
-        icon: Users,
-        value: 10000,
-        suffix: "+",
-        label: "সক্রিয় ব্যবহারকারী",
-    },
-    {
-        id: "posters",
-        icon: ImageIcon,
-        value: 50000,
-        suffix: "+",
-        label: "তৈরি পোস্টার",
-    },
-    {
-        id: "templates",
-        icon: LayoutGrid,
-        value: 50,
-        suffix: "+",
-        label: "অনুমোদিত টেমপ্লেট",
-    },
-    {
-        id: "rating",
-        icon: Star,
-        value: 4.9,
-        suffix: "/৫",
-        label: "গড় রেটিং",
-        decimals: 1,
-    },
-];
+import { serverURL } from "@/lib/api/authApi";
+import { StatCardProps, StatItem } from "../home.types";
+import { DEFAULT_STATS } from "../home.data";
 
 // Reusable helper to format
 function formatBengaliNumber(val: number, decimals = 0): string {
@@ -81,12 +43,6 @@ function useCountUp(target: number, duration = 2000, start = false) {
     }, [start, target, duration]);
 
     return count;
-}
-
-interface StatCardProps {
-    stat: StatItem;
-    index: number;
-    start: boolean;
 }
 
 function StatCard({ stat, index, start }: StatCardProps) {
@@ -144,10 +100,62 @@ function StatCard({ stat, index, start }: StatCardProps) {
 export default function StatisticsClient() {
     const containerRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(containerRef, { once: true, amount: 0.2 });
+    const [stats, setStats] = useState<StatItem[]>(DEFAULT_STATS);
+
+    useEffect(() => {
+        let isMounted = true;
+        const baseUrl = serverURL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+
+        fetch(`${baseUrl}/api/v1/public/stats`)
+            .then((res) => res.json())
+            .then((data) => {
+                if (isMounted && data?.success && data?.data) {
+                    const d = data.data;
+                    setStats([
+                        {
+                            id: "users",
+                            icon: Users,
+                            value: Number(d.totalUsers || 0),
+                            suffix: "+",
+                            label: "সক্রিয় ব্যবহারকারী",
+                        },
+                        {
+                            id: "posters",
+                            icon: ImageIcon,
+                            value: Number(d.totalPosters || 0),
+                            suffix: "+",
+                            label: "তৈরি পোস্টার",
+                        },
+                        {
+                            id: "templates",
+                            icon: LayoutGrid,
+                            value: Number(d.totalTemplates || 0),
+                            suffix: "+",
+                            label: "অনুমোদিত টেমপ্লেট",
+                        },
+                        {
+                            id: "rating",
+                            icon: Star,
+                            value: Number(d.rating || 4.9),
+                            suffix: "/৫",
+                            label: "গড় রেটিং",
+                            decimals: 1,
+                        },
+                    ]);
+                }
+            })
+            .catch((err) => {
+                console.warn("Failed to fetch public stats:", err);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return (
         <div ref={containerRef} className="grid w-full grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-            {statsData.map((stat, i) => (
+            {stats.map((stat, i) => (
                 <StatCard
                     key={stat.id}
                     stat={stat}

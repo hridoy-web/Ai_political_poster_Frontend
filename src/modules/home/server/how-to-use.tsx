@@ -1,34 +1,8 @@
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import StepCard, { type StepItem } from "../client/step-card";
+import StepCard from "../client/step-card";
+import { steps } from "../home.data";
 
-// Data
-const steps: StepItem[] = [
-    {
-        number: "০১",
-        title: "অ্যাকাউন্ট তৈরি করুন",
-        description: "রেজিস্টার করে লগইন করুন এবং আপনার দল নির্বাচন করুন।",
-        icon: "user-plus",
-    },
-    {
-        number: "০২",
-        title: "টেমপ্লেট বেছে নিন",
-        description: "কর্মসূচির ধরন অনুযায়ী অনুমোদিত টেমপ্লেট থেকে বেছে নিন।",
-        icon: "layout-grid",
-    },
-    {
-        number: "০৩",
-        title: "ছবি ও তথ্য যোগ করুন",
-        description: "সর্বোচ্চ ৩টি ছবি, নাম, পদবি, দল, এলাকা ও শিরোনাম লিখুন।",
-        icon: "image-plus",
-    },
-    {
-        number: "০৪",
-        title: "প্রিভিউ ও ডাউনলোড",
-        description: "প্রিভিউ দেখে সম্পাদনা করুন, তারপর এইচডি PNG ডাউনলোড করুন।",
-        icon: "download",
-    },
-];
 
 const HowToUse = () => {
     return (
@@ -100,7 +74,7 @@ const HowToUse = () => {
                         ))}
                     </div>
                 </div>
-                
+
             </div>
         </section>
     );

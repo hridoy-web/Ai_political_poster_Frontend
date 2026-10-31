@@ -1,20 +1,22 @@
-//  Server Component
+// Server Component
 import { GeneratorWorkspace } from "../client/generator-workspace";
 import { DEFAULT_CANDIDATE_INFO, SLOGAN_TOPICS } from "../generator.service";
 
-export async function GeneratorPageContent() {
-    const initialCandidate = DEFAULT_CANDIDATE_INFO;
+export async function GeneratorPageContent({
+  initialTemplateId,
+}: {
+  initialTemplateId?: string;
+}) {
+  const initialCandidate = DEFAULT_CANDIDATE_INFO;
   const topics = SLOGAN_TOPICS;
 
-  return(
+  return (
     <section>
-         <GeneratorWorkspace
-         initialCandidate={initialCandidate}
+      <GeneratorWorkspace
+        initialCandidate={initialCandidate}
         sloganTopics={topics}
-         >
-            
-         </GeneratorWorkspace>
+        initialTemplateId={initialTemplateId}
+      />
     </section>
-  )
-
+  );
 }

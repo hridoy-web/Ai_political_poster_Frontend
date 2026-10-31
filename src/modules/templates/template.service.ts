@@ -1,5 +1,6 @@
 import { CategoryOption, PosterTemplate, TemplateCategory, TemplateSort } from "./template.types";
 import { apiFetch } from "@/lib/api/api-client";
+import { serverURL } from "@/lib/api/authApi";
 
 export const TEMPLATE_CATEGORIES: CategoryOption[] = [
   { id: "all", label: "সকল টেমপ্লেট", count: 5 },
@@ -64,7 +65,6 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-106",
     title: "প্রতিষ্ঠাবার্ষিকী",
-    
     category: "greetings",
     categoryLabel: "প্রতিষ্ঠাবার্ষিকী",
     thumbnailUrl: "/image/images3.jpg",
@@ -75,7 +75,6 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-107",
     title: "ভোটার উদ্বুদ্ধকরণ",
-    
     category: "election",
     categoryLabel: "ভোটার উদ্বুদ্ধকরণ",
     thumbnailUrl: "/image/images5.jpg",
@@ -86,7 +85,6 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-108",
     title: "ধর্মীয় উৎসব ও ঈদ শুভেচ্ছা",
-   
     category: "religious",
     categoryLabel: "ধর্মীয় উৎসব",
     thumbnailUrl: "/image/images4.jpg",
@@ -101,7 +99,7 @@ function getTemplateImage(item: any, index: number): string {
   if (item.previewUrl) return item.previewUrl;
   if (item.config?.previewUrl) return item.config.previewUrl;
   if (item.config?.thumbnailUrl) return item.config.thumbnailUrl;
-  // cloudinary
+  if (item.config?.blankTemplateUrl) return item.config.blankTemplateUrl;
   if (item.preview?.storageKey) {
     return item.preview.storageKey.startsWith("http")
       ? item.preview.storageKey
@@ -120,151 +118,9 @@ function getTemplateImage(item: any, index: number): string {
   return fallbackImages[index % fallbackImages.length];
 }
 
-
-
 export class TemplateService {
-  // Fetch all templates 
+  // Fetch all templates (Live API -> Fallback to Mock)
   static async getAllTemplates(categoryId?: string): Promise<PosterTemplate[]> {
     try {
-      const query = categoryId && categoryId !== "all" ? `?categoryId=${categoryId}` : "";
-      const res = await apiFetch<{ items: any[] }>(`/template${query}`);
-      
-      if (res.success && res.data?.items && res.data.items.length > 0) {
-        return res.data.items.map((item: any, index: number) => ({
-  id: item.id,
-  title: item.title,
-  category: item.categoryId || "all",
-  categoryLabel: item.title,
-  thumbnailUrl: getTemplateImage(item, index),
-  isPremium: item.accessLevel === "PREMIUM",
-  tags: [item.title],
-  createdAt: item.createdAt,
-  width: item.width || 1080,
-  height: item.height || 1350,
-  aspectRatio: item.aspectRatio || "4:5",
-  previewAssetId: item.previewAssetId || null,
-  config: item.config || null,
-}));
-      }
-    } catch (error) {
-      console.error("Templates fetch failed, using fallback:", error);
-    }
-    return MOCK_TEMPLATES;
-  }
-
-   // Find a specific template by ID
-  static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
-    try {
-      const res = await apiFetch<any>(`/template/${id}`);
-      
-      if (res.success && res.data) {
-        const item = res.data;
-        return {
-          id: item.id,
-          title: item.title,
-          category: item.categoryId || "all",
-          categoryLabel: item.category?.name || item.title,
-          thumbnailUrl: getTemplateImage(item, 0),
-          isPremium: item.accessLevel === "PREMIUM",
-          tags: [item.title],
-          createdAt: item.createdAt,
-          width: item.width || 1080,
-          height: item.height || 1350,
-          aspectRatio: item.aspectRatio || "4:5",
-          previewAssetId: item.previewAssetId || null,
-          config: item.config || null,
-        };
-      }
-    } catch (error) {
-      console.error("Single Template Fetch Failed:", error);
-    }
-    return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
-  }
-
-
-  // Get categories with dynamic template count
-  static async getCategories(): Promise<CategoryOption[]> {
-     try {
-    const res = await apiFetch<any[]>("/category");
-    if (res.success && Array.isArray(res.data) && res.data.length > 0) {
-      return [
-        { id: "all", label: "সকল টেমপ্লেট" },
-        ...res.data.map((cat) => ({
-          id: cat.id,
-          label: cat.name,
-        })),
-      ];
-    }
-  } catch (error) {
-    console.error("Categories fetch failed, using fallback:", error);
-  }
-  return TEMPLATE_CATEGORIES;
-}
-  
-
-  // Search and filtering engine
-  static filterTemplates(
-    templates: PosterTemplate[],
-    options: {
-      category?: TemplateCategory;
-      search?: string;
-      sort?: TemplateSort;
-      bookmarkedIds?: Set<string>;
-    }
-  ): PosterTemplate[] {
-    let result = [...templates];
-
-    // 1. Category filter (skip if 'all')
-    if (options.category && options.category !== "all") {
-      result = result.filter((item) => item.category === options.category);
-    }
-
-    // 2. Search filter (matches title, description, or tags)
-    if (options.search && options.search.trim() !== "") {
-      const query = options.search.toLowerCase().trim();
-      result = result.filter(
-        (item) =>
-          item.title.toLowerCase().includes(query) ||
-          item.tags.some((tag) => tag.toLowerCase().includes(query))
-      );
-    }
-
-    // 3. Sorting filter (popular, latest, or premium)
-    if (options.sort) {
-      if (options.sort === "popular") {
-        if (options.bookmarkedIds) {
-          result = result.filter((item) => options.bookmarkedIds!.has(item.id));
-        }
-      } else if (options.sort === "latest") {
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      } else if (options.sort === "premium") {
-        result = result.filter((item) => item.isPremium);
-      }
-    }
-
-    return result;
-  }
-  //Bookmark API
-    static async  addBookmark(templateId: string){
-      return await apiFetch(`/bookmarks/${templateId}` , {
-        method:"POST",
-      })
-    }
-    static async removeBookmark(templateId: string) {
-      return await apiFetch(`/bookmarks/${templateId}`, {
-        method: "DELETE",
-      });
-    }
-    static async getBookmarks(): Promise<string[]>{
-      try{
-        const res = await apiFetch<any[]>("/bookmarks");
-        if (res.success && Array.isArray(res.data) ){
-          return res.data.map((item) => item.id)
-        }
-         } catch (error) {
-    console.error("Failed to fetch bookmarks:", error);
-  }
-  return [];
-      }
-    }
-
+      const query = categoryId && categoryId !== "all" ? `?categoryId=${categoryId}&limit=50` : "?limit=50";
+      const res = await api

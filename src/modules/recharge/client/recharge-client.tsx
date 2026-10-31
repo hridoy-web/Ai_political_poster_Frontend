@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "cn";
 import { useAuth } from "@/hooks/get-user-data";
-import { initiateRechargePayment } from "../recharge.service";
+import { initiateRechargePayment, fetchPackagesFromApi } from "../recharge.service";
 
 import type { PackagePlan } from "../types";
 import {
@@ -16,11 +16,12 @@ import {
   calculatePosterBenefits,
   getUpsellTip,
 } from "../utils";
-import { PAYMENT_GATEWAYS, TRUST_BADGES } from "../data/recharge.data";
+import { TRUST_BADGES } from "../data/recharge.data";
 import { PackageCard } from "./package-card";
 import { RechargeSummary } from "./recharge-summary";
-import { PaymentGatewaySelector } from "./payment-gateway-selector";
 import { WalletBalanceCard } from "./wallet-balance-card";
+import { GuestAuthModal } from "./guest-auth-modal";
+import { toast } from "sonner";
 import type { TrustBadgeItem } from "../types";
 
 // Re-export types and utilities for 100% backward compatibility
@@ -43,13 +44,27 @@ export function RechargeClient({
   const { user } = useAuth();
   const inputId = useId();
 
+  const [packages, setPackages] = useState<PackagePlan[]>(presetPackages);
   const [selectedPlanId, setSelectedPlanId] = useState<string>("campaign");
   const [displayAmount, setDisplayAmount] = useState<string>("৫০");
-  const [selectedPayment, setSelectedPayment] = useState<string>("card");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const paymentStatus = searchParams?.get("status");
   const [isStatusDismissed, setIsStatusDismissed] = useState(false);
+
+  // Fetch live packages from PostgreSQL database
+  useEffect(() => {
+    let isMounted = true;
+    fetchPackagesFromApi().then((live) => {
+      if (isMounted && live && live.length > 0) {
+        setPackages(live);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Derive status banner cleanly without setState inside useEffect
   const statusBanner = isStatusDismissed ? null : paymentStatus;
@@ -85,9 +100,9 @@ export function RechargeClient({
   );
 
   const selectedPlanTitle = useMemo(() => {
-    const matched = presetPackages.find((p) => p.id === selectedPlanId);
+    const matched = packages.find((p) => p.id === selectedPlanId);
     return matched?.nameBangla || "কাস্টম রিচার্জ";
-  }, [presetPackages, selectedPlanId]);
+  }, [packages, selectedPlanId]);
 
   // Handlers memoized with useCallback
   const handleSelectPlan = useCallback((plan: PackagePlan) => {
@@ -111,63 +126,86 @@ export function RechargeClient({
 
       const num = parseInt(toEnglishNumber(bengaliConverted), 10);
       if (!isNaN(num)) {
-        const matched = presetPackages.find((p) => p.amount === num);
+        const matched = packages.find((p) => p.amount === num);
         setSelectedPlanId(matched ? matched.id : "custom");
       }
     },
-    [presetPackages]
+    [packages]
   );
 
   const handleQuickAmountSelect = useCallback(
     (amt: number) => {
       setDisplayAmount(toBengaliNumber(amt));
-      const matched = presetPackages.find((p) => p.amount === amt);
+      const matched = packages.find((p) => p.amount === amt);
       setSelectedPlanId(matched ? matched.id : "custom");
     },
-    [presetPackages]
+    [packages]
   );
 
-  const handlePaymentSelect = useCallback((gatewayId: string) => {
-    setSelectedPayment(gatewayId);
-  }, []);
-
-  const handleProceedToPayment = useCallback(async () => {
-    if (!isMinimumValid || isSubmitting) return;
-
-    // 1. Auth Guard: Check if user is logged in
-    if (!user) {
-      alert("রিচার্জ সম্পন্ন করতে অনুগ্রহ করে প্রথমে আপনার অ্যাকাউন্টে লগইন করুন।");
-      router.push("/login?redirect=/recharge");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setErrorMessage(null);
-
-      const response = await initiateRechargePayment({
-        customAmount: currentAmount,
-        packageId: selectedPlanId && selectedPlanId !== "custom" ? selectedPlanId : undefined,
-        paymentMethod: selectedPayment,
-      });
-
-      if (response.success && response.data?.GatewayPageURL) {
-        window.location.href = response.data.GatewayPageURL;
-      } else {
-        const msg = response.message || "পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।";
-        setErrorMessage(msg);
-        alert(msg);
+  const handleProceedToPayment = useCallback(
+    async () => {
+      // 1. Auth Guard: If guest user, immediately open registration modal and do not attempt payment
+      if (!user) {
+        setIsAuthModalOpen(true);
+        return;
       }
-    } catch (err: unknown) {
-      console.error("Payment initiation error:", err);
-      const errorObj = err as { response?: { data?: { message?: string } }; message?: string };
-      const msg = errorObj.response?.data?.message || errorObj.message || "পেমেন্ট সেশন শুরু করতে সমস্যা হয়েছে।";
-      setErrorMessage(msg);
-      alert(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId, selectedPayment, router]);
+
+      if (!isMinimumValid || isSubmitting) return;
+
+      try {
+        setIsSubmitting(true);
+        setErrorMessage(null);
+
+        const response = await initiateRechargePayment({
+          customAmount: currentAmount,
+          packageId:
+            selectedPlanId && selectedPlanId !== "custom"
+              ? selectedPlanId
+              : undefined,
+        });
+
+        if (response.success && response.data?.GatewayPageURL) {
+          window.location.href = response.data.GatewayPageURL;
+        } else {
+          const msg =
+            response.message ||
+            "পেমেন্ট গেটওয়েতে সংযোগ করতে সমস্যা হচ্ছে। আবার চেষ্টা করুন।";
+          setErrorMessage(msg);
+          toast.error(msg);
+        }
+      } catch (err: unknown) {
+        console.error("Payment initiation error:", err);
+        const errorObj = err as {
+          response?: { data?: { message?: string } };
+          message?: string;
+        };
+        const msg =
+          errorObj.response?.data?.message ||
+          errorObj.message ||
+          "পেমেন্ট সেশন শুরু করতে সমস্যা হয়েছে।";
+        setErrorMessage(msg);
+        toast.error(msg);
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId]
+  );
+
+  const handleBuyPackage = useCallback(
+    (plan: PackagePlan) => {
+      setSelectedPlanId(plan.id);
+      setDisplayAmount(toBengaliNumber(plan.amount));
+
+      if (!user) {
+        setIsAuthModalOpen(true);
+        return;
+      }
+
+      handleProceedToPayment();
+    },
+    [user, handleProceedToPayment]
+  );
 
   return (
     <div className="space-y-12">
@@ -273,12 +311,13 @@ export function RechargeClient({
           aria-label="জনপ্রিয় প্রি-সেট প্ল্যানসমূহ"
           className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-stretch"
         >
-          {presetPackages.map((pkg) => (
+          {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
               plan={pkg}
               isSelected={selectedPlanId === pkg.id}
               onSelect={() => handleSelectPlan(pkg)}
+              onBuy={() => handleBuyPackage(pkg)}
             />
           ))}
         </div>
@@ -380,13 +419,6 @@ export function RechargeClient({
                 <span className="font-semibold leading-relaxed">{upsellTip}</span>
               </div>
             )}
-
-            {/* Payment Gateways */}
-            <PaymentGatewaySelector
-              gateways={PAYMENT_GATEWAYS}
-              selectedPayment={selectedPayment}
-              onSelectPayment={handlePaymentSelect}
-            />
           </div>
 
           {/* Right Column: Live Summary Order Card */}
@@ -400,6 +432,14 @@ export function RechargeClient({
           />
         </div>
       </section>
+
+      {/* Simple Guest Registration Guard Modal */}
+      <GuestAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        planTitle={selectedPlanTitle}
+        amount={currentAmount}
+      />
     </div>
   );
 }

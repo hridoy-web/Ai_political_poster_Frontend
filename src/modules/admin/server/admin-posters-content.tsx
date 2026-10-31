@@ -1,55 +1,56 @@
-import { use } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AdminPostersGrid } from "./admin-posters-grid";
 import { PosterSearchInput, PosterPagination } from "../client/poster-filter-controls";
 import { AdminPoster } from "../admin.types";
+import { AdminService } from "../admin.service";
+import { Loader2 } from "lucide-react";
 
 interface AdminPostersContentProps {
-  searchParams: Promise<{
+  searchParams?: Promise<{
     page?: string;
     search?: string;
   }>;
 }
 
-export function AdminPostersContent({ searchParams }: AdminPostersContentProps) {
-  const resolvedParams = use(searchParams);
-  const currentPage = Number(resolvedParams.page) || 1;
-  const searchTerm = resolvedParams.search || "";
+export function AdminPostersContent({}: AdminPostersContentProps) {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams?.get("page")) || 1;
+  const searchTerm = searchParams?.get("search") || "";
   const itemsPerPage = 8;
 
-  const mockPosters: AdminPoster[] = [
-    {
-      id: "1",
-      title: "নির্বাচনী ব্যানার ২০২৬",
-      userName: "হৃদয় চৌধুরী",
-      userEmail: "hridoy@example.com",
-      imageUrl: "https://via.placeholder.com/600x800",
-      createdAt: "১৫ অক্টোবর, ২০২৬",
-      category: "রাজনৈতিক",
-    },
-    {
-      id: "2",
-      title: "চেয়ারম্যান প্রার্থীর পোস্টার",
-      userName: "অনিল কুমার",
-      userEmail: "anil@example.com",
-      imageUrl: "https://via.placeholder.com/600x800",
-      createdAt: "১২ অক্টোবর, ২০২৬",
-      category: "ইউনিয়ন পরিষদ",
-    },
-  ];
+  const [posters, setPosters] = useState<AdminPoster[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  // Server-side Filtering Logic
-  const filtered = mockPosters.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
 
-  const totalCount = filtered.length;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filtered.slice(startIndex, startIndex + itemsPerPage);
+    AdminService.getPosters(currentPage, itemsPerPage, searchTerm)
+      .then((data) => {
+        if (isMounted) {
+          setPosters(data.posters);
+          setTotalCount(data.totalCount);
+          setTotalPages(data.totalPages);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load admin posters:", err);
+        if (isMounted) {
+          setPosters([]);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentPage, searchTerm]);
 
   return (
     <div className="space-y-5">
@@ -61,17 +62,32 @@ export function AdminPostersContent({ searchParams }: AdminPostersContentProps) 
         </span>
       </div>
 
-      {/* Optimized Posters Grid */}
-      <AdminPostersGrid posters={paginatedData} />
+      {loading ? (
+        <div className="p-16 text-center flex flex-col items-center justify-center gap-3 bg-card/50 rounded-2xl border border-dashed border-border">
+          <Loader2 className="w-6 h-6 animate-spin text-brand-primary" />
+          <p className="text-xs text-muted-foreground">পোস্টার তালিকা লোড হচ্ছে...</p>
+        </div>
+      ) : (
+        <>
+          {/* Optimized Posters Grid */}
+          <AdminPostersGrid
+            posters={posters}
+            onPosterDeleted={(deletedId) => {
+              setPosters((prev) => prev.filter((p) => p.id !== deletedId));
+              setTotalCount((prev) => Math.max(0, prev - 1));
+            }}
+          />
 
-      {/* Pagination Footer */}
-      <div className="flex items-center justify-between px-2 pt-2">
-        <p className="text-xs text-muted-foreground font-medium">
-          পেজ <span className="text-foreground font-bold">{currentPage}</span> /{" "}
-          <span className="text-foreground font-bold">{totalPages || 1}</span>
-        </p>
-        <PosterPagination currentPage={currentPage} totalPages={totalPages} />
-      </div>
+          {/* Pagination Footer */}
+          <div className="flex items-center justify-between px-2 pt-2">
+            <p className="text-xs text-muted-foreground font-medium">
+              পেজ <span className="text-foreground font-bold">{currentPage}</span> /{" "}
+              <span className="text-foreground font-bold">{totalPages || 1}</span>
+            </p>
+            <PosterPagination currentPage={currentPage} totalPages={totalPages} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Sparkles, ChevronRight, CheckCircle2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HeroSectionClient from "../client/hero-section-client";
 
+
 export default function HeroSection() {
     return (
         <section

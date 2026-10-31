@@ -1,0 +1,224 @@
+import axios from "axios";
+import { serverURL } from "@/lib/api/authApi";
+import {
+  Template,
+  TransactionHistory,
+  UserPoster,
+  WalletSummary,
+} from "./dashboard.types";
+
+export class DashboardService {
+  /**
+   * Fetches consolidated user dashboard overview statistics from live database.
+   */
+  static async getDashboardOverviewStats(): Promise<WalletSummary & { credits: number }> {
+    try {
+      const [walletRes, postersRes, bookmarksRes] = await Promise.allSettled([
+        axios.get(`${serverURL}/api/v1/wallets/me`, { withCredentials: true }),
+        axios.get(`${serverURL}/api/v1/posters?limit=1`, { withCredentials: true }),
+        axios.get(`${serverURL}/api/v1/bookmarks`, { withCredentials: true }),
+      ]);
+
+      const walletData =
+        walletRes.status === "fulfilled" && walletRes.value.data?.success
+          ? walletRes.value.data.data
+          : null;
+
+      const postersCount =
+        postersRes.status === "fulfilled" && postersRes.value.data?.success
+          ? postersRes.value.data.data?.meta?.total || 0
+          : 0;
+
+      const bookmarksCount =
+        bookmarksRes.status === "fulfilled" && bookmarksRes.value.data?.success
+          ? Array.isArray(bookmarksRes.value.data.data)
+            ? bookmarksRes.value.data.data.length
+            : 0
+          : 0;
+
+      return {
+        balance: Number(walletData?.moneyBalance ?? 0),
+        credits: Number(walletData?.credits ?? 0),
+        currency: "BDT",
+        totalPosters: postersCount,
+        bookmarkedTemplates: bookmarksCount,
+      };
+    } catch (err) {
+      console.warn("Failed to fetch dashboard stats, returning zero state:", err);
+      return {
+        balance: 0,
+        credits: 0,
+        currency: "BDT",
+        totalPosters: 0,
+        bookmarkedTemplates: 0,
+      };
+    }
+  }
+
+  /**
+   * Fetches real user posters from database via GET /api/v1/posters.
+   */
+  static async getMyPosters(page: number = 1, limit: number = 20): Promise<UserPoster[]> {
+    try {
+      const res = await axios.get(
+        `${serverURL}/api/v1/posters?page=${page}&limit=${limit}`,
+        { withCredentials: true }
+      );
+
+      if (res.data?.success && Array.isArray(res.data.data?.items)) {
+        return res.data.data.items.map((item: any) => {
+          const input = item.inputData || {};
+          const candidateName = input.candidateName || input.name;
+          const displayTitle = candidateName
+            ? `${candidateName} - নির্বাচনী পোস্টার`
+            : item.template?.title || "আমার পোস্টার";
+
+          const previewUrl =
+            item.outputUrl ||
+            item.previewUrl ||
+            (item.output && item.output.url) ||
+            (item.preview && item.preview.url) ||
+            input.photoUrl ||
+            "/image/images26.jpg";
+
+          let formattedDate = "তারিখ অনুপলব্ধ";
+          if (item.createdAt) {
+            try {
+              formattedDate = new Intl.DateTimeFormat("bn-BD", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(new Date(item.createdAt));
+            } catch {
+              formattedDate = String(item.createdAt).slice(0, 10);
+            }
+          }
+
+          return {
+            id: item.id,
+            title: displayTitle,
+            imageUrl: previewUrl,
+            createdAt: formattedDate,
+            category: item.template?.title || "রাজনৈতিক পোস্টার",
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch user posters from DB:", err);
+    }
+    return [];
+  }
+
+  /**
+   * Deletes a poster from the database via DELETE /api/v1/posters/:id.
+   */
+  static async deletePoster(posterId: string): Promise<boolean> {
+    const res = await axios.delete(`${serverURL}/api/v1/posters/${posterId}`, {
+      withCredentials: true,
+    });
+    return Boolean(res.data?.success);
+  }
+
+  /**
+   * Fetches all templates bookmarked by current user from GET /api/v1/bookmarks.
+   */
+  static async getMyBookmarks(): Promise<Template[]> {
+    try {
+      const res = await axios.get(`${serverURL}/api/v1/bookmarks`, {
+        withCredentials: true,
+      });
+
+      if (res.data?.success && Array.isArray(res.data.data)) {
+        return res.data.data.map((item: any) => {
+          const tpl = item.template || item || {};
+          const cfg = tpl.config || {};
+          const preview =
+            cfg.previewUrl ||
+            cfg.blankTemplateUrl ||
+            tpl.thumbnailUrl ||
+            "/image/images26.jpg";
+
+          return {
+            id: tpl.id || item.templateId,
+            title: tpl.title || "সংরক্ষিত পোস্টার ফ্রেম",
+            category: tpl.category?.name || "রাজনৈতিক",
+            imageUrl: preview,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch bookmarks from DB:", err);
+    }
+    return [];
+  }
+
+  /**
+   * Toggles bookmark state in database via POST/DELETE /api/v1/bookmarks.
+   */
+  static async toggleBookmark(templateId: string, currentlyBookmarked: boolean): Promise<boolean> {
+    if (currentlyBookmarked) {
+      const res = await axios.delete(`${serverURL}/api/v1/bookmarks/${templateId}`, {
+        withCredentials: true,
+      });
+      return Boolean(res.data?.success);
+    } else {
+      const res = await axios.post(
+        `${serverURL}/api/v1/bookmarks`,
+        { templateId },
+        { withCredentials: true }
+      );
+      return Boolean(res.data?.success);
+    }
+  }
+
+  /**
+   * Fetches user's transaction history from GET /api/v1/transaction/my-history.
+   */
+  static async getMyTransactions(page: number = 1, limit: number = 20): Promise<TransactionHistory[]> {
+    try {
+      const res = await axios.get(
+        `${serverURL}/api/v1/transaction/my-history?page=${page}&limit=${limit}`,
+        { withCredentials: true }
+      );
+
+      if (res.data?.success && res.data.data) {
+        const rawPayments = res.data.data.payments?.data || [];
+        return rawPayments.map((p: any) => {
+          let method: "bKash" | "Nagad" | "Card" = "bKash";
+          const ref = (p.providerReference || "").toLowerCase();
+          if (ref.includes("nagad")) method = "Nagad";
+          else if (ref.includes("card") || ref.includes("visa") || ref.includes("master")) method = "Card";
+
+          let status: "Successful" | "Failed" | "Pending" = "Pending";
+          if (p.status === "SUCCEEDED" || p.status === "VALIDATED") status = "Successful";
+          else if (p.status === "FAILED" || p.status === "CANCELLED") status = "Failed";
+
+          let formattedDate = "তারিখ অনুপলব্ধ";
+          if (p.createdAt) {
+            try {
+              formattedDate = new Intl.DateTimeFormat("bn-BD", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(new Date(p.createdAt));
+            } catch {
+              formattedDate = String(p.createdAt).slice(0, 10);
+            }
+          }
+
+          return {
+            id: p.id,
+            amount: Number(p.amount || 0),
+            method,
+            trxId: p.tranId || p.id,
+            status,
+            date: formattedDate,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch transaction history from DB:", err);
+    }
+    return [];
+  }
+}

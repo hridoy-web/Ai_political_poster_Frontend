@@ -1,7 +1,7 @@
-import { use } from "react";
 import { AdminTemplatesGrid } from "./admin-templates-grid";
 import { TemplateSearchInput, TemplatePagination } from "../client/template-filter-controls";
 import { AdminTemplate } from "../admin.types";
+import { serverURL } from "@/lib/api/authApi";
 
 interface AdminTemplatesContentProps {
   searchParams: Promise<{
@@ -10,33 +10,50 @@ interface AdminTemplatesContentProps {
   }>;
 }
 
-export function AdminTemplatesContent({ searchParams }: AdminTemplatesContentProps) {
-  const resolvedParams = use(searchParams);
+async function fetchTemplates(): Promise<AdminTemplate[]> {
+  try {
+    const res = await fetch(`${serverURL}/api/v1/template?limit=50`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (data?.success && Array.isArray(data.data?.items)) {
+      return data.data.items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        category: item.category?.name || "রাজনৈতিক পোস্টার",
+        imageUrl:
+          item.config?.previewUrl ||
+          item.config?.blankTemplateUrl ||
+          "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80",
+        isPremium: item.accessLevel === "PREMIUM",
+        isActive: item.status === "PUBLISHED",
+        aspectRatio: item.aspectRatio || "4:5",
+        width: item.width || 1080,
+        height: item.height || 1350,
+        description: item.description || "",
+        createdAt: item.createdAt,
+        photoSlotsCount: Array.isArray(item.config?.photoSlots) ? item.config.photoSlots.length : 1,
+        textSlotsCount: Array.isArray(item.config?.textSlots) ? item.config.textSlots.length : 4,
+      }));
+    }
+  } catch (e) {
+    console.error("Failed to fetch templates on server:", e);
+  }
+  return [];
+}
+
+export async function AdminTemplatesContent({ searchParams }: AdminTemplatesContentProps) {
+  const resolvedParams = await searchParams;
   const currentPage = Number(resolvedParams.page) || 1;
   const searchTerm = resolvedParams.search || "";
   const itemsPerPage = 8;
 
-  const mockTemplates: AdminTemplate[] = [
-    {
-      id: "tpl-1",
-      title: "চেয়ারম্যান পদপ্রার্থী ক্যানভাস ফ্রেম",
-      category: "ইউনিয়ন পরিষদ",
-      imageUrl: "https://via.placeholder.com/600x800",
-      isPremium: true,
-      isActive: true,
-    },
-    {
-      id: "tpl-2",
-      title: "মেয়র পদপ্রার্থী পোস্টার",
-      category: "পৌরসভা",
-      imageUrl: "https://via.placeholder.com/600x800",
-      isPremium: false,
-      isActive: true,
-    },
-  ];
+  const realTemplates = await fetchTemplates();
+  const templatesList = realTemplates;
 
   // Server-side Filter Logic
-  const filtered = mockTemplates.filter(
+  const filtered = templatesList.filter(
     (item) =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase())
