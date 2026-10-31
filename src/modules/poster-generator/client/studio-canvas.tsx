@@ -18,6 +18,7 @@ interface StudioCanvasProps {
   onImageOffsetChange?: (x: number, y: number) => void;
   template?: PublishedTemplate | null;
   onCreatePoster: () => void;
+  onStartNewPoster?: () => void;
   isCreating: boolean;
   isCreated: boolean;
   onDownload: () => void;
@@ -36,6 +37,7 @@ export function StudioCanvas({
   onImageOffsetChange,
   template,
   onCreatePoster,
+  onStartNewPoster,
   isCreating,
   isCreated,
   onDownload,
@@ -417,11 +419,12 @@ export function StudioCanvas({
               <Button
                 type="button"
                 variant="outline"
-                onClick={onCreatePoster}
+                onClick={onStartNewPoster || onCreatePoster}
                 disabled={isCreating || isRendering}
-                className="w-full sm:w-auto text-xs font-semibold h-11 px-4 rounded-xl border-border hover:bg-accent cursor-pointer"
+                className="w-full sm:w-auto text-xs font-semibold h-11 px-4 rounded-xl border-border hover:bg-accent cursor-pointer gap-1.5"
               >
-                <span>পুনরায় তৈরি করুন</span>
+                <Sparkles className="size-3.5 text-brand-primary" />
+                <span>নতুন পোস্টার তৈরি করুন</span>
               </Button>
               <Button
                 type="button"

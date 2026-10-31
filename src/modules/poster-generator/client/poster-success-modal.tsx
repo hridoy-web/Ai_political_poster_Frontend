@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { CheckCircle2, Download, ArrowRight, X, Sparkles, LayoutDashboard } from "lucide-react";
+import { CheckCircle2, Download, ArrowRight, X, Sparkles, LayoutDashboard, PlusCircle, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PosterSuccessModalProps {
@@ -11,6 +11,8 @@ interface PosterSuccessModalProps {
   posterImageUrl?: string | null;
   candidateName: string;
   onDownload: () => void;
+  creditsLeft?: number | null;
+  onStartNewPoster?: () => void;
 }
 
 export function PosterSuccessModal({
@@ -19,6 +21,8 @@ export function PosterSuccessModal({
   posterImageUrl,
   candidateName,
   onDownload,
+  creditsLeft,
+  onStartNewPoster,
 }: PosterSuccessModalProps) {
   if (!isOpen) return null;
 
@@ -54,6 +58,19 @@ export function PosterSuccessModal({
           </p>
         </div>
 
+        {/* Live Remaining Credits Badge */}
+        {creditsLeft !== undefined && creditsLeft !== null && (
+          <div className="w-full py-2 px-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-between text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
+            <div className="flex items-center gap-1.5">
+              <Coins className="w-4 h-4 text-amber-500 shrink-0" />
+              <span>অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
+            </div>
+            <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
+              {creditsLeft}টি
+            </span>
+          </div>
+        )}
+
         {/* Poster Image Preview */}
         {posterImageUrl ? (
           <div className="relative w-48 aspect-[4/5] rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/20 flex items-center justify-center p-1">
@@ -67,16 +84,29 @@ export function PosterSuccessModal({
         ) : null}
 
         {/* Action Buttons */}
-        <div className="w-full space-y-2.5 pt-2">
+        <div className="w-full space-y-2.5 pt-1">
           {/* Download Button */}
           <Button
             type="button"
             onClick={onDownload}
-            className="w-full bg-gradient-brand text-white font-bold h-12 rounded-xl shadow-md gap-2 cursor-pointer hover:opacity-95 text-sm"
+            className="w-full bg-gradient-brand text-white font-bold h-11 rounded-xl shadow-md gap-2 cursor-pointer hover:opacity-95 text-sm"
           >
             <Download className="w-4 h-4" />
             <span>এইচডি পোস্টার ডাউনলোড করুন</span>
           </Button>
+
+          {/* Start New Poster / Reset Session Button */}
+          {onStartNewPoster && (
+            <Button
+              type="button"
+              onClick={onStartNewPoster}
+              variant="default"
+              className="w-full bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary border border-brand-primary/30 font-bold h-10 rounded-xl shadow-2xs gap-2 cursor-pointer text-xs"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>নতুন পোস্টার তৈরি করুন (নতুন সেশন)</span>
+            </Button>
+          )}
 
           {/* Secondary Actions */}
           <div className="grid grid-cols-2 gap-2 w-full">
@@ -107,4 +137,3 @@ export function PosterSuccessModal({
     </div>
   );
 }
-

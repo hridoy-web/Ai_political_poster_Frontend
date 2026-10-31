@@ -13,9 +13,10 @@ import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
 import { PosterSuccessModal } from "./poster-success-modal";
-import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2 } from "lucide-react";
+import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fetchWalletBalance } from "@/modules/recharge/recharge.service";
 
 // Type of data coming from the server component
 interface GeneratorWorkspaceProps {
@@ -47,7 +48,41 @@ export function GeneratorWorkspace({
   const [createdPosterUrl, setCreatedPosterUrl] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Load user credit balance (or guest 3-poster quota)
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadCredits() {
+      try {
+        const wallet = await fetchWalletBalance();
+        if (isCancelled) return;
+        if (wallet && typeof wallet.credits === "number") {
+          setCredits(wallet.credits);
+          setIsGuest(false);
+          return;
+        }
+      } catch {
+        // Guest or unauthenticated session
+      }
+
+      if (!isCancelled) {
+        setIsGuest(true);
+        const usedStr = typeof window !== "undefined" ? localStorage.getItem("guest_posters_created") : null;
+        const used = usedStr ? parseInt(usedStr, 10) : 0;
+        setCredits(Math.max(0, 3 - used));
+      }
+    }
+
+    loadCredits();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   // Template selection flow state:
   // If user visits /create-poster without templateId, show template picker first
@@ -144,8 +179,20 @@ export function GeneratorWorkspace({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 2. Logic to update the canvas instantly when input changes
+  // Start a fresh poster creation session without page reload
+  const handleStartNewPoster = () => {
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
+    setIsSuccessModalOpen(false);
+    toast.info("নতুন পোস্টার তৈরির সেশন প্রস্তুত করা হয়েছে।");
+  };
+
+  // 2. Logic to update the canvas instantly when input changes & auto-reset session on edit
   const handleCandidateChange = (field: keyof CandidateInfo, value: string) => {
+    if (isCreated) {
+      setIsCreated(false);
+      setCreatedPosterUrl(null);
+    }
     setCandidate((prev) => ({
       ...prev,
       [field]: value,
@@ -153,6 +200,10 @@ export function GeneratorWorkspace({
   };
 
   const handlePhotoUpload = (file: File) => {
+    if (isCreated) {
+      setIsCreated(false);
+      setCreatedPosterUrl(null);
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -164,6 +215,9 @@ export function GeneratorWorkspace({
   };
 
   const handleReset = () => {
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
+    setIsSuccessModalOpen(false);
     setCandidate(initialCandidate);
     setTheme("emerald");
     setImageScale(100);
@@ -171,7 +225,7 @@ export function GeneratorWorkspace({
     setImageOffsetY(0);
     setIsComparing(false);
     setComparePhotoUrl(null);
-    toast.info("ইনপুট তথ্য রিসেট করা হয়েছে।");
+    toast.info("ইনপুট তথ্য ও সেশন রিসেট করা হয়েছে।");
   };
 
   // Full real database pipeline: Validate -> Save Draft -> Trigger Render -> Poll Completion -> Show Success Modal
@@ -183,6 +237,16 @@ export function GeneratorWorkspace({
     }
     if (!candidate.designation?.trim()) {
       toast.error("অনুগ্রহ করে প্রার্থীর পদবি বা নির্বাচনী এলাকা লিখুন।");
+      return;
+    }
+
+    // 2. Credits check
+    if (credits !== null && credits <= 0) {
+      toast.error(
+        isGuest
+          ? "ফ্রি ৩টি পোস্টার তৈরির কোটা শেষ হয়ে গেছে! পরবর্তী পোস্টার তৈরি করতে অনুগ্রহ করে সাইন-আপ বা লগইন করুন।"
+          : "আপনার অ্যাকাউন্টে কোনো পোস্টার ক্রেডিট অবশিষ্ট নেই। অনুগ্রহ করে রিচার্জ করুন।"
+      );
       return;
     }
 
@@ -198,7 +262,12 @@ export function GeneratorWorkspace({
       }
     }
 
+    // Reset previous modal/created state for clean session execution
+    setIsSuccessModalOpen(false);
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
     setIsCreating(true);
+
     try {
       toast.info("ডাটাবেজে পোস্টার ড্রাফট সেভ হচ্ছে...");
 
@@ -257,6 +326,20 @@ export function GeneratorWorkspace({
         completedStatus?.outputUrl ||
         completedStatus?.previewUrl ||
         photoUrl;
+
+      // Real-time credit deduction
+      if (isGuest) {
+        const nextUsed = parseInt(localStorage.getItem("guest_posters_created") || "0", 10) + 1;
+        localStorage.setItem("guest_posters_created", nextUsed.toString());
+        setCredits(Math.max(0, 3 - nextUsed));
+      } else {
+        setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+        fetchWalletBalance().then((bal) => {
+          if (bal && typeof bal.credits === "number") {
+            setCredits(bal.credits);
+          }
+        });
+      }
 
       setCreatedPosterUrl(finalUrl);
       setIsCreated(true);
@@ -430,16 +513,28 @@ export function GeneratorWorkspace({
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setIsSelectingTemplate(true)}
-          className="rounded-xl border-border/80 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 font-semibold text-xs gap-1.5 cursor-pointer shrink-0"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>অন্য টেমপ্লেট বেছে নিন</span>
-        </Button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Live Remaining Credits Badge */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
+            <Coins className="size-4 text-amber-500 shrink-0" />
+            <span className="hidden sm:inline">অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
+            <span className="sm:hidden">বাকি ক্রেডিট:</span>
+            <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
+              {credits !== null ? `${credits}টি` : "..."}
+            </span>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSelectingTemplate(true)}
+            className="rounded-xl border-border/80 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 font-semibold text-xs gap-1.5 cursor-pointer shrink-0"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>অন্য টেমপ্লেট বেছে নিন</span>
+          </Button>
+        </div>
       </div>
 
       {/* Main Studio Grid - Input Panel is wider & bigger */}
@@ -495,6 +590,7 @@ export function GeneratorWorkspace({
             }}
             template={activeTemplate}
             onCreatePoster={handleCreatePoster}
+            onStartNewPoster={handleStartNewPoster}
             isCreating={isCreating}
             isCreated={isCreated}
             onDownload={handleDownloadFile}
@@ -508,10 +604,16 @@ export function GeneratorWorkspace({
       {/* Poster Generation Success & Download Modal */}
       <PosterSuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          setIsCreated(false);
+          setCreatedPosterUrl(null);
+        }}
         posterImageUrl={createdPosterUrl}
         candidateName={candidate.name}
         onDownload={handleDownloadFile}
+        creditsLeft={credits}
+        onStartNewPoster={handleStartNewPoster}
       />
     </div>
   );
