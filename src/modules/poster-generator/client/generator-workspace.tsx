@@ -187,6 +187,17 @@ export function GeneratorWorkspace({
     }
 
     const currentTemplateId = activeTemplate?.id || "4c8057b1-35fb-4dad-83a3-32ecd314a0a3";
+
+    // Pre-capture high-res canvas image directly before async operations
+    let canvasDataUrl = "";
+    if (canvasRef.current) {
+      try {
+        canvasDataUrl = canvasRef.current.toDataURL("image/png");
+      } catch (e) {
+        console.warn("Pre-capture canvas toDataURL error:", e);
+      }
+    }
+
     setIsCreating(true);
     try {
       toast.info("ডাটাবেজে পোস্টার ড্রাফট সেভ হচ্ছে...");
@@ -230,17 +241,23 @@ export function GeneratorWorkspace({
         attempts++;
       }
 
-      // Try capturing direct high-res canvas PNG as primary or fallback
-      let capturedDataUrl = "";
+      // Re-capture fresh canvas if available
       if (canvasRef.current) {
         try {
-          capturedDataUrl = canvasRef.current.toDataURL("image/png");
+          const fresh = canvasRef.current.toDataURL("image/png");
+          if (fresh) canvasDataUrl = fresh;
         } catch {
           // ignore
         }
       }
 
-      const finalUrl = completedStatus?.outputUrl || completedStatus?.previewUrl || capturedDataUrl || photoUrl;
+      // Prioritize the real rendered canvas image so the preview in modal displays the actual poster cleanly
+      const finalUrl =
+        canvasDataUrl ||
+        completedStatus?.outputUrl ||
+        completedStatus?.previewUrl ||
+        photoUrl;
+
       setCreatedPosterUrl(finalUrl);
       setIsCreated(true);
       setIsSuccessModalOpen(true);

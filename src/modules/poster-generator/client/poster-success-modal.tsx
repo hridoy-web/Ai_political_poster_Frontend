@@ -55,16 +55,16 @@ export function PosterSuccessModal({
         </div>
 
         {/* Poster Image Preview */}
-        {posterImageUrl && (
-          <div className="relative w-44 aspect-3/4 rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/40">
+        {posterImageUrl ? (
+          <div className="relative w-48 aspect-[4/5] rounded-2xl overflow-hidden border border-border/80 shadow-md bg-muted/20 flex items-center justify-center p-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={posterImageUrl}
               alt="Generated Poster Preview"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain rounded-xl"
             />
           </div>
-        )}
+        ) : null}
 
         {/* Action Buttons */}
         <div className="w-full space-y-2.5 pt-2">
