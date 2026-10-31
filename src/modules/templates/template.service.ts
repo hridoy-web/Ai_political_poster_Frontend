@@ -1,5 +1,4 @@
 import { CategoryOption, PosterTemplate, TemplateCategory, TemplateSort } from "./template.types";
-import { apiFetch } from "@/lib/api/api-client";
 import { serverURL } from "@/lib/api/authApi";
 
 export const TEMPLATE_CATEGORIES: CategoryOption[] = [
@@ -94,33 +93,168 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   },
 ];
 
-function getTemplateImage(item: any, index: number): string {
-  if (item.thumbnailUrl) return item.thumbnailUrl;
-  if (item.previewUrl) return item.previewUrl;
-  if (item.config?.previewUrl) return item.config.previewUrl;
-  if (item.config?.thumbnailUrl) return item.config.thumbnailUrl;
-  if (item.config?.blankTemplateUrl) return item.config.blankTemplateUrl;
-  if (item.preview?.storageKey) {
-    return item.preview.storageKey.startsWith("http")
-      ? item.preview.storageKey
-      : `https://res.cloudinary.com/dtniwvrty/image/upload/${item.preview.storageKey}`;
-  }
-  const fallbackImages = [
-    "/image/images26.jpg",
-    "/image/image6.jpg",
-    "/image/images21.jpg",
-    "/image/images24.jpg",
-    "/image/images11.jpg",
-    "/image/images3.jpg",
-    "/image/images5.jpg",
-    "/image/images4.jpg",
-  ];
-  return fallbackImages[index % fallbackImages.length];
-}
-
 export class TemplateService {
-  // Fetch all templates (Live API -> Fallback to Mock)
+  // Fetch all templates with live backend integration and graceful fallback
   static async getAllTemplates(categoryId?: string): Promise<PosterTemplate[]> {
     try {
       const query = categoryId && categoryId !== "all" ? `?categoryId=${categoryId}&limit=50` : "?limit=50";
-      const res = await api
+      const res = await fetch(`${serverURL}/api/v1/template${query}`, {
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.success && Array.isArray(data.data?.items)) {
+          const liveTemplates: PosterTemplate[] = data.data.items.map((item: any) => {
+            const cfg = item.config || {};
+            const preview =
+              cfg.previewUrl ||
+              cfg.blankTemplateUrl ||
+              item.thumbnailUrl ||
+              "/image/images26.jpg";
+
+            return {
+              id: item.id,
+              title: item.title,
+              category: item.category?.slug || item.category?.id || "political-posters",
+              categoryLabel: item.category?.name || "রাজনৈতিক পোস্টার",
+              thumbnailUrl: preview,
+              previewUrl: preview,
+              isPremium: item.accessLevel === "PREMIUM",
+              tags: Array.isArray(item.tags) && item.tags.length > 0
+                ? item.tags
+                : [item.category?.name || "রাজনৈতিক", "পোস্টার", item.title],
+              createdAt: item.createdAt || new Date().toISOString(),
+            };
+          });
+
+          // If live templates exist in DB, show them first
+          if (liveTemplates.length > 0) {
+            const liveIds = new Set(liveTemplates.map((t) => t.id));
+            const remainingMocks = MOCK_TEMPLATES.filter((m) => !liveIds.has(m.id));
+            return [...liveTemplates, ...remainingMocks];
+          }
+        }
+      }
+    } catch (error) {
+      console.error("API Fetch Failed, falling back to mock templates:", error);
+    }
+
+    return MOCK_TEMPLATES;
+  }
+
+  // Find a specific template by ID (checks live API first, then mocks)
+  static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
+    try {
+      const res = await fetch(`${serverURL}/api/v1/template/${id}`, {
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const item = data?.data;
+        if (item) {
+          const cfg = item.config || {};
+          const preview =
+            cfg.previewUrl ||
+            cfg.blankTemplateUrl ||
+            item.thumbnailUrl ||
+            "/image/images26.jpg";
+
+          return {
+            id: item.id,
+            title: item.title,
+            category: item.category?.slug || item.category?.id || "political-posters",
+            categoryLabel: item.category?.name || "রাজনৈতিক পোস্টার",
+            thumbnailUrl: preview,
+            previewUrl: preview,
+            isPremium: item.accessLevel === "PREMIUM",
+            tags: Array.isArray(item.tags) && item.tags.length > 0
+              ? item.tags
+              : [item.category?.name || "রাজনৈতিক", "পোস্টার", item.title],
+            createdAt: item.createdAt || new Date().toISOString(),
+          };
+        }
+      }
+    } catch (error) {
+      console.error("Single Template Fetch Failed, searching mock:", error);
+    }
+
+    return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
+  }
+
+  // Get categories with dynamic template count based on available templates
+  static async getCategories(templates?: PosterTemplate[]): Promise<CategoryOption[]> {
+    const list = templates || (await this.getAllTemplates());
+    const categoryMap = new Map<string, { label: string; count: number }>();
+
+    list.forEach((tpl) => {
+      const key = tpl.category || "political-posters";
+      const existing = categoryMap.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        categoryMap.set(key, {
+          label: tpl.categoryLabel || "রাজনৈতিক পোস্টার",
+          count: 1,
+        });
+      }
+    });
+
+    const dynamicCategories: CategoryOption[] = Array.from(categoryMap.entries()).map(
+      ([id, data]) => ({
+        id,
+        label: data.label,
+        count: data.count,
+      })
+    );
+
+    return [
+      { id: "all", label: "সকল টেমপ্লেট", count: list.length },
+      ...dynamicCategories,
+    ];
+  }
+
+  // Search and filtering engine
+  static filterTemplates(
+    templates: PosterTemplate[],
+    options: {
+      category?: TemplateCategory;
+      search?: string;
+      sort?: TemplateSort;
+      bookmarkedIds?: Set<string>;
+    }
+  ): PosterTemplate[] {
+    let result = [...templates];
+
+    // 1. Category filter (skip if 'all')
+    if (options.category && options.category !== "all") {
+      result = result.filter((item) => item.category === options.category);
+    }
+
+    // 2. Search filter (matches title, description, or tags)
+    if (options.search && options.search.trim() !== "") {
+      const query = options.search.toLowerCase().trim();
+      result = result.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.tags.some((tag) => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // 3. Sorting filter (popular, latest, or premium)
+    if (options.sort) {
+      if (options.sort === "popular") {
+        if (options.bookmarkedIds) {
+          result = result.filter((item) => options.bookmarkedIds!.has(item.id));
+        }
+      } else if (options.sort === "latest") {
+        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      } else if (options.sort === "premium") {
+        result = result.filter((item) => item.isPremium);
+      }
+    }
+
+    return result;
+  }
+}
