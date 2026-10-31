@@ -1,21 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import axios from "axios";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LogOut,
-  Home,
-  Sparkles,
-  Loader2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -25,31 +16,10 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { ADMIN_NAV_ITEMS } from "../admin.constants";
 import { useAuth } from "@/hooks/get-user-data";
-import authApi, { serverURL } from "@/lib/api/authApi";
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { isAdmin, isSuperAdmin, setUser } = useAuth();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      setIsLoggingOut(true);
-      await axios({
-        url: `${serverURL}${authApi.logout.url}`,
-        method: authApi.logout.method,
-        withCredentials: true,
-      });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setUser(null);
-      setIsLoggingOut(false);
-      router.push("/login");
-      router.refresh();
-    }
-  };
+  const { isAdmin, isSuperAdmin } = useAuth();
 
   // If user is not full admin (i.e. only Template Manager), show only template manager navigation
   const visibleNavItems = isAdmin
@@ -134,37 +104,6 @@ export function AdminSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-
-      {/* Sidebar Footer */}
-      <SidebarFooter className="p-2 border-t border-border/40 space-y-1.5 group-data-[collapsible=icon]:px-1">
-        <Link href="/" className="w-full flex justify-center">
-          <Button
-            variant="outline"
-            className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 border-border/80 text-foreground hover:bg-accent px-3 h-10 rounded-xl transition-colors duration-150"
-          >
-            <Home className="w-4.5 h-4.5 shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
-              মূল ওয়েবসাইট
-            </span>
-          </Button>
-        </Link>
-
-        <Button
-          variant="ghost"
-          onClick={handleLogout}
-          disabled={isLoggingOut}
-          className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive px-3 h-10 rounded-xl transition-colors duration-150 cursor-pointer"
-        >
-          {isLoggingOut ? (
-            <Loader2 className="w-4.5 h-4.5 shrink-0 animate-spin" />
-          ) : (
-            <LogOut className="w-4.5 h-4.5 shrink-0" />
-          )}
-          <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
-            {isLoggingOut ? "লগআউট হচ্ছে..." : "লগআউট"}
-          </span>
-        </Button>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>
