@@ -41,12 +41,17 @@ interface CategoryOption {
   slug: string;
 }
 
-export function TemplateStudioWorkspace() {
+interface TemplateStudioWorkspaceProps {
+  editTemplateId?: string;
+}
+
+export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorkspaceProps = {}) {
   const router = useRouter();
 
   // Categories state
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(Boolean(editTemplateId));
 
   // Core Form State
   const [title, setTitle] = useState("জাতীয় সংসদ নির্বাচন ক্যানভাস ২০২৬");
@@ -227,6 +232,59 @@ export function TemplateStudioWorkspace() {
     }
     loadCategories();
   }, []);
+
+  // Fetch existing template if in Edit Mode
+  useEffect(() => {
+    if (!editTemplateId) return;
+
+    let isCancelled = false;
+    async function loadExistingTemplate() {
+      try {
+        setIsLoadingTemplate(true);
+        const res = await axios.get(`${serverURL}/api/v1/template/${editTemplateId}`, {
+          withCredentials: true,
+        });
+
+        if (isCancelled) return;
+        const tmpl = res.data?.data;
+        if (tmpl) {
+          if (tmpl.title) setTitle(tmpl.title);
+          if (tmpl.categoryId) setCategoryId(tmpl.categoryId);
+          if (tmpl.accessLevel) setAccessLevel(tmpl.accessLevel);
+          if (
+            tmpl.aspectRatio &&
+            (tmpl.aspectRatio === "4:5" || tmpl.aspectRatio === "1:1" || tmpl.aspectRatio === "9:16")
+          ) {
+            setAspectRatio(tmpl.aspectRatio as AspectRatioType);
+          }
+          if (tmpl.config?.blankTemplateUrl) setBlankTemplateUrl(tmpl.config.blankTemplateUrl);
+          if (tmpl.config?.previewUrl) setPreviewUrl(tmpl.config.previewUrl);
+          if (Array.isArray(tmpl.config?.photoSlots) && tmpl.config.photoSlots.length > 0) {
+            setPhotoSlots(tmpl.config.photoSlots);
+            setSelectedSlotId(tmpl.config.photoSlots[0].id);
+            setSelectedSlotType("photo");
+          }
+          if (Array.isArray(tmpl.config?.textSlots) && tmpl.config.textSlots.length > 0) {
+            setTextSlots(tmpl.config.textSlots);
+          }
+          toast.success(`"${tmpl.title}" টেমপ্লেট এডিটের জন্য প্রস্তুত।`);
+        }
+      } catch (err: any) {
+        console.error("Failed to load template for editing:", err);
+        toast.error("টেমপ্লেটের পূর্ববর্তী তথ্য লোড করতে সমস্যা হয়েছে।");
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingTemplate(false);
+        }
+      }
+    }
+
+    loadExistingTemplate();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [editTemplateId]);
 
   // Handlers for Slots
   const handleAddPhotoSlot = () => {
@@ -447,6 +505,27 @@ export function TemplateStudioWorkspace() {
         },
       };
 
+      if (editTemplateId) {
+        // Update existing template via PATCH
+        const res = await axios.patch(
+          `${serverURL}/api/v1/template/${editTemplateId}`,
+          templatePayload,
+          {
+            withCredentials: true,
+            timeout: 25000,
+          }
+        );
+
+        if (res.data?.success || res.status === 200) {
+          toast.success("টেমপ্লেট সফলভাবে আপডেট করা হয়েছে!");
+          setIsPublishing(false);
+          window.location.href = "/admin/templates";
+          return;
+        } else {
+          throw new Error(res.data?.message || "টেমপ্লেট আপডেট করা সম্ভব হয়নি।");
+        }
+      }
+
       // 1. Create Template (DRAFT) with timeout
       const res = await axios.post(`${serverURL}/api/v1/template`, templatePayload, {
         withCredentials: true,
@@ -479,6 +558,15 @@ export function TemplateStudioWorkspace() {
     }
   };
 
+  if (isLoadingTemplate) {
+    return (
+      <div className="py-28 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+        <p className="text-sm font-semibold">টেমপ্লেট এডিটর লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       {/* ================= HEADER BAR ================= */}
@@ -497,13 +585,13 @@ export function TemplateStudioWorkspace() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                HTML5 Canvas 2D স্টুডিও
+                {editTemplateId ? "টেমপ্লেট এডিট মোড" : "HTML5 Canvas 2D স্টুডিও"}
               </span>
-              <span className="text-xs text-muted-foreground">• টেমপ্লেট মেকার</span>
+              <span className="text-xs text-muted-foreground">• {editTemplateId ? "পরিবর্তন ও আপডেট" : "টেমপ্লেট মেকার"}</span>
             </div>
             <h1 className="text-lg sm:text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               <Layers className="size-5 text-brand-primary" />
-              <span>টেমপ্লেট ম্যানেজার স্টুডিও</span>
+              <span>{editTemplateId ? "টেমপ্লেট কাস্টমাইজেশন ও এডিট" : "টেমপ্লেট ম্যানেজার স্টুডিও"}</span>
             </h1>
           </div>
         </div>
@@ -532,20 +620,22 @@ export function TemplateStudioWorkspace() {
             )}
           </Button>
 
-          {/* Publish Button */}
+          {/* Publish / Update Button */}
           <Button
             type="button"
             onClick={handlePublishTemplate}
             disabled={isPublishing}
-            className="bg-gradient-brand text-white font-semibold rounded-2xl h-10 px-5 shadow-md shadow-brand-primary/20 hover:opacity-90 gap-2 text-xs sm:text-sm"
+            className="bg-gradient-brand text-white font-semibold rounded-2xl h-10 px-5 shadow-md shadow-brand-primary/20 hover:opacity-90 gap-2 text-xs sm:text-sm cursor-pointer"
           >
             {isPublishing ? (
               <>
-                <Loader2 className="size-4 animate-spin" /> পাবলিশ হচ্ছে...
+                <Loader2 className="size-4 animate-spin" />
+                <span>{editTemplateId ? "আপডেট হচ্ছে..." : "পাবলিশ হচ্ছে..."}</span>
               </>
             ) : (
               <>
-                <CheckCircle2 className="size-4" /> টেমপ্লেট পাবলিশ করুন
+                <UploadCloud className="size-4" />
+                <span>{editTemplateId ? "পরিবর্তন সংরক্ষণ করুন" : "ক্যানভাস টেমপ্লেট পাবলিশ করুন"}</span>
               </>
             )}
           </Button>

@@ -20,6 +20,7 @@ import {
   ExternalLink,
   Sliders,
   CheckCircle2,
+  Edit,
 } from "lucide-react";
 import { AdminTemplate } from "../admin.types";
 import { serverURL } from "@/lib/api/authApi";
@@ -124,7 +125,7 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+              <div className="flex items-center gap-1.5 pt-2 border-t border-border/40">
                 {/* Preview Button */}
                 <Button
                   id={`btn-preview-${tpl.id}`}
@@ -132,9 +133,22 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
                   variant="outline"
                   size="sm"
                   onClick={() => setPreviewTemplate(tpl)}
-                  className="flex-1 text-xs h-9 rounded-xl font-semibold hover:bg-muted gap-1.5 transition-colors"
+                  className="flex-1 text-xs h-9 rounded-xl font-semibold hover:bg-muted gap-1 transition-colors px-2"
                 >
                   <Eye className="w-3.5 h-3.5 text-brand-primary" /> প্রিভিউ
+                </Button>
+
+                {/* Edit Button */}
+                <Button
+                  id={`btn-edit-${tpl.id}`}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-xs h-9 rounded-xl font-semibold hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 border-border/80 gap-1 transition-colors px-2"
+                >
+                  <Link href={`/admin/templates/${tpl.id}/edit`}>
+                    <Edit className="w-3.5 h-3.5" /> এডিট
+                  </Link>
                 </Button>
 
                 {/* Delete Button */}
@@ -145,7 +159,7 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
                   size="icon"
                   onClick={() => setDeleteCandidate(tpl)}
                   title="টেমপ্লেট মুছুন"
-                  className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10 transition-colors"
+                  className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/10 transition-colors shrink-0"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -273,7 +287,7 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-border/60 bg-muted/20">
+            <div className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-border/60 bg-muted/20 flex-wrap">
               <Button
                 id="btn-close-preview"
                 variant="outline"
@@ -281,6 +295,17 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
                 className="h-10 rounded-xl px-4 text-xs font-semibold hover:bg-muted"
               >
                 বন্ধ করুন
+              </Button>
+
+              <Button
+                id="btn-edit-from-preview"
+                asChild
+                variant="outline"
+                className="h-10 rounded-xl px-4 text-xs font-semibold hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 gap-1.5"
+              >
+                <Link href={`/admin/templates/${previewTemplate.id}/edit`}>
+                  <Edit className="size-3.5" /> এডিট করুন
+                </Link>
               </Button>
 
               <Button
