@@ -119,8 +119,22 @@ export default function LoginForm() {
         },
         withCredentials: true,
       });
-      setUser(res?.data?.data?.user);
-      router.push("/");
+      const userData = res?.data?.data?.user;
+      setUser(userData);
+
+      // Redirect role-based: Super Admin and Admin to /admin, Template Manager to /admin/templates, standard user to homepage
+      const userRoles = userData?.roles || userData?.roleNames || [];
+      const hasSuperAdmin = userRoles.includes("SUPER_ADMIN");
+      const hasAdmin = userRoles.includes("ADMIN") || hasSuperAdmin;
+      const hasTemplateManager = userRoles.includes("TEMPLATE_MANAGER");
+
+      if (hasSuperAdmin || hasAdmin) {
+        router.push("/admin");
+      } else if (hasTemplateManager) {
+        router.push("/admin/templates");
+      } else {
+        router.push("/");
+      }
       router.refresh();
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {

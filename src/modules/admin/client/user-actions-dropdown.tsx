@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Lock, Ban, CheckCircle, Crown } from "lucide-react";
+import { MoreHorizontal, Lock, Ban, CheckCircle, Crown, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AdminService } from "../admin.service";
 import { UserRoleType } from "../admin.types";
@@ -98,7 +98,12 @@ export function UserActionsDropdown({
             </>
           )}
 
-          {currentStatus === "ACTIVE" ? (
+          {currentRole === "SUPER_ADMIN" ? (
+            <div className="px-2.5 py-2 text-[11px] font-medium text-amber-500/90 flex items-center gap-1.5 bg-amber-500/10 rounded-xl border border-amber-500/20">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>সুপার অ্যাডমিন অ্যাকাউন্ট ব্লক বা ব্যান করা যাবে না</span>
+            </div>
+          ) : currentStatus === "ACTIVE" ? (
             <>
               <DropdownMenuItem
                 onClick={() => handleAction("BLOCK")}

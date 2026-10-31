@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 const mainNavLinks = [
   { name: "হোম", href: "/" },
   { name: "টেমপ্লেট গ্যালারি", href: "/templates" },
-  { name: "পোস্টার তৈরি করুন", href: "/create-poster", isHot: true },
   { name: "আমাদের সম্পর্কে", href: "/about" },
   { name: "রিচার্জ প্যাক", href: "/recharge" },
 ];
@@ -55,11 +54,6 @@ export default function MobileMenu() {
                   >
                     <Link href={link.href}>
                       <span>{link.name}</span>
-                      {link.isHot && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-red-500 text-white px-2 py-0.5 rounded-full animate-pulse">
-                          HOT
-                        </span>
-                      )}
                     </Link>
                   </Button>
                 );

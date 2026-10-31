@@ -17,9 +17,13 @@ interface StudioCanvasProps {
   imageOffsetY?: number;
   onImageOffsetChange?: (x: number, y: number) => void;
   template?: PublishedTemplate | null;
+  onCreatePoster: () => void;
+  isCreating: boolean;
+  isCreated: boolean;
   onDownload: () => void;
-  isDownloading: boolean;
+  isDownloading?: boolean;
   isComparing?: boolean;
+  canvasRef?: React.RefObject<HTMLCanvasElement | null>;
 }
 
 export function StudioCanvas({
@@ -31,11 +35,16 @@ export function StudioCanvas({
   imageOffsetY = 0,
   onImageOffsetChange,
   template,
+  onCreatePoster,
+  isCreating,
+  isCreated,
   onDownload,
-  isDownloading,
+  isDownloading = false,
   isComparing = false,
+  canvasRef: externalCanvasRef,
 }: StudioCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const localCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = externalCanvasRef || localCanvasRef;
   const [isRendering, setIsRendering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isHoveringPhoto, setIsHoveringPhoto] = useState(false);
@@ -370,13 +379,13 @@ export function StudioCanvas({
         </div>
       </div>
 
-      {/* Download & Save Section */}
+      {/* Action Section at Bottom of Poster */}
       <div className="w-full rounded-2xl p-4 border border-border bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
         <div className="flex flex-col text-center sm:text-left">
           <span className="text-sm font-bold text-foreground flex items-center justify-center sm:justify-start gap-1.5">
             <ShieldCheck className="size-4 text-brand-green" />
             <span>
-              {canvasWidth} × {canvasHeight} পোস্টার ডাউনলোড (HD Download)
+              {canvasWidth} × {canvasHeight} ডিজিটাল ক্যানভাস
             </span>
           </span>
           <span className="text-xs text-muted-foreground mt-0.5">
@@ -384,24 +393,56 @@ export function StudioCanvas({
           </span>
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button
-            type="button"
-            onClick={handleDownloadClick}
-            disabled={isDownloading || isRendering}
-            className="w-full sm:w-auto bg-gradient-brand text-white font-bold text-sm h-11 px-6 rounded-xl shadow-md gap-2 cursor-pointer hover:opacity-95"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>তৈরি হচ্ছে...</span>
-              </>
-            ) : (
-              <>
-                <Download className="size-4" />
-                <span>Download Poster</span>
-              </>
-            )}
-          </Button>
+          {!isCreated ? (
+            <Button
+              type="button"
+              onClick={onCreatePoster}
+              disabled={isCreating || isRendering}
+              className="w-full sm:w-auto bg-gradient-brand text-white font-bold text-sm h-11 px-7 rounded-xl shadow-md gap-2 cursor-pointer hover:opacity-95"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>পোস্টার তৈরি হচ্ছে...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  <span>পোস্টার তৈরি করুন</span>
+                </>
+              )}
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCreatePoster}
+                disabled={isCreating || isRendering}
+                className="w-full sm:w-auto text-xs font-semibold h-11 px-4 rounded-xl border-border hover:bg-accent cursor-pointer"
+              >
+                <span>পুনরায় তৈরি করুন</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={onDownload}
+                disabled={isDownloading || isRendering}
+                className="w-full sm:w-auto bg-gradient-brand text-white font-bold text-sm h-11 px-6 rounded-xl shadow-md gap-2 cursor-pointer hover:opacity-95"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>ডাউনলোড হচ্ছে...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="size-4" />
+                    <span>পোস্টার ডাউনলোড করুন</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -13,7 +13,6 @@ export interface NavLink {
 export const navLinks: NavLink[] = [
   { name: "হোম", href: "/" },
   { name: "টেমপ্লেট গ্যালারি", href: "/templates" },
-  { name: "পোস্টার তৈরি করুন", href: "/create-poster" },
   { name: "আমাদের সম্পর্কে", href: "/about" },
   { name: "রিচার্জ প্যাক", href: "/recharge" },
 ];
