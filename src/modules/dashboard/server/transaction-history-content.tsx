@@ -18,7 +18,7 @@ export function TransactionHistoryContent({}: TransactionHistoryContentProps) {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams?.get("page")) || 1;
   const searchTerm = searchParams?.get("search") || "";
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   const [transactions, setTransactions] = useState<TransactionHistory[]>([]);
   const [loading, setLoading] = useState(true);

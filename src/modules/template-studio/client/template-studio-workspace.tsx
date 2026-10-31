@@ -219,10 +219,14 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
           }
         }
       } catch {
-        // Fallback default category
+        // Fallback default categories
         const fallback = [
-          { id: "7dae81a2-f9ed-4acf-8910-6ecdd2cb442f", name: "রাজনৈতিক পোস্টার", slug: "political-posters" },
-          { id: "0e307770-b69a-4fc0-86e6-6f0c1057ff5c", name: "নির্বাচনী পোস্টার নতুন", slug: "election-poster-new" },
+          { id: "election", name: "নির্বাচনী", slug: "election" },
+          { id: "gathering", name: "সমাবেশ", slug: "gathering" },
+          { id: "birthday", name: "জন্মদিন", slug: "birthday" },
+          { id: "victory-day", name: "বিজয় দিবস", slug: "victory-day" },
+          { id: "independence-day", name: "স্বাধীনতা দিবস", slug: "independence-day" },
+          { id: "mourning", name: "শোকবার্তা", slug: "mourning" },
         ];
         setCategories(fallback);
         setCategoryId(fallback[0].id);

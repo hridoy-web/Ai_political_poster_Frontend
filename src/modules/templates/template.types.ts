@@ -1,4 +1,12 @@
-export type TemplateCategory = "all" | "election" | "national-day" | "greetings" | "birthday" | "religious" | (string & {});
+export type TemplateCategory =
+  | "all"
+  | "election"
+  | "gathering"
+  | "birthday"
+  | "victory-day"
+  | "independence-day"
+  | "mourning"
+  | (string & {});
 
 export type TemplateSort = "trending" | "popular" | "latest" | "premium"
 

@@ -2,12 +2,12 @@ import { CategoryOption, PosterTemplate, TemplateCategory, TemplateSort } from "
 import { serverURL } from "@/lib/api/authApi";
 
 export const TEMPLATE_CATEGORIES: CategoryOption[] = [
-  { id: "all", label: "সকল টেমপ্লেট", count: 5 },
-  { id: "election", label: "নির্বাচন প্রচারণা", count: 1 },
-  { id: "national-day", label: "জাতীয় দিবস", count: 1 },
-  { id: "greetings", label: "দলীয় পদের শুভেচ্ছা", count: 1 },
-  { id: "birthday", label: "শুভ জন্মদিন", count: 1 },
-  { id: "religious", label: "ধর্মীয় উৎসব", count: 1 },
+  { id: "election", label: "নির্বাচনী" },
+  { id: "gathering", label: "সমাবেশ" },
+  { id: "birthday", label: "জন্মদিন" },
+  { id: "victory-day", label: "বিজয় দিবস" },
+  { id: "independence-day", label: "স্বাধীনতা দিবস" },
+  { id: "mourning", label: "শোকবার্তা" },
 ];
 
 export const MOCK_TEMPLATES: PosterTemplate[] = [
@@ -15,7 +15,7 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
     id: "tpl-101",
     title: "নির্বাচনী প্রচারণা",
     category: "election",
-    categoryLabel: "নির্বাচন প্রচারণা",
+    categoryLabel: "নির্বাচনী",
     thumbnailUrl: "/image/images26.jpg",
     isPremium: true,
     tags: ["নির্বাচন", "ভোট", "প্রচারণা", "পোস্টার"],
@@ -24,8 +24,8 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-102",
     title: "জনসভা পোস্টার",
-    category: "greetings",
-    categoryLabel: "সমাবেশ ও জনসভা",
+    category: "gathering",
+    categoryLabel: "সমাবেশ",
     thumbnailUrl: "/image/image6.jpg",
     isPremium: false,
     tags: ["জনসভা", "সমাবেশ", "মিছিল", "দলীয়"],
@@ -35,7 +35,7 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
     id: "tpl-103",
     title: "নেতার জন্মদিন",
     category: "birthday",
-    categoryLabel: "শুভ জন্মদিন",
+    categoryLabel: "জন্মদিন",
     thumbnailUrl: "/image/images24.jpg",
     isPremium: false,
     tags: ["জন্মদিন", "নেতা", "শুভেচ্ছা", "দীর্ঘায়ু"],
@@ -44,8 +44,8 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-104",
     title: "বিজয় দিবস",
-    category: "national-day",
-    categoryLabel: "জাতীয় দিবস",
+    category: "victory-day",
+    categoryLabel: "বিজয় দিবস",
     thumbnailUrl: "/image/images21.jpg",
     isPremium: true,
     tags: ["বিজয় দিবস", "১৬ ডিসেম্বর", "বাংলাদেশ", "স্বাধীনতা"],
@@ -54,7 +54,7 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   {
     id: "tpl-105",
     title: "শোকবার্তা",
-    category: "national-day",
+    category: "mourning",
     categoryLabel: "শোকবার্তা",
     thumbnailUrl: "/image/images11.jpg",
     isPremium: false,
@@ -63,19 +63,19 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   },
   {
     id: "tpl-106",
-    title: "প্রতিষ্ঠাবার্ষিকী",
-    category: "greetings",
-    categoryLabel: "প্রতিষ্ঠাবার্ষিকী",
+    title: "স্বাধীনতা দিবস পোস্টার",
+    category: "independence-day",
+    categoryLabel: "স্বাধীনতা দিবস",
     thumbnailUrl: "/image/images3.jpg",
     isPremium: false,
-    tags: ["প্রতিষ্ঠাবার্ষিকী", "শুভেচ্ছা", "দলীয়"],
+    tags: ["স্বাধীনতা দিবস", "২৬ মার্চ", "বাংলাদেশ"],
     createdAt: "2026-03-14",
   },
   {
     id: "tpl-107",
     title: "ভোটার উদ্বুদ্ধকরণ",
     category: "election",
-    categoryLabel: "ভোটার উদ্বুদ্ধকরণ",
+    categoryLabel: "নির্বাচনী",
     thumbnailUrl: "/image/images5.jpg",
     isPremium: true,
     tags: ["ভোট", "নির্বাচন", "গণতন্ত্র"],
@@ -83,12 +83,12 @@ export const MOCK_TEMPLATES: PosterTemplate[] = [
   },
   {
     id: "tpl-108",
-    title: "ধর্মীয় উৎসব ও ঈদ শুভেচ্ছা",
-    category: "religious",
-    categoryLabel: "ধর্মীয় উৎসব",
+    title: "সমাবেশ ও সম্মেলন",
+    category: "gathering",
+    categoryLabel: "সমাবেশ",
     thumbnailUrl: "/image/images4.jpg",
     isPremium: false,
-    tags: ["ঈদ", "ঈদ মোবারক", "ধর্মীয়", "উৎসব"],
+    tags: ["সমাবেশ", "সম্মেলন", "মিছিল"],
     createdAt: "2026-03-16",
   },
 ];
@@ -183,36 +183,27 @@ export class TemplateService {
     return MOCK_TEMPLATES.find((tpl) => tpl.id === id);
   }
 
-  // Get categories with dynamic template count based on available templates
-  static async getCategories(templates?: PosterTemplate[]): Promise<CategoryOption[]> {
-    const list = templates || (await this.getAllTemplates());
-    const categoryMap = new Map<string, { label: string; count: number }>();
+  // Get categories from backend or fallback to standard 6 categories
+  static async getCategories(): Promise<CategoryOption[]> {
+    try {
+      const res = await fetch(`${serverURL}/api/v1/category`, {
+        cache: "no-store",
+      });
 
-    list.forEach((tpl) => {
-      const key = tpl.category || "political-posters";
-      const existing = categoryMap.get(key);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        categoryMap.set(key, {
-          label: tpl.categoryLabel || "রাজনৈতিক পোস্টার",
-          count: 1,
-        });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
+          return data.data.map((cat: any) => ({
+            id: cat.slug || cat.id,
+            label: cat.name,
+          }));
+        }
       }
-    });
+    } catch (error) {
+      console.warn("Could not fetch categories from server, using presets:", error);
+    }
 
-    const dynamicCategories: CategoryOption[] = Array.from(categoryMap.entries()).map(
-      ([id, data]) => ({
-        id,
-        label: data.label,
-        count: data.count,
-      })
-    );
-
-    return [
-      { id: "all", label: "সকল টেমপ্লেট", count: list.length },
-      ...dynamicCategories,
-    ];
+    return TEMPLATE_CATEGORIES;
   }
 
   // Search and filtering engine
@@ -229,7 +220,12 @@ export class TemplateService {
 
     // 1. Category filter (skip if 'all')
     if (options.category && options.category !== "all") {
-      result = result.filter((item) => item.category === options.category);
+      result = result.filter(
+        (item) =>
+          item.category === options.category ||
+          (item as any).categoryId === options.category ||
+          item.categoryLabel === options.category
+      );
     }
 
     // 2. Search filter (matches title, description, or tags)

@@ -250,6 +250,7 @@ export class DashboardService {
             status,
             date: formattedDate,
             packageName: p.package?.name,
+            rawTimestamp: p.createdAt ? new Date(p.createdAt).getTime() : 0,
           });
         });
       }
@@ -281,12 +282,13 @@ export class DashboardService {
             trxId: entry.idempotencyKey || entry.id,
             status: "Successful",
             date: formattedDate,
+            rawTimestamp: entry.createdAt ? new Date(entry.createdAt).getTime() : 0,
           });
         });
       }
 
-      // Sort by most recent first (by id string which includes timestamps)
-      return results.sort((a, b) => (b.id > a.id ? 1 : -1));
+      // Sort by date descending (present / most recent date first)
+      return results.sort((a, b) => (b.rawTimestamp || 0) - (a.rawTimestamp || 0));
     } catch (err) {
       console.error("Failed to fetch transaction history from DB:", err);
     }
