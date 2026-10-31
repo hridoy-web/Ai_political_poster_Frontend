@@ -19,3 +19,4 @@ export default async function EditTemplatePage({ params }: EditTemplatePageProps
 
   return <TemplateStudioWorkspace editTemplateId={id} />;
 }
+
