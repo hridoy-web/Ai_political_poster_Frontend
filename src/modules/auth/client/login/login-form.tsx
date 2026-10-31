@@ -157,6 +157,14 @@ const handleGoogleLogin = async () => {
   if (busy) return;
 
   setError("");
+
+  if (!auth || !googleProvider) {
+    setError(
+      "গুগল লগইন বর্তমানে কনফিগার করা নেই। অনুগ্রহ করে আপনার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।"
+    );
+    return;
+  }
+
   setGoogleLoading(true);
 
   try {
@@ -180,8 +188,16 @@ const handleGoogleLogin = async () => {
     });
     console.log("[google] 5: backend সফল", res.status);
 
-    setUser(res?.data?.data?.user);
-    router.push("/");
+    const loggedUser = res?.data?.data?.user;
+    setUser(loggedUser);
+
+    if (loggedUser?.role === "SUPER_ADMIN" || loggedUser?.role === "ADMIN") {
+      router.push("/admin");
+    } else if (loggedUser?.role === "TEMPLATE_MANAGER") {
+      router.push("/admin/templates");
+    } else {
+      router.push("/");
+    }
     router.refresh();
   } catch (err: unknown) {
     console.error("[google] ব্যর্থ:", err);
