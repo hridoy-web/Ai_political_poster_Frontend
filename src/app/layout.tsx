@@ -1,26 +1,9 @@
 import type { Metadata } from "next";
-import { Outfit, Noto_Serif_Bengali } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
-
-const outfitFont = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  preload: true,
-});
-
-const banglaFont = Noto_Serif_Bengali({
-  variable: "--font-bengali",
-  subsets: ["bengali"],
-  weight: ["400", "500", "700"],
-  display: "swap",
-  preload: false,
-});
 
 export const metadata: Metadata = {
   title: "PosterAI - AI-Powered Political Poster Maker Platform",
@@ -52,14 +35,21 @@ export default function RootLayout({
     <html
       lang="bn"
       data-scroll-behavior="smooth"
-      className={cn(
-        "h-full",
-        outfitFont.variable,
-        banglaFont.variable,
-        "font-sans",
-      )}
+      className="h-full font-sans"
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground antialiased">
         <ThemeProvider
           attribute="class"
@@ -68,7 +58,7 @@ export default function RootLayout({
           disableTransitionOnChange
           scriptProps={{ type: "application/json" }}
         >
-          <AuthProvider> {children}</AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
