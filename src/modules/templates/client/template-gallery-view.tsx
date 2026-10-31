@@ -7,8 +7,11 @@ import { CategoryTabs } from "./category-tabs"
 import { TemplateSearchBar } from "./template-search-bar"
 import { TemplateCard } from "./template-card"
 import { TemplatePreviewDialog } from "./template-preview-dialog"
-import { Sparkles, LayoutGrid } from "lucide-react"
+import { LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/get-user-data"
+import { DashboardService } from "@/modules/dashboard/dashboard.service"
+import { toast } from "sonner"
 
 interface TemplateGalleryViewProps {
   initialTemplates: PosterTemplate[]
@@ -24,7 +27,31 @@ export function TemplateGalleryView({
   const [currentSort, setCurrentSort] = React.useState<TemplateSort>("trending")
   const [previewTemplate, setPreviewTemplate] = React.useState<PosterTemplate | null>(null)
   const [dialogOpen, setDialogOpen] = React.useState(false)
-  const [bookmarkedIds, setBookmarkedIds] = React.useState<Set<string>>(new Set(["tpl-101", "tpl-102"]))
+  const [bookmarkedIds, setBookmarkedIds] = React.useState<Set<string>>(new Set())
+  const { user } = useAuth()
+
+  // Load real user bookmarks from database
+  React.useEffect(() => {
+    let isMounted = true
+
+    if (user) {
+      DashboardService.getMyBookmarks()
+        .then((bookmarks) => {
+          if (isMounted && Array.isArray(bookmarks)) {
+            setBookmarkedIds(new Set(bookmarks.map((b) => b.id)))
+          }
+        })
+        .catch((err) => {
+          console.warn("Could not load user bookmarks:", err)
+        })
+    } else {
+      setBookmarkedIds(new Set())
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [user])
 
   // Filter & sort templates interactively
   const filteredTemplates = React.useMemo(() => {
@@ -41,11 +68,18 @@ export function TemplateGalleryView({
     setDialogOpen(true)
   }
 
-  const handleToggleBookmark = (id: string) => {
+  const handleToggleBookmark = async (id: string) => {
+    if (!user) {
+      toast.error("বুকমার্ক করতে অনুগ্রহ করে প্রথমে লগইন করুন!")
+      return
+    }
+
+    const isCurrentlyBookmarked = bookmarkedIds.has(id)
+
     // Optimistic local state update for instant bookmark toggle
     setBookmarkedIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) {
+      if (isCurrentlyBookmarked) {
         next.delete(id)
       } else {
         next.add(id)
@@ -53,15 +87,30 @@ export function TemplateGalleryView({
       return next
     })
 
-    /* When bookmark API is ready, uncomment the block below:
     try {
-      fetch("API_URL_HERE", {
-        method: "POST",
-      })
+      const success = await DashboardService.toggleBookmark(id, isCurrentlyBookmarked)
+      if (success) {
+        toast.success(
+          isCurrentlyBookmarked
+            ? "বুকমার্ক থেকে সরানো হয়েছে!"
+            : "পছন্দের তালিকায় সংরক্ষণ করা হয়েছে!"
+        )
+      } else {
+        throw new Error("Action failed")
+      }
     } catch (error) {
-      console.error("Bookmark API Failed:", error)
+      // Revert optimistic update on failure
+      setBookmarkedIds((prev) => {
+        const next = new Set(prev)
+        if (isCurrentlyBookmarked) {
+          next.add(id)
+        } else {
+          next.delete(id)
+        }
+        return next
+      })
+      toast.error("বুকমার্ক সংরক্ষণ করতে লগইন করুন বা পুনরায় চেষ্টা করুন।")
     }
-    */
   }
 
   return (
@@ -102,13 +151,13 @@ export function TemplateGalleryView({
           </div>
           <h3 className="text-base font-semibold text-foreground">
             {currentSort === "popular"
-              ? "পছন্দের কোনো পোস্টার পাওয়া যায়নি"
-              : "কোনো টেমপ্লেট খুঁজে পাওয়া যায়নি"}
+              ? "পছন্দের কোনো পোস্টার পাওয়া যায়নি"
+              : "কোনো টেমপ্লেট খুঁজে পাওয়া যায়নি"}
           </h3>
           <p className="text-xs text-muted-foreground max-w-sm">
             {currentSort === "popular"
               ? "পোস্টারের ওপরের লাভ (হার্ট) আইকনে ক্লিক করে আপনার পছন্দের তালিকা তৈরি করুন।"
-              : "আপনার অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্টার পাওয়া যায়নি। অনুগ্রহ করে অন্য কি-ওয়ার্ড দিয়ে চেষ্টা করুন।"}
+              : "আপনার অনুসন্ধান বা ফিল্টারের সাথে মিলে এমন কোনো পোস্টার পাওয়া যায়নি। অনুগ্রহ করে অন্য কি-ওয়ার্ড দিয়ে চেষ্টা করুন।"}
           </p>
           <Button
             variant="outline"

@@ -16,10 +16,15 @@ export interface UserPoster {
 export interface TransactionHistory {
   id: string;
   amount: number;
-  method: "bKash" | "Nagad" | "Card";
+  /** Positive = deposit/recharge, Negative = deduction */
+  signedAmount: number;
+  type: "RECHARGE" | "PACKAGE_PURCHASE" | "OTHER";
+  method: "bKash" | "Nagad" | "Card" | "Wallet";
   trxId: string;
   status: "Successful" | "Failed" | "Pending";
   date: string;
+  packageName?: string;
+  rawTimestamp?: number;
 }
 
 export interface Template {
@@ -27,4 +32,15 @@ export interface Template {
   title: string;
   category: string;
   imageUrl: string;
+}
+
+export interface ActiveSubscription {
+  id: string;
+  packageName: string;
+  packageCode: string;
+  posterCredits: number;
+  bonusCredits: number;
+  remainingCredits: number;
+  startsAt: string | null;
+  endsAt: string | null;
 }

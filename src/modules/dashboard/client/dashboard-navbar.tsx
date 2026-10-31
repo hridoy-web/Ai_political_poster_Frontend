@@ -1,77 +1,71 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, User, Wallet, LogOut } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
+import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
+import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function DashboardNavbar() {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          setIsScrolled((prev) => {
+            if (!prev && currentScrollY > 25) return true;
+            if (prev && currentScrollY < 10) return false;
+            return prev;
+          });
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="h-16 border-b border-border/60 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-20">
-      {/* Left: Sidebar Collapse/Expand Toggle Button */}
-      <div className="flex items-center gap-3">
-        <SidebarTrigger className="hover:bg-accent hover:text-foreground border border-border/60 rounded-lg p-1.5" />
-        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-brand-green/10 text-brand-mint border border-brand-green/20">
-          ইউজার প্যানেল
-        </span>
-      </div>
+    <header
+      className={cn(
+        "sticky z-50 w-full inset-x-0 mx-auto max-w-7xl transition-all duration-300 ease-in-out px-4 sm:px-6 lg:px-8",
+        isScrolled ? "top-2 sm:top-3" : "top-0 pt-2 sm:pt-4"
+      )}
+    >
+      <div
+        className={cn(
+          "h-16 flex items-center justify-between gap-4 transition-all duration-300 ease-in-out px-4 sm:px-6",
+          isScrolled
+            ? "rounded-full backdrop-blur-2xl shadow-lg bg-white/85 dark:bg-card/85 border border-brand-green/25 dark:border-brand-mint/20 shadow-brand-green/5 dark:shadow-2xl dark:shadow-black/70"
+            : "rounded-2xl border border-border/60 bg-card/75 backdrop-blur-xl shadow-xs"
+        )}
+      >
+        {/* Left: Brand Logo & Title */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Link href="/" className="hover:opacity-90 transition-opacity">
+            <Logo />
+          </Link>
+          <div className="hidden sm:block h-5 w-px bg-border" />
+          <span className="hidden sm:inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-green/10 text-brand-mint border border-brand-green/20 items-center gap-1">
+            <Sparkles className="size-3" /> ড্যাশবোর্ড
+          </span>
+        </div>
 
-      {/* Right: Theme Toggle & User Profile Dropdown */}
-      <div className="flex items-center gap-3">
-        <ThemeToggle />
+        {/* Right: Theme Toggle & Unified Profile Picture Dropdown */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <ThemeToggle />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="focus:outline-none">
-            <Avatar className="h-9 w-9 border border-brand-primary/30 hover:ring-2 hover:ring-brand-primary/40 transition-all">
-              <AvatarImage src="" alt="Hridoy Chowdhury" />
-              <AvatarFallback className="bg-gradient-brand text-white font-bold text-xs">
-                হচ
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 mt-2 bg-card/95 backdrop-blur-xl border-border">
-            <DropdownMenuLabel className="font-normal p-3">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-semibold text-foreground">হৃদয় চৌধুরী</p>
-                <p className="text-xs text-muted-foreground truncate">hridoy@example.com</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/" className="flex items-center gap-2">
-                <Home className="w-4 h-4 text-muted-foreground" />
-                <span>হোম পেজ</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/dashboard/profile" className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span>প্রোফাইল সেটিংস</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/recharge" className="flex items-center gap-2">
-                <Wallet className="w-4 h-4 text-muted-foreground" />
-                <span>রিচার্জ ওয়ালেট</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive flex items-center gap-2">
-              <LogOut className="w-4 h-4" />
-              <span>লগআউট</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          {/* Unified Profile Picture Dropdown - 100% Identical across all pages */}
+          <NavbarDropdown />
+        </div>
       </div>
     </header>
   );

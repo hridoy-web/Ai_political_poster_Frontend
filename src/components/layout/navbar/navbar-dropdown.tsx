@@ -5,13 +5,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import {
+  Home,
   LayoutDashboard,
   Settings,
   LogOut,
   FileText,
+  Wallet,
   LogIn,
   UserPlus,
   User,
+  Layers,
+  Bookmark,
+  ReceiptText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,15 +35,19 @@ import authApi, { serverURL } from "@/lib/api/authApi";
 import { loginBtnStyle, registerBtnStyle } from "./navbar-actions";
 
 const userDropdownLinks = [
+  { name: "হোম পেজ", href: "/", icon: Home },
   { name: "ড্যাশবোর্ড", href: "/dashboard", icon: LayoutDashboard },
   { name: "আমার পোস্টারসমূহ", href: "/dashboard/posters", icon: FileText },
+  { name: "সংরক্ষিত পোস্টার", href: "/dashboard/saved", icon: Bookmark },
+  { name: "লেনদেনের ইতিহাস", href: "/dashboard/history", icon: ReceiptText },
   { name: "প্রোফাইল সেটিংস", href: "/dashboard/profile", icon: Settings },
+  { name: "রিচার্জ ওয়ালেট", href: "/recharge", icon: Wallet },
 ];
 
 export function NavbarDropdown() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, setUser } = useAuth();
+  const { user, setUser, isTemplateManager, isAdmin } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -116,6 +125,42 @@ export function NavbarDropdown() {
                   </DropdownMenuItem>
                 );
               })}
+
+              {isAdmin && (
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                  <Link
+                    href="/admin"
+                    className={cn(
+                      "flex items-center w-full px-2.5 py-2 text-xs font-semibold transition-colors rounded-xl",
+                      pathname === "/admin" ||
+                        (pathname.startsWith("/admin") &&
+                          !pathname.startsWith("/admin/templates"))
+                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 font-bold"
+                        : "text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                    )}
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4 text-amber-500" />
+                    <span>অ্যাডমিন প্যানেল</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
+              {isTemplateManager && (
+                <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                  <Link
+                    href="/admin/templates"
+                    className={cn(
+                      "flex items-center w-full px-2.5 py-2 text-xs font-semibold transition-colors rounded-xl",
+                      pathname.startsWith("/admin/templates")
+                        ? "bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold"
+                        : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                    )}
+                  >
+                    <Layers className="mr-2 h-4 w-4 text-rose-500" />
+                    <span>টেমপ্লেট ম্যানেজার</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator className="bg-border" />

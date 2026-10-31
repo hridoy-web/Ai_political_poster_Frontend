@@ -1,84 +1,54 @@
-import { use } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { TransactionHistoryTable } from "./transaction-history-table";
 import { TransactionHistory } from "../dashboard.types";
+import { DashboardService } from "../dashboard.service";
+import { Loader2 } from "lucide-react";
 
 interface TransactionHistoryContentProps {
-  searchParams: Promise<{
+  searchParams?: Promise<{
     page?: string;
     search?: string;
   }>;
 }
 
-export function TransactionHistoryContent({
-  searchParams,
-}: TransactionHistoryContentProps) {
+export function TransactionHistoryContent({}: TransactionHistoryContentProps) {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams?.get("page")) || 1;
+  const searchTerm = searchParams?.get("search") || "";
+  const itemsPerPage = 10;
 
-  const resolvedParams = use(searchParams);
-  const currentPage = Number(resolvedParams.page) || 1;
-  const searchTerm = resolvedParams.search || "";
-  const itemsPerPage = 5;
+  const [transactions, setTransactions] = useState<TransactionHistory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const allTransactions: TransactionHistory[] = [
-    {
-      id: "1",
-      trxId: "TRX982347129",
-      method: "bKash",
-      amount: 100.0,
-      date: "১২ অক্টোবর, ২০২৬",
-      status: "Successful",
-    },
-    {
-      id: "2",
-      trxId: "TRX582348123",
-      method: "Nagad",
-      amount: 50.0,
-      date: "০৫ অক্টোবর, ২০২৬",
-      status: "Successful",
-    },
-    {
-      id: "3",
-      trxId: "TRX109238471",
-      method: "bKash",
-      amount: 200.0,
-      date: "২৮ সেপ্টেম্বর, ২০২৬",
-      status: "Successful",
-    },
-    {
-      id: "4",
-      trxId: "TRX482019382",
-      method: "Nagad",
-      amount: 150.0,
-      date: "১৫ সেপ্টেম্বর, ২০২৬",
-      status: "Failed",
-    },
-    {
-      id: "5",
-      trxId: "TRX781203948",
-      method: "bKash",
-      amount: 50.0,
-      date: "০১ সেপ্টেম্বর, ২০২৬",
-      status: "Successful",
-    },
-    {
-      id: "6",
-      trxId: "TRX982347129",
-      method: "bKash",
-      amount: 100.0,
-      date: "১২ অক্টোবর, ২০২৬",
-      status: "Successful",
-    },
-    {
-      id: "7",
-      trxId: "TRX582348123",
-      method: "Nagad",
-      amount: 50.0,
-      date: "০৫ অক্টোবর, ২০২৬",
-      status: "Successful",
-    }
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
 
-  // Server-side Filtering Logic
-  const filtered = allTransactions.filter(
+    DashboardService.getMyTransactions(1, 100)
+      .then((data) => {
+        if (isMounted) {
+          setTransactions(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load user transactions:", err);
+        if (isMounted) {
+          setTransactions([]);
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Real data filtering logic
+  const filtered = transactions.filter(
     (item) =>
       item.trxId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.method.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -86,9 +56,20 @@ export function TransactionHistoryContent({
   );
 
   const totalCount = filtered.length;
-  const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedData = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 space-y-3 rounded-3xl border border-border/80 bg-card/80">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+        <p className="text-sm text-muted-foreground font-medium">
+          ট্রানজেকশন তথ্য লোড হচ্ছে...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <TransactionHistoryTable

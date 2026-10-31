@@ -1,4 +1,12 @@
-export type TemplateCategory = "all" | "election" | "national-day" | "greetings" | "birthday" | "religious"
+export type TemplateCategory =
+  | "all"
+  | "election"
+  | "gathering"
+  | "birthday"
+  | "victory-day"
+  | "independence-day"
+  | "mourning"
+  | (string & {});
 
 export type TemplateSort = "trending" | "popular" | "latest" | "premium"
 
@@ -12,6 +20,11 @@ export interface PosterTemplate {
   isPremium: boolean
   tags: string[]
   createdAt: string
+  width?: number
+  height?: number
+  aspectRatio?: string
+  previewAssetId?: string | null
+  config?: any
 }
 
 export interface CategoryOption {

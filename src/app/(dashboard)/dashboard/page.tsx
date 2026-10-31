@@ -1,33 +1,50 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { WalletStatCards } from "@/modules/dashboard/server/wallet-stat-cards";
+import { DashboardHeader } from "@/modules/dashboard/client/dashboard-header";
+import { DashboardService, type DashboardOverview } from "@/modules/dashboard/dashboard.service";
+import { Loader2 } from "lucide-react";
 
-export const metadata = {
-    title: "ড্যাশবোর্ড - PosterAI",
-    description: "ইউজার ড্যাশবোর্ড ও ওয়ালেট ওভারভিউ",
-};
+export default function DashboardOverviewPage() {
+  const [stats, setStats] = useState<DashboardOverview>({
+    balance: 0,
+    credits: 0,
+    currency: "BDT",
+    totalPosters: 0,
+    bookmarkedTemplates: 0,
+    activeSubscription: null,
+  });
+  const [loading, setLoading] = useState(true);
 
-export default async function DashboardOverviewPage() {
-    // damy data
-    const mockWalletStats = {
-        balance: 150.0,
-        currency: "BDT",
-        totalPosters: 12,
-        bookmarkedTemplates: 5,
-    };
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const liveStats = await DashboardService.getDashboardOverviewStats();
+        setStats(liveStats);
+      } catch (err) {
+        console.error("Failed to load dashboard live stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
 
-    return (
-        <div className="space-y-8">
-            {/* Header Section */}
-            <div className="space-y-1 pt-6 lg:pt-0">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                    স্বাগতম, <span className="text-gradient-brand">হৃদয় চৌধুরী</span> 👋
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    আপনার অ্যাকাউন্ট ওয়ালেট ব্যালেন্স ও পোস্টার তৈরির সামারি একনজরে দেখে নিন।
-                </p>
-            </div>
+  return (
+    <div className="space-y-8">
+      {/* Header Section */}
+      <DashboardHeader />
 
-            {/* SSR Rendered Wallet & Stats Component */}
-            <WalletStatCards stats={mockWalletStats} />
+      {/* Real Database Wallet & Stats Section */}
+      {loading ? (
+        <div className="flex items-center justify-center p-12 text-muted-foreground gap-2 rounded-2xl border border-dashed border-border/70 bg-card/40">
+          <Loader2 className="size-5 animate-spin text-brand-primary" />
+          <span className="text-sm font-medium">ওয়ালেট ব্যালেন্স ও পোস্টার হিস্ট্রি লোড হচ্ছে...</span>
         </div>
-    );
+      ) : (
+        <WalletStatCards stats={stats} />
+      )}
+    </div>
+  );
 }

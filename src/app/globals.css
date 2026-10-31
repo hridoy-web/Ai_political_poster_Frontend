@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -5,8 +6,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-outfit), var(--font-bengali), sans-serif;
-  --font-heading: var(--font-outfit), var(--font-bengali), sans-serif;
+  --font-sans: "Outfit", "Noto Serif Bengali", system-ui, -apple-system, sans-serif;
+  --font-heading: "Outfit", "Noto Serif Bengali", system-ui, -apple-system, sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+  --font-bengali: "Noto Serif Bengali", serif;
 
   /* Brand Primary Colors */
   --color-brand-primary: #e11d48;

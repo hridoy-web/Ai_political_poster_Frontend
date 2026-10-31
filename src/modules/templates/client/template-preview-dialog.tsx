@@ -47,19 +47,7 @@ export function TemplatePreviewDialog({
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               {/* Badge overlay */}
-              <div className="absolute top-3 left-3 flex gap-2">
-                {template.isPremium ? (
-                  <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 shadow-md flex items-center gap-1 font-bold">
-                    <Crown className="size-3" />
-                    <span>প্রিমিয়াম</span>
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shadow-md flex items-center gap-1 font-medium">
-                    <CheckCircle2 className="size-3" />
-                    <span>ফ্রি টেমপ্লেট</span>
-                  </Badge>
-                )}
-              </div>
+              
             </div>
           </div>
 

@@ -1,56 +1,16 @@
 import { HeartHandshake } from "lucide-react";
-import { UserFeedbackCarousel, ReviewItem } from "../client/user-feedback-carousel";
-
-// Feedback Data
-const reviewsData: ReviewItem[] = [
-    {
-        id: "1",
-        name: "রহিম উদ্দিন চৌধুরী",
-        role: "ইউনিয়ন পরিষদ চেয়ারম্যান পদপ্রার্থী",
-        party: "ধানের শীষ প্রতীক",
-        comment:
-            "মাঠপর্যায়ের প্রচারণার জন্য ২ মিনিটেই প্রফেশনাল এইচডি পোস্টার তৈরি করে ফেলেছি। এআই ব্যাকগ্রাউন্ড কোয়ালিটি দারুণ!",
-        rating: 5,
-        avatarText: "রউ",
-    },
-    {
-        id: "2",
-        name: "মোঃ শাকিল আহমেদ",
-        role: "কেন্দ্রীয় সাধারণ সম্পাদক",
-        party: "ছাত্র সংগ্রাম পরিষদ",
-        comment:
-            "এআই অটো-ক্যাপশন সাজেস্ট ফিচারটি আমার সময় অনেক বাঁচিয়ে দিয়েছে। এক ক্লিকেই স্লোগান জেনারেট হয়ে যায়!",
-        rating: 5,
-        avatarText: "শাআ",
-    },
-    {
-        id: "3",
-        name: "কাজী তানভীর হোসেন",
-        role: "হেড অফ ক্যাম্পেইন মিডিয়া",
-        party: "স্বতন্ত্র প্রার্থীর মিডিয়া সেল",
-        comment:
-            "হাই-রেজোলিউশন পোস্টার প্রিন্টিংয়ের জন্য এটিই সেরা প্ল্যাটফর্ম। কালার গ্রাডিয়েন্ট ও ফ্রেম ডিজাইনগুলো একদম ডিজিটাল এজেন্সির মতো!",
-        rating: 5,
-        avatarText: "কা তা",
-    },
-    {
-        id: "4",
-        name: "মাহমুদুল হাসান",
-        role: "পৌরসভা কাউন্সিলর প্রার্থী",
-        party: "নৌকা প্রতীক",
-        comment:
-            "মোবাইল দিয়েই পোস্টার ডিজাইন সম্পন্ন করা যায়। ফ্রেম পছন্দ করে ছবি বসালেই রেডিমেড ব্যানার তৈরি!",
-        rating: 5,
-        avatarText: "মা হা",
-    },
-];
+import { UserFeedbackCarousel } from "../client/user-feedback-carousel";
+import { reviewsData } from "../home.data";
 
 
 export function UserFeedbackSection() {
     return (
-        <section className="w-full py-8 md:py-10 lg:py-12 sm:py-8 bg-linear-to-b from-transparent via-muted/20 to-transparent relative overflow-hidden">
-            {/* Background Decorative Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-75 bg-brand-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-green/5 to-background py-8 md:py-10 lg:py-12 dark:via-brand-green/10">
+            {/* Background Radial Glow Effects */}
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -top-20 left-1/3 h-80 w-80 rounded-full bg-brand-green/10 blur-[120px] dark:bg-brand-green/5" />
+                <div className="absolute -bottom-20 right-1/3 h-80 w-80 rounded-full bg-brand-mint/10 blur-[120px] dark:bg-brand-mint/5" />
+            </div>
 
             <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 space-y-10 relative z-10">
                 {/* Modern & Catchy Section Header */}

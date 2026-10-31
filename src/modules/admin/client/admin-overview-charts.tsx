@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ResponsiveContainer,
@@ -9,13 +10,14 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
+import { AdminService, OverviewAnalyticsData } from "../admin.service";
 
-const analyticsData = [
-  { day: "১০ অক", revenue: 1200 },
-  { day: "১২ অক", revenue: 1800 },
-  { day: "১৪ অক", revenue: 2900 },
-  { day: "১৬ অক", revenue: 3800 },
-  { day: "১৮ অক", revenue: 2500 },
+const defaultAnalyticsData = [
+  { day: "১০ অক", revenue: 0 },
+  { day: "১২ অক", revenue: 0 },
+  { day: "১৪ অক", revenue: 0 },
+  { day: "১৬ অক", revenue: 0 },
+  { day: "১৮ অক", revenue: 0 },
 ];
 
 // Custom Tooltip Interface 
@@ -40,6 +42,28 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function AdminOverviewCharts() {
+  const [data, setData] = useState<OverviewAnalyticsData | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    AdminService.getOverviewAnalytics()
+      .then((res) => {
+        if (isMounted && res) {
+          setData(res);
+        }
+      })
+      .catch((err) => console.warn("Failed to load admin charts analytics:", err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const chartData =
+    data?.dailyRevenue && data.dailyRevenue.length > 0
+      ? data.dailyRevenue
+      : defaultAnalyticsData;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <Card className="lg:col-span-2 border border-border/80 bg-card/80 backdrop-blur-xl rounded-3xl p-4 shadow-xs">
@@ -51,7 +75,7 @@ export function AdminOverviewCharts() {
         <CardContent className="p-0 h-55 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={analyticsData}
+              data={chartData}
               margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
             >
               <defs>
@@ -98,13 +122,17 @@ export function AdminOverviewCharts() {
             <span className="text-[11px] text-muted-foreground font-semibold">
               আজকের পোস্টার
             </span>
-            <h4 className="text-lg font-bold text-foreground">২৬০ টি</h4>
+            <h4 className="text-lg font-bold text-foreground">
+              {(data?.todayPosters || 0).toLocaleString("bn-BD")} টি
+            </h4>
           </div>
           <div className="p-3 rounded-2xl bg-accent/40 border border-border/40">
             <span className="text-[11px] text-muted-foreground font-semibold">
               আজকের সাইনআপ
             </span>
-            <h4 className="text-lg font-bold text-foreground">১৮ জন</h4>
+            <h4 className="text-lg font-bold text-foreground">
+              {(data?.todayUsers || 0).toLocaleString("bn-BD")} জন
+            </h4>
           </div>
         </CardContent>
       </Card>

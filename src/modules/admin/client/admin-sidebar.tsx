@@ -3,16 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  LogOut,
-  Home,
-  Sparkles,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -21,9 +15,16 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/brand/logo";
 import { ADMIN_NAV_ITEMS } from "../admin.constants";
+import { useAuth } from "@/hooks/get-user-data";
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { isAdmin, isSuperAdmin } = useAuth();
+
+  // If user is not full admin (i.e. only Template Manager), show only template manager navigation
+  const visibleNavItems = isAdmin
+    ? ADMIN_NAV_ITEMS
+    : ADMIN_NAV_ITEMS.filter((item) => item.href.startsWith("/admin/templates"));
 
   return (
     <Sidebar
@@ -33,13 +34,25 @@ export function AdminSidebar() {
       {/* Sidebar Header */}
       <SidebarHeader className="h-16 flex flex-row items-center justify-between px-3.5 border-b border-border/40 shrink-0">
         <Link
-          href="/admin"
+          href={isAdmin ? "/admin" : "/admin/templates"}
           className="flex items-center justify-center w-full active:scale-95 transition-transform"
         >
           <div className="group-data-[collapsible=icon]:hidden w-full flex items-center justify-between">
             <Logo />
-            <span className="px-2 py-0.5 text-[10px] font-bold bg-destructive/10 text-destructive border border-destructive/20 rounded-full">
-              ADMIN
+            <span
+              className={`px-2.5 py-0.5 text-[9.5px] font-bold border rounded-full tracking-wide ${
+                isSuperAdmin
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                  : isAdmin
+                  ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
+                  : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+              }`}
+            >
+              {isSuperAdmin
+                ? "SUPER ADMIN"
+                : isAdmin
+                ? "ADMIN"
+                : "TEMPLATE MANAGER"}
             </span>
           </div>
 
@@ -52,7 +65,7 @@ export function AdminSidebar() {
       {/* Sidebar Navigation */}
       <SidebarContent className="p-2 pt-6 space-y-1.5 group-data-[collapsible=icon]:px-1">
         <SidebarMenu className="space-y-1">
-          {ADMIN_NAV_ITEMS.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive =
               item.href === "/admin"
                 ? pathname === "/admin"
@@ -91,31 +104,6 @@ export function AdminSidebar() {
           })}
         </SidebarMenu>
       </SidebarContent>
-
-      {/* Sidebar Footer */}
-      <SidebarFooter className="p-2 border-t border-border/40 space-y-1.5 group-data-[collapsible=icon]:px-1">
-        <Link href="/" className="w-full flex justify-center">
-          <Button
-            variant="outline"
-            className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 border-border/80 text-foreground hover:bg-accent px-3 h-10 rounded-xl transition-colors duration-150"
-          >
-            <Home className="w-4.5 h-4.5 shrink-0" />
-            <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
-              মূল ওয়েবসাইট
-            </span>
-          </Button>
-        </Link>
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start group-data-[collapsible=icon]:justify-center gap-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive px-3 h-10 rounded-xl transition-colors duration-150"
-        >
-          <LogOut className="w-4.5 h-4.5 shrink-0" />
-          <span className="group-data-[collapsible=icon]:hidden truncate font-medium text-xs">
-            লগআউট
-          </span>
-        </Button>
-      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

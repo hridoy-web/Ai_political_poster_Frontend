@@ -12,12 +12,14 @@ interface PackageCardProps {
   plan: PackagePlan;
   isSelected: boolean;
   onSelect: () => void;
+  onBuy?: () => void;
 }
 
 export const PackageCard = memo(function PackageCard({
   plan,
   isSelected,
   onSelect,
+  onBuy,
 }: PackageCardProps) {
   const isRedHero = plan.isPopular;
   const isGreenHero = plan.isBestValue;
@@ -175,10 +177,14 @@ export const PackageCard = memo(function PackageCard({
           )}
           onClick={(e) => {
             e.stopPropagation();
-            onSelect();
+            if (onBuy) {
+              onBuy();
+            } else {
+              onSelect();
+            }
           }}
         >
-          {isSelected ? "প্যাকেজটি নির্বাচিত" : "প্যাকেজটি বেছে নিন"}
+          {isSelected ? "প্যাকেজটি কিনুন" : "প্যাকেজটি বেছে নিন"}
         </Button>
       </div>
     </Card>

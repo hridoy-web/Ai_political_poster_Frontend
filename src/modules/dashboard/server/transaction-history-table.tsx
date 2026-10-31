@@ -8,7 +8,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Wallet, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowUpDown, Wallet, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import {
     TransactionSearch,
     TransactionCopyBtn,
@@ -34,18 +34,46 @@ export function TransactionHistoryTable({
     const renderMethodBadge = (method: string) => {
         const isBkash = method.toLowerCase().includes("bkash");
         const isNagad = method.toLowerCase().includes("nagad");
+        const isWallet = method.toLowerCase() === "wallet";
 
         return (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-muted/80 border border-border/80">
                 <Wallet
-                    className={`w-3.5 h-3.5 ${isBkash
+                    className={`w-3.5 h-3.5 ${
+                        isBkash
                             ? "text-pink-500"
                             : isNagad
-                                ? "text-orange-500"
-                                : "text-brand-primary"
-                        }`}
+                            ? "text-orange-500"
+                            : isWallet
+                            ? "text-purple-500"
+                            : "text-brand-primary"
+                    }`}
                 />
                 <span>{method}</span>
+            </div>
+        );
+    };
+
+    /** Renders the amount cell with sign (+/-) and color coding */
+    const renderAmountCell = (trx: TransactionHistory) => {
+        const isDebit = trx.signedAmount < 0 || trx.type === "PACKAGE_PURCHASE";
+        const displayAmt = Math.abs(trx.amount).toFixed(2);
+
+        return (
+            <div className={`flex items-center gap-1.5 font-bold text-sm ${isDebit ? "text-destructive" : "text-emerald-600 dark:text-emerald-400"}`}>
+                {isDebit ? (
+                    <ArrowUpRight className="w-4 h-4 shrink-0 rotate-180" />
+                ) : (
+                    <ArrowDownLeft className="w-4 h-4 shrink-0 rotate-180" />
+                )}
+                <span>
+                    {isDebit ? "-" : "+"}৳ {displayAmt}
+                </span>
+                {trx.packageName && (
+                    <span className="text-xs text-muted-foreground font-medium ml-1">
+                        ({trx.packageName})
+                    </span>
+                )}
             </div>
         );
     };
@@ -65,7 +93,19 @@ export function TransactionHistoryTable({
                 </div>
             </div>
 
-            {/* Main Table Structure (SSR) */}
+            {/* Legend */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground px-1">
+                <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                    <span>+ সবুজ = রিচার্জ / ডিপোজিট</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-destructive inline-block" />
+                    <span>- লাল = প্যাকেজ কেনা / ডেবিট</span>
+                </div>
+            </div>
+
+            {/* Main Table */}
             <div className="border border-border/80 rounded-3xl bg-card/80 backdrop-blur-xl overflow-hidden shadow-md">
                 <Table>
                     <TableHeader className="bg-muted/50 border-b border-border/60">
@@ -111,8 +151,8 @@ export function TransactionHistoryTable({
                                         {renderMethodBadge(trx.method)}
                                     </TableCell>
 
-                                    <TableCell className="py-4 px-6 font-bold text-foreground text-sm">
-                                        ৳ {trx.amount.toFixed(2)}
+                                    <TableCell className="py-4 px-6">
+                                        {renderAmountCell(trx)}
                                     </TableCell>
 
                                     <TableCell className="py-4 px-6 text-xs text-muted-foreground font-medium">
@@ -124,6 +164,10 @@ export function TransactionHistoryTable({
                                             <Badge className="bg-brand-green/10 text-brand-mint hover:bg-brand-green/20 border-brand-green/20 font-semibold px-3 py-1 rounded-full gap-1.5">
                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                                 <span>Success</span>
+                                            </Badge>
+                                        ) : trx.status === "Pending" ? (
+                                            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 font-semibold px-3 py-1 rounded-full">
+                                                <span>Pending</span>
                                             </Badge>
                                         ) : (
                                             <Badge className="bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20 font-semibold px-3 py-1 rounded-full gap-1.5">
@@ -140,7 +184,7 @@ export function TransactionHistoryTable({
                                     colSpan={5}
                                     className="h-32 text-center text-muted-foreground text-sm"
                                 >
-                                    No transaction records found.
+                                    কোনো ট্রানজেকশন রেকর্ড পাওয়া যায়নি।
                                 </TableCell>
                             </TableRow>
                         )}
@@ -148,13 +192,12 @@ export function TransactionHistoryTable({
                 </Table>
             </div>
 
-            {/* SSR Bottom Bar */}
+            {/* Bottom Bar */}
             <div className="flex items-center justify-between px-2 pt-1">
                 <p className="text-xs text-muted-foreground font-medium">
                     Page <span className="text-foreground font-bold">{currentPage}</span> of{" "}
                     <span className="text-foreground font-bold">{totalPages || 1}</span>
                 </p>
-
                 <TransactionPagination
                     currentPage={currentPage}
                     totalPages={totalPages}

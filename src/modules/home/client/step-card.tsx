@@ -1,30 +1,10 @@
 "use client";
 import React from "react";
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, UserPlus, LayoutGrid, ImagePlus, Download, type LucideIcon } from "lucide-react";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { iconMap, StepCardProps, StepIconKey } from "../home.types";
 
-export type StepIconKey = "user-plus" | "layout-grid" | "image-plus" | "download";
-
-export interface StepItem {
-    number: string;
-    title: string;
-    description: string;
-    icon: StepIconKey | LucideIcon;
-}
-
-interface StepCardProps {
-    step: StepItem;
-    isLast?: boolean;
-    index?: number;
-}
-
-const iconMap: Record<StepIconKey, LucideIcon> = {
-    "user-plus": UserPlus,
-    "layout-grid": LayoutGrid,
-    "image-plus": ImagePlus,
-    "download": Download,
-};
 
 export const cardVariants: Variants = {
     hidden: { opacity: 0, y: 24, scale: 0.98 },
