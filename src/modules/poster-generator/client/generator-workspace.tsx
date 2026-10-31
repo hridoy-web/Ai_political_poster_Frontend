@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -12,6 +12,7 @@ import {
 import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
+import { PosterSuccessModal } from "./poster-success-modal";
 import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,12 @@ export function GeneratorWorkspace({
   const [imageOffsetY, setImageOffsetY] = useState(0);
   const [isComparing, setIsComparing] = useState(false);
   const [comparePhotoUrl, setComparePhotoUrl] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
+  const [createdPosterUrl, setCreatedPosterUrl] = useState<string | null>(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Template selection flow state:
   // If user visits /create-poster without templateId, show template picker first
@@ -168,10 +174,20 @@ export function GeneratorWorkspace({
     toast.info("ইনপুট তথ্য রিসেট করা হয়েছে।");
   };
 
-  // Full real database pipeline: Save Draft -> Trigger Render -> Poll Completion -> Download
-  const handleDownload = async () => {
+  // Full real database pipeline: Validate -> Save Draft -> Trigger Render -> Poll Completion -> Show Success Modal
+  const handleCreatePoster = async () => {
+    // 1. Validation check
+    if (!candidate.name?.trim()) {
+      toast.error("অনুগ্রহ করে প্রার্থীর নাম লিখুন।");
+      return;
+    }
+    if (!candidate.designation?.trim()) {
+      toast.error("অনুগ্রহ করে প্রার্থীর পদবি বা নির্বাচনী এলাকা লিখুন।");
+      return;
+    }
+
     const currentTemplateId = activeTemplate?.id || "4c8057b1-35fb-4dad-83a3-32ecd314a0a3";
-    setIsDownloading(true);
+    setIsCreating(true);
     try {
       toast.info("ডাটাবেজে পোস্টার ড্রাফট সেভ হচ্ছে...");
 
@@ -188,15 +204,17 @@ export function GeneratorWorkspace({
           theme,
           photoUrl,
           imageScale,
+          imageOffsetX,
+          imageOffsetY,
         },
       });
 
       toast.info("রেন্ডারিং ইঞ্জিন প্রসেসিং করছে...");
 
-      // 2. Trigger asynchronous render job
+      // 2. Trigger asynchronous render job (backend debits 1 credit)
       await PosterGeneratorService.triggerPosterRender(draft.id);
 
-      // 3. Poll render status
+      // 3. Poll render status until completed
       let attempts = 0;
       let completedStatus = null;
       while (attempts < 12) {
@@ -212,24 +230,60 @@ export function GeneratorWorkspace({
         attempts++;
       }
 
-      toast.success("পোস্টার সফলভাবে তৈরি হয়েছে এবং ডাটাবেজে সংরক্ষিত হয়েছে!");
-
-      // 4. Download file
-      const downloadTarget = completedStatus?.outputUrl || completedStatus?.previewUrl || photoUrl;
-      if (downloadTarget) {
-        const link = document.createElement("a");
-        link.href = downloadTarget;
-        link.download = `poster-${candidate.name.replace(/\s+/g, "-") || "candidate"}.png`;
-        link.target = "_blank";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      // Try capturing direct high-res canvas PNG as primary or fallback
+      let capturedDataUrl = "";
+      if (canvasRef.current) {
+        try {
+          capturedDataUrl = canvasRef.current.toDataURL("image/png");
+        } catch {
+          // ignore
+        }
       }
+
+      const finalUrl = completedStatus?.outputUrl || completedStatus?.previewUrl || capturedDataUrl || photoUrl;
+      setCreatedPosterUrl(finalUrl);
+      setIsCreated(true);
+      setIsSuccessModalOpen(true);
+      toast.success("পোস্টার সফলভাবে তৈরি হয়েছে এবং ডাটাবেজে সংরক্ষিত হয়েছে!");
     } catch (err: any) {
       console.error("Poster render pipeline error:", err);
       const errMsg =
         err.response?.data?.message || err.message || "পোস্টার প্রসেস করতে সমস্যা হয়েছে।";
       toast.error(errMsg);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Download high-resolution poster file
+  const handleDownloadFile = () => {
+    setIsDownloading(true);
+    try {
+      let downloadTarget = createdPosterUrl;
+      if (!downloadTarget && canvasRef.current) {
+        try {
+          downloadTarget = canvasRef.current.toDataURL("image/png");
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!downloadTarget) {
+        toast.error("পোস্টার ফাইল পাওয়া যায়নি। অনুগ্রহ করে পুনরায় তৈরি করুন।");
+        return;
+      }
+
+      const safeName = (candidate.name || "candidate_poster").replace(/\s+/g, "_");
+      const link = document.createElement("a");
+      link.href = downloadTarget;
+      link.download = `poster-${safeName}.png`;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("পোস্টার সফলভাবে ডাউনলোড হয়েছে!");
+    } catch (err: any) {
+      toast.error("ডাউনলোড করতে সমস্যা হয়েছে।");
     } finally {
       setIsDownloading(false);
     }
@@ -423,12 +477,25 @@ export function GeneratorWorkspace({
               setImageOffsetY(y);
             }}
             template={activeTemplate}
-            onDownload={handleDownload}
+            onCreatePoster={handleCreatePoster}
+            isCreating={isCreating}
+            isCreated={isCreated}
+            onDownload={handleDownloadFile}
             isDownloading={isDownloading}
             isComparing={isComparing}
+            canvasRef={canvasRef}
           />
         </div>
       </div>
+
+      {/* Poster Generation Success & Download Modal */}
+      <PosterSuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        posterImageUrl={createdPosterUrl}
+        candidateName={candidate.name}
+        onDownload={handleDownloadFile}
+      />
     </div>
   );
 }

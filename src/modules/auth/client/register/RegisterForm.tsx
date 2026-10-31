@@ -3,13 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import authApi, { serverURL } from "@/lib/api/authApi";
 import {
   Camera,
-  Check,
   CheckCheck,
   Eye,
   EyeOff,
@@ -25,6 +25,7 @@ import { ALLOWED_IMAGE_TYPES, fieldErrorClass, FieldErrors, FormData_, inputClas
 /* ---------------- Component ---------------- */
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [form, setForm] = useState<FormData_>({
     name: "",
     email: "",
@@ -37,7 +38,6 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -166,7 +166,9 @@ export default function RegisterForm() {
         withCredentials: true,
       });
 
-      setDone(true);
+      // Redirect directly to home on successful registration
+      router.push("/");
+      return;
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
@@ -180,33 +182,6 @@ export default function RegisterForm() {
       setLoading(false);
     }
   };
-
-  /* ---------------- Success Screen ---------------- */
-
-  if (done) {
-    return (
-      <div className="flex flex-col items-center py-6 text-center">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground ring-8 ring-secondary/30">
-          <Check className="h-8 w-8 text-white" />
-        </div>
-
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Account created
-        </h2>
-
-        <p className="mt-2 max-w-xs text-xs leading-5 text-muted-foreground sm:text-sm">
-          Your account is ready. Log in to start creating your posters.
-        </p>
-
-        <Link
-          href="/login"
-          className="mt-6 w-full rounded-xl bg-gradient-brand px-6 py-3 text-center text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99]"
-        >
-          Go to login
-        </Link>
-      </div>
-    );
-  }
 
   /* ---------------- Registration Form ---------------- */
 

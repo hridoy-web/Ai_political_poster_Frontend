@@ -137,8 +137,9 @@ export async function renderTemplateCanvas({
           const photoImg = await loadImage(sampleCandidate.photoUrl);
           ctx.save();
 
-          // Clip to slot shape with 30% overflow margin for flexible positioning
-          clipSlotShape(ctx, slot, 0.30);
+          // Clip to canvas bounds only (not photo slot shape) so candidate's photo does not get cut off when crossing slot border
+          ctx.beginPath();
+          ctx.rect(0, 0, width, height);
           ctx.clip();
 
           // Draw image centered and covering the slot with user offsets

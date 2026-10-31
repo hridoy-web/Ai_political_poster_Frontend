@@ -476,39 +476,6 @@ export function StudioInputPanel({
               />
             </div>
           </div>
-
-          {/* Banner Solid Color Theme (Bigger & Clearer - Image 2) */}
-          <div className="pt-2 border-t border-border/80">
-            <label className="block text-xs sm:text-sm font-bold text-foreground mb-2.5">
-              ব্যানারের সলিড কালার থিম:
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              {[
-                { id: "emerald", label: "সবুজ", color: "bg-[#063923]" },
-                { id: "crimson", label: "লাল", color: "bg-[#881337]" },
-                { id: "navy", label: "নেভি ব্লু", color: "bg-[#0f172a]" },
-                { id: "charcoal", label: "চারকোল", color: "bg-[#18181b]" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => onThemeChange(t.id as BannerTheme)}
-                  className={`h-11 sm:h-12 px-3 rounded-xl border text-center flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                    theme === t.id
-                      ? "border-2 border-brand-primary bg-brand-primary/10 shadow-sm ring-1 ring-brand-primary/30"
-                      : "border-border hover:border-brand-primary/40 bg-card"
-                  }`}
-                >
-                  <span
-                    className={`size-4 rounded-full ${t.color} shrink-0 border border-white/60 shadow-xs`}
-                  />
-                  <span className="text-xs sm:text-sm font-bold text-foreground">
-                    {t.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 

@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react";
 import { WalletStatCards } from "@/modules/dashboard/server/wallet-stat-cards";
 import { DashboardHeader } from "@/modules/dashboard/client/dashboard-header";
-import { DashboardService } from "@/modules/dashboard/dashboard.service";
-import { WalletSummary } from "@/modules/dashboard/dashboard.types";
+import { DashboardService, type DashboardOverview } from "@/modules/dashboard/dashboard.service";
 import { Loader2 } from "lucide-react";
 
 export default function DashboardOverviewPage() {
-  const [stats, setStats] = useState<WalletSummary>({
+  const [stats, setStats] = useState<DashboardOverview>({
     balance: 0,
+    credits: 0,
     currency: "BDT",
     totalPosters: 0,
     bookmarkedTemplates: 0,
+    activeSubscription: null,
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +40,7 @@ export default function DashboardOverviewPage() {
       {loading ? (
         <div className="flex items-center justify-center p-12 text-muted-foreground gap-2 rounded-2xl border border-dashed border-border/70 bg-card/40">
           <Loader2 className="size-5 animate-spin text-brand-primary" />
-          <span className="text-sm font-medium">ওয়ালেট ব্যালেন্স ও পোস্টার হিস্ট্রি লোড হচ্ছে...</span>
+          <span className="text-sm font-medium">ওয়ালেট ব্যালেন্স ও পোস্টার হিস্ট্রি লোড হচ্ছে...</span>
         </div>
       ) : (
         <WalletStatCards stats={stats} />
