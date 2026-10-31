@@ -1,7 +1,6 @@
 export const serverURL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
-
 interface ApiEndpoint {
   url: string;
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -10,6 +9,7 @@ interface ApiEndpoint {
 interface AuthApiType {
   register: ApiEndpoint;
   login: ApiEndpoint;
+  googleLogin: ApiEndpoint;
   logout: ApiEndpoint;
   getCurrentUser: ApiEndpoint;
 }
@@ -21,6 +21,10 @@ const authApi: AuthApiType = {
   },
   login: {
     url: "/api/v1/auth/login",
+    method: "POST",
+  },
+  googleLogin: {
+    url: "/api/v1/auth/google",
     method: "POST",
   },
   logout: {

@@ -212,17 +212,6 @@ export default function RegisterForm() {
 
   return (
     <>
-      {/* Heading */}
-
-      {/* <div className="mb-5 text-center">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Create your account
-        </h1>
-
-        <p className="mt-1.5 text-xs leading-5 text-muted-foreground sm:text-sm">
-          Join to start creating and sharing your posters.
-        </p>
-      </div> */}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         {/* Profile Image */}
