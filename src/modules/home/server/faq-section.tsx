@@ -4,7 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { faqData } from "../home.service";
+import { faqData } from "../home.data";
 
 
 export function FaqSection() {
