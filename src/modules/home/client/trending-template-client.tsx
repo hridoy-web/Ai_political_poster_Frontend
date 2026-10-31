@@ -7,14 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CATEGORY_MAP, TemplateCardProps, TemplateCategory, TrendingTemplateClientProps } from "../home.types";
-import { BADGE_CONFIG } from "../home.service";
+import { BADGE_CONFIG } from "../home.data";
 
 
 function TemplateCard({ template, className }: TemplateCardProps) {
     const [imageError, setImageError] = useState(false);
-    const badge = template.badge ? BADGE_CONFIG[template.badge] : null;
+    const badge = template.badge && template.badge in BADGE_CONFIG ? BADGE_CONFIG[template.badge] : null;
     const BadgeIcon = badge?.icon;
-    const categoryLabel = CATEGORY_MAP[template.category] || template.category;
+    const categoryLabel = template.categoryLabel || CATEGORY_MAP[template.category] || template.category;
 
     return (
         <Card
@@ -29,7 +29,7 @@ function TemplateCard({ template, className }: TemplateCardProps) {
                 <div
                     className={cn(
                         "absolute inset-0 bg-linear-to-br flex flex-col items-center justify-center p-4 text-center transition-transform duration-500 group-hover:scale-105",
-                        template.gradient
+                        template.gradient || "from-emerald-600 via-green-700 to-emerald-900"
                     )}
                 >
                     {imageError && (
@@ -130,18 +130,32 @@ export default function TrendingTemplateClient({
     templates,
     categories,
 }: TrendingTemplateClientProps) {
-    const [activeCategory, setActiveCategory] = useState<TemplateCategory>("all");
+    const [activeCategory, setActiveCategory] = useState<TemplateCategory | string>("all");
 
     // Memoized filter logic
     const filteredTemplates = useMemo(() => {
         if (activeCategory === "all") return templates;
-        return templates.filter((t) => t.category === activeCategory);
+        return templates.filter((t) => {
+            if (t.category === activeCategory) return true;
+            if (t.categoryId === activeCategory) return true;
+            if (t.categorySlug === activeCategory) return true;
+
+            const text = `${t.category} ${t.categorySlug || ""} ${t.title} ${t.categoryLabel || ""}`.toLowerCase();
+            if (activeCategory === "election" && (text.includes("election") || text.includes("নির্বাচন") || text.includes("ভোট"))) return true;
+            if (activeCategory === "rally" && (text.includes("rally") || text.includes("সমাবেশ") || text.includes("জনসভা") || text.includes("মিছিল"))) return true;
+            if (activeCategory === "birthday" && (text.includes("birthday") || text.includes("জন্মদিন"))) return true;
+            if (activeCategory === "victory" && (text.includes("victory") || text.includes("বিজয়") || text.includes("১৬ ডিসেম্বর"))) return true;
+            if (activeCategory === "independence" && (text.includes("independence") || text.includes("sadhinota") || text.includes("shadhinota") || text.includes("স্বাধীনতা") || text.includes("২৬ মার্চ"))) return true;
+            if (activeCategory === "condolence" && (text.includes("condolence") || text.includes("shok") || text.includes("শোক") || text.includes("স্মরণ"))) return true;
+
+            return false;
+        });
     }, [activeCategory, templates]);
 
     return (
         <div>
             {/* Category Filter Tabs */}
-            <div className="mb-8 flex items-center justify-center sm:mb-12">
+            <div className="mb-4 flex items-center justify-center sm:mb-6">
                 <div className="flex max-w-full gap-2 overflow-x-auto p-1.5 scrollbar-none sm:flex-wrap sm:justify-center">
                     {categories.map((cat) => {
                         const isActive = activeCategory === cat.id;

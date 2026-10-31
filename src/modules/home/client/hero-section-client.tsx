@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { POSTERS } from "../home.service";
+import { POSTERS } from "../home.data";
 
 export default function HeroSectionClient() {
     const [activeIdx, setActiveIdx] = useState(0);
@@ -27,13 +27,13 @@ export default function HeroSectionClient() {
     };
 
     return (
-        <div 
+        <div
             className="relative z-10 flex w-full flex-col items-center justify-center overflow-hidden sm:overflow-visible"
             onMouseEnter={() => { isInteractingRef.current = true; }}
             onMouseLeave={() => { isInteractingRef.current = false; }}
             onTouchStart={() => { isInteractingRef.current = true; }}
-            onTouchEnd={() => { 
-                setTimeout(() => { isInteractingRef.current = false; }, 2000); 
+            onTouchEnd={() => {
+                setTimeout(() => { isInteractingRef.current = false; }, 2000);
             }}
         >
             {/* Card Stack Container - Mobile Optimized */}

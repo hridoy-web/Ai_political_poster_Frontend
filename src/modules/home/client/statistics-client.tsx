@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/c
 
 import { serverURL } from "@/lib/api/authApi";
 import { StatCardProps, StatItem } from "../home.types";
-import { DEFAULT_STATS } from "../home.service";
+import { DEFAULT_STATS } from "../home.data";
 
 // Reusable helper to format
 function formatBengaliNumber(val: number, decimals = 0): string {

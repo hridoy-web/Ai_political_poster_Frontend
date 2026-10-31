@@ -1,39 +1,42 @@
 import { Download, ImagePlus, LayoutGrid, LucideIcon, UserPlus } from "lucide-react";
 
-// HERO
-export interface PosterCardItem {
-    id: string;
-    src: string;
-    title: string;
-}
-
 // TRENDING-TEMPLATES
 export type TemplateCategory =
     | "all"
     | "election"
     | "rally"
     | "birthday"
+    | "victory"
+    | "independence"
     | "condolence"
-    | "victory";
+    | (string & {});
 
 // TRENDING-TEMPLATES
 export interface Template {
-    id: number;
+    id: number | string;
     title: string;
-    category: Exclude<TemplateCategory, "all">;
+    category: string;
+    categoryId?: string;
+    categorySlug?: string;
     categoryLabel?: string;
     badge?: "trending" | "new" | "popular";
-    gradient: string;
+    gradient?: string;
     image: string;
+    isPremium?: boolean;
 }
 
 // TRENDING-TEMPLATES
-export const CATEGORY_MAP: Record<Exclude<TemplateCategory, "all">, string> = {
+export const CATEGORY_MAP: Record<string, string> = {
     election: "নির্বাচনী",
     rally: "সমাবেশ",
     birthday: "জন্মদিন",
     victory: "বিজয় দিবস",
+    independence: "স্বাধীনতা দিবস",
     condolence: "শোকবার্তা",
+    "political-posters": "রাজনৈতিক পোস্টার",
+    "election-poster-new": "নির্বাচনী প্রচারণা পোস্টার",
+    "victory-day-poster": "বিজয় দিবস পোস্টার",
+    "victory-day-poster21971": "বিজয় দিবস পোস্টার ১৯৭১",
 };
 
 // TRENDING-TEMPLATES
@@ -46,46 +49,12 @@ export const categories: {
         { id: "rally", label: CATEGORY_MAP.rally },
         { id: "birthday", label: CATEGORY_MAP.birthday },
         { id: "victory", label: CATEGORY_MAP.victory },
+        { id: "independence", label: CATEGORY_MAP.independence },
         { id: "condolence", label: CATEGORY_MAP.condolence },
     ];
 
-// TRENDING-TEMPLATES-CLIENT
-export interface BadgeConfigItem {
-    icon: LucideIcon;
-    label: string;
-    className: string;
-}
-
-// TRENDING-TEMPLATES-CLIENT
-export interface TemplateCardProps {
-    template: Template;
-    className?: string;
-}
-
-// TRENDING-TEMPLATES-CLIENT
-export interface TrendingTemplateClientProps {
-    templates: Template[];
-    categories: { id: TemplateCategory; label: string }[];
-}
-
-
 // STEP-CARD
 export type StepIconKey = "user-plus" | "layout-grid" | "image-plus" | "download";
-
-// STEP-CARD
-export interface StepItem {
-    number: string;
-    title: string;
-    description: string;
-    icon: StepIconKey | LucideIcon;
-}
-
-// STEP-CARD
-export interface StepCardProps {
-    step: StepItem;
-    isLast?: boolean;
-    index?: number;
-}
 
 // STEP-CARD
 export const iconMap: Record<StepIconKey, LucideIcon> = {
@@ -95,43 +64,16 @@ export const iconMap: Record<StepIconKey, LucideIcon> = {
     "download": Download,
 };
 
-// STATISTICS-CLIENT
-export interface StatItem {
-    id: string;
-    icon: LucideIcon;
-    value: number;
-    suffix: string;
-    label: string;
-    decimals?: number;
-}
-
-// STATISTICS-CLIENT
-export interface StatCardProps {
-    stat: StatItem;
-    index: number;
-    start: boolean;
-}
-
-// USER-FEEDBACK
-export interface ReviewItem {
-    id: string;
-    name: string;
-    role: string;
-    party: string;
-    comment: string;
-    rating: number;
-    avatarText: string;
-}
-
-// USER-FEEDBACK
-export interface UserFeedbackCarouselProps {
-    reviews: ReviewItem[];
-}
-
-// FAQ-SECTION
-export interface FAQItem {
-    id: string;
-    question: string;
-    answer: string;
-}
-
+export type {
+    PosterCardItem,
+    BadgeConfigItem,
+    TemplateCardProps,
+    TrendingTemplateClientProps,
+    StepItem,
+    StepCardProps,
+    StatItem,
+    StatCardProps,
+    ReviewItem,
+    UserFeedbackCarouselProps,
+    FAQItem,
+} from "./home.schema";

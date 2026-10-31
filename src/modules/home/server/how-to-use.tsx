@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import StepCard from "../client/step-card";
-import { steps } from "../home.service";
+import { steps } from "../home.data";
 
 
 const HowToUse = () => {
@@ -74,7 +74,7 @@ const HowToUse = () => {
                         ))}
                     </div>
                 </div>
-                
+
             </div>
         </section>
     );
