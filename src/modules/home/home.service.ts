@@ -66,7 +66,7 @@ export class HomeService {
     try {
       const baseUrl = getBaseServerUrl();
       const res = await fetch(`${baseUrl}/api/v1/template?limit=${limit}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
 
       if (!res.ok) {

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { AuthProvider } from "@/context/AuthContext";
+import { GoogleAuthProvider } from "@/components/providers/google-auth-provider";
 
 export const metadata: Metadata = {
   title: "PosterAI - AI-Powered Political Poster Maker Platform",
@@ -58,7 +60,9 @@ export default function RootLayout({
           disableTransitionOnChange
           scriptProps={{ type: "application/json" }}
         >
-          <AuthProvider>{children}</AuthProvider>
+          <GoogleAuthProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </GoogleAuthProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>

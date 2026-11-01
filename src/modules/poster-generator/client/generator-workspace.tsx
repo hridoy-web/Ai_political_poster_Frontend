@@ -17,6 +17,7 @@ import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins, Crown, Check
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchWalletBalance } from "@/modules/recharge/recharge.service";
+import { useAuth } from "@/hooks/get-user-data";
 
 // Type of data coming from the server component
 interface GeneratorWorkspaceProps {
@@ -31,6 +32,21 @@ export function GeneratorWorkspace({
 }: GeneratorWorkspaceProps) {
   const searchParams = useSearchParams();
   const queryTemplateId = searchParams?.get("templateId") || initialTemplateId;
+  const { user, hasCreditBypass, canBypassCredits: contextCanBypass } = useAuth();
+  const canBypassCredits = Boolean(
+    hasCreditBypass ||
+    contextCanBypass ||
+    user?.hasCreditBypass ||
+    user?.roles?.includes("SUPER_ADMIN") ||
+    user?.roles?.includes("ADMIN") ||
+    user?.roleNames?.includes("SUPER_ADMIN") ||
+    user?.roleNames?.includes("ADMIN") ||
+    user?.permissions?.includes("UNLIMITED_CREDITS") ||
+    user?.permissions?.includes("BYPASS_CREDIT_CHECK") ||
+    user?.permissions?.includes("POSTER_CREATE_FREE") ||
+    user?.permissions?.includes("POSTER:CREATE:FREE") ||
+    user?.permissions?.includes("CREDITS:BYPASS")
+  );
 
   // 1. Core central states
   const [candidate, setCandidate] = useState<CandidateInfo>(initialCandidate);
@@ -244,7 +260,7 @@ export function GeneratorWorkspace({
     const isProTemplate = activeTemplate?.accessLevel === "PREMIUM";
 
     // 2. Credits check ONLY for PRO templates! Free templates are 100% complimentary.
-    if (isProTemplate && credits !== null && credits <= 0) {
+    if (isProTemplate && !canBypassCredits && credits !== null && credits <= 0) {
       toast.error(
         isGuest
           ? "ফ্রি ৩টি প্রো পোস্টার তৈরির কোটা শেষ হয়ে গেছে! পরবর্তী প্রো পোস্টার তৈরি করতে অনুগ্রহ করে সাইন-আপ বা লগইন করুন।"
@@ -329,7 +345,7 @@ export function GeneratorWorkspace({
         photoUrl;
 
       // Real-time credit deduction ONLY for PRO templates!
-      if (isProTemplate) {
+      if (isProTemplate && !canBypassCredits) {
         if (isGuest) {
           const nextUsed = parseInt(localStorage.getItem("guest_posters_created") || "0", 10) + 1;
           localStorage.setItem("guest_posters_created", nextUsed.toString());
@@ -554,7 +570,7 @@ export function GeneratorWorkspace({
           {activeTemplate?.accessLevel === "PREMIUM" ? (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-400 font-bold text-xs shadow-2xs">
               <Crown className="size-3.5 fill-amber-500 text-amber-500" />
-              <span>প্রো ফ্রেম (১ ক্রেডিট)</span>
+              <span>{canBypassCredits ? "প্রো ফ্রেম (ফ্রি অ্যাক্সেস)" : "প্রো ফ্রেম (১ ক্রেডিট)"}</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 font-bold text-xs shadow-2xs">
@@ -569,7 +585,7 @@ export function GeneratorWorkspace({
             <span className="hidden sm:inline">অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
             <span className="sm:hidden">বাকি ক্রেডিট:</span>
             <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
-              {credits !== null ? `${credits}টি` : "..."}
+              {canBypassCredits ? "আনলিমিটেড (Unlimited)" : credits !== null ? `${credits}টি` : "..."}
             </span>
           </div>
 
@@ -661,7 +677,7 @@ export function GeneratorWorkspace({
         posterImageUrl={createdPosterUrl}
         candidateName={candidate.name}
         onDownload={handleDownloadFile}
-        creditsLeft={credits}
+        creditsLeft={canBypassCredits ? "আনলিমিটেড" : credits}
         onStartNewPoster={handleStartNewPoster}
         isPro={activeTemplate?.accessLevel === "PREMIUM"}
       />

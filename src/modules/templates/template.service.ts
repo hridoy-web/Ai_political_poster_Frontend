@@ -144,10 +144,19 @@ export class TemplateService {
   }
 
   // Find a specific template by ID (checks live API first, then mocks)
-  static async getTemplateById(id: string): Promise<PosterTemplate | undefined> {
+  static async getTemplateById(
+    id: string,
+    cookieHeader?: string
+  ): Promise<PosterTemplate | undefined> {
     try {
+      const headers: Record<string, string> = {};
+      if (cookieHeader) {
+        headers["Cookie"] = cookieHeader;
+      }
+
       const res = await fetch(`${serverURL}/api/v1/template/${id}`, {
         cache: "no-store",
+        headers,
       });
 
       if (res.ok) {
@@ -175,6 +184,10 @@ export class TemplateService {
             createdAt: item.createdAt || new Date().toISOString(),
           };
         }
+      } else if (res.status === 401 || res.status === 403) {
+        // Handle 401/403 authorization restrictions gracefully
+        const errorJson = await res.json().catch(() => null);
+        console.warn(`Template authorization status ${res.status}:`, errorJson?.message || res.statusText);
       }
     } catch (error) {
       console.error("Single Template Fetch Failed, searching mock:", error);
