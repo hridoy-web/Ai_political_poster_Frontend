@@ -1,5 +1,8 @@
+const cleanServerUrl = (url?: string) =>
+  url ? url.trim().replace(/^["']|["']$/g, "").replace(/\/$/, "") : "";
+
 export const serverURL =
-  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+  cleanServerUrl(process.env.NEXT_PUBLIC_SERVER_URL) || "http://localhost:5000";
 
 interface ApiEndpoint {
   url: string;
