@@ -226,7 +226,7 @@ export default function LoginForm() {
 
   const loginWithGoogle = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: (errorResponse) => {
+    onError: (errorResponse: any) => {
       console.error("[Google Auth] popup error:", errorResponse);
       setGoogleLoading(false);
       setError("গুগল লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো।");
