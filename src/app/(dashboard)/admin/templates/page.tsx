@@ -2,13 +2,11 @@ import React, { Suspense } from "react";
 import { AdminTemplatesContent } from "@/modules/admin/server/admin-templates-content";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus, Sparkles, Layers } from "lucide-react";
+import { Plus, Layers } from "lucide-react";
 
 export const metadata = {
   title: "টেমপ্লেট ম্যানেজার - PosterAI",
 };
-
-export const instant = false;
 
 interface AdminTemplatesPageProps {
   searchParams: Promise<{
