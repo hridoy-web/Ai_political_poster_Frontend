@@ -14,5 +14,27 @@ export const axiosInstance = axios.create({
 
 axiosInstance.defaults.withCredentials = true;
 
+// Add Bearer token fallback for cross-domain requests (Vercel <-> Render)
+axiosInstance.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("auth_token");
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+// Also attach to global axios instance
+axios.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("auth_token");
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 export { axios };
 export default axiosInstance;
