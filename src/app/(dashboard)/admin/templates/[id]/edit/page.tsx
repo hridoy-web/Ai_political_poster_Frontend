@@ -1,5 +1,6 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { TemplateStudioWorkspace } from "@/modules/template-studio/client/template-studio-workspace";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = {
   title: "টেমপ্লেট এডিট স্টুডিও - PosterAI",
@@ -12,9 +13,15 @@ interface EditTemplatePageProps {
   }>;
 }
 
-export default async function EditTemplatePage({ params }: EditTemplatePageProps) {
+async function EditTemplateContent({ params }: EditTemplatePageProps) {
   const { id } = await params;
-
   return <TemplateStudioWorkspace editTemplateId={id} />;
 }
 
+export default function EditTemplatePage({ params }: EditTemplatePageProps) {
+  return (
+    <Suspense fallback={<Skeleton className="h-[750px] w-full rounded-2xl" />}>
+      <EditTemplateContent params={params} />
+    </Suspense>
+  );
+}

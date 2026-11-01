@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useEffect, useState, type ReactNode } from "react";
-import axios from "axios";
+import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
+import axiosInstance from "@/lib/axios";
 import authApi, { serverURL } from "@/lib/api/authApi";
 
 export interface User {
@@ -15,15 +15,20 @@ export interface User {
   avatarAssetId?: string;
   roles?: string[];
   roleNames?: string[];
+  permissions?: string[];
+  hasCreditBypass?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  refreshUser: () => Promise<User | null>;
   loading: boolean;
   isTemplateManager: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  hasCreditBypass: boolean;
+  canBypassCredits: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -34,28 +39,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      try {
-        const response = await axios({
-          url: `${serverURL}${authApi.getCurrentUser.url}`,
-          method: authApi.getCurrentUser.method,
-          withCredentials: true,
-        });
-        console.log(response.data);
-        setUser(response.data.data);
-      } catch (error) {
-        console.error("Failed to fetch current user:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getCurrentUser();
+  const getCurrentUser = useCallback(async (): Promise<User | null> => {
+    try {
+      const response = await axiosInstance({
+        url: `${serverURL}${authApi.getCurrentUser.url}`,
+        method: authApi.getCurrentUser.method,
+        withCredentials: true,
+      });
+      console.log("[AuthContext] Current user loaded:", response.data?.data);
+      const fetchedUser = response.data?.data || null;
+      setUser(fetchedUser);
+      return fetchedUser;
+    } catch (error) {
+      console.warn("[AuthContext] Failed to fetch current user (not authenticated):", error);
+      setUser(null);
+      return null;
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    getCurrentUser();
+  }, [getCurrentUser]);
+
   const roles = user?.roles || user?.roleNames || [];
+  const permissions = user?.permissions || [];
+
   const isTemplateManager =
     roles.includes("TEMPLATE_MANAGER") ||
     roles.includes("ADMIN") ||
@@ -63,13 +73,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
   const isSuperAdmin = roles.includes("SUPER_ADMIN");
 
+  const hasCreditBypass = Boolean(
+    user?.hasCreditBypass ||
+      isSuperAdmin ||
+      isAdmin ||
+      permissions.includes("UNLIMITED_CREDITS") ||
+      permissions.includes("BYPASS_CREDIT_CHECK") ||
+      permissions.includes("POSTER_CREATE_FREE") ||
+      permissions.includes("POSTER:CREATE:FREE") ||
+      permissions.includes("CREDITS:BYPASS")
+  );
+
   const info = {
     user,
     setUser,
+    refreshUser: getCurrentUser,
     loading,
     isTemplateManager,
     isAdmin,
     isSuperAdmin,
+    hasCreditBypass,
+    canBypassCredits: hasCreditBypass,
   };
 
   return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;

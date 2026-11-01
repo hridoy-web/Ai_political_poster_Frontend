@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import { axiosInstance } from "@/lib/axios";
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
@@ -17,8 +18,7 @@ import { Label } from "@/components/ui/label";
 import authApi, { serverURL } from "@/lib/api/authApi";
 import { FcGoogle } from "react-icons/fc";
 import { AuthContext } from "@/context/AuthContext";
-import { signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { useGoogleLogin } from "@react-oauth/google";
 
 /* ---------------- Validation (Zod) ---------------- */
 
@@ -50,7 +50,7 @@ export default function LoginForm() {
     throw new Error("LoginForm must be used within AuthProvider");
   }
 
-  const { setUser } = authContext;
+  const { setUser, refreshUser } = authContext;
   const [form, setForm] = useState<LoginData>({
     email: "",
     password: "",
@@ -123,9 +123,13 @@ export default function LoginForm() {
       });
       const userData = res?.data?.data?.user;
       setUser(userData);
+      await refreshUser?.().catch(() => {});
 
       // Redirect role-based: Super Admin and Admin to /admin, Template Manager to /admin/templates, standard user to homepage
-      const userRoles = userData?.roles || userData?.roleNames || [];
+      const userRoles =
+        userData?.roles ||
+        userData?.roleNames ||
+        (userData?.role ? [userData.role] : []);
       const hasSuperAdmin = userRoles.includes("SUPER_ADMIN");
       const hasAdmin = userRoles.includes("ADMIN") || hasSuperAdmin;
       const hasTemplateManager = userRoles.includes("TEMPLATE_MANAGER");
@@ -141,7 +145,7 @@ export default function LoginForm() {
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         setError(
-          err.response?.data?.message ?? "লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো।",
+          err.response?.data?.message ?? "লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
         );
       } else {
         setError("একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করো।");
@@ -153,82 +157,103 @@ export default function LoginForm() {
 
   /* ---------------- Google Login ---------------- */
 
-const handleGoogleLogin = async () => {
-  if (busy) return;
+  const handleGoogleSuccess = async (response: any) => {
+    setGoogleLoading(true);
+    setError("");
 
-  setError("");
+    try {
+      // Handles both useGoogleLogin (implicit: response.access_token) and <GoogleLogin /> (response.credential)
+      const token =
+        response?.credential ||
+        response?.access_token ||
+        response?.token ||
+        (typeof response === "string" ? response : "");
 
-  if (!auth || !googleProvider) {
-    setError(
-      "গুগল লগইন বর্তমানে কনফিগার করা নেই। অনুগ্রহ করে আপনার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন।"
-    );
-    return;
-  }
+      if (!token) {
+        console.error("[Google Auth] Failed to extract token from Google response:", response);
+        setError("গুগল অথেন্টিকেশন টোকেন পাওয়া যায়নি। আবার চেষ্টা করো।");
+        return;
+      }
 
-  setGoogleLoading(true);
+      console.log("[Google Auth] Sending token to backend (length:", token.length, ")");
 
-  try {
-    console.log("[google] 1: popup শুরু");
-    const credential = await signInWithPopup(auth, googleProvider);
-    console.log("[google] 2: popup সফল", credential.user.email);
+      const res = await axios.request({
+        baseURL: serverURL,
+        url: authApi.googleLogin.url,
+        method: authApi.googleLogin.method,
+        data: {
+          token,
+          idToken: token,
+          credential: token,
+        },
+        withCredentials: true,
+      });
 
-    const idToken = await credential.user.getIdToken();
-    console.log("[google] 3: idToken পেয়েছি, দৈর্ঘ্য:", idToken.length);
+      const loggedUser = res?.data?.data?.user;
+      setUser(loggedUser);
+      await refreshUser?.().catch(() => {});
 
-    // আমাদের নিজের cookie-ই session, Firebase session লাগবে না।
-    await signOut(auth).catch(() => {});
+      const userRoles =
+        loggedUser?.roles ||
+        loggedUser?.roleNames ||
+        (loggedUser?.role ? [loggedUser.role] : []);
+      const hasSuperAdmin = userRoles.includes("SUPER_ADMIN");
+      const hasAdmin = userRoles.includes("ADMIN") || hasSuperAdmin;
+      const hasTemplateManager = userRoles.includes("TEMPLATE_MANAGER");
 
-    console.log("[google] 4: backend-এ পাঠাচ্ছি", serverURL, authApi.googleLogin.url);
-    const res = await axios.request({
-      baseURL: serverURL,
-      url: authApi.googleLogin.url,
-      method: authApi.googleLogin.method,
-      data: { idToken },
-      withCredentials: true,
-    });
-    console.log("[google] 5: backend সফল", res.status);
-
-    const loggedUser = res?.data?.data?.user;
-    setUser(loggedUser);
-
-    if (loggedUser?.role === "SUPER_ADMIN" || loggedUser?.role === "ADMIN") {
-      router.push("/admin");
-    } else if (loggedUser?.role === "TEMPLATE_MANAGER") {
-      router.push("/admin/templates");
-    } else {
-      router.push("/");
+      if (hasSuperAdmin || hasAdmin) {
+        router.push("/admin");
+      } else if (hasTemplateManager) {
+        router.push("/admin/templates");
+      } else {
+        router.push("/");
+      }
+      router.refresh();
+    } catch (err: unknown) {
+      console.error("[Google Auth] Request failed:", err);
+      if (axios.isAxiosError(err)) {
+        setError(
+          err.response?.data?.message ??
+            "গুগল লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
+        );
+      } else {
+        setError("একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করো।");
+      }
+    } finally {
+      setGoogleLoading(false);
     }
-    router.refresh();
-  } catch (err: unknown) {
-    console.error("[google] ব্যর্থ:", err);
+  };
 
-    const code =
-      typeof err === "object" && err !== null && "code" in err
-        ? String((err as { code: unknown }).code)
-        : "";
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: (errorResponse) => {
+      console.error("[Google Auth] popup error:", errorResponse);
+      setGoogleLoading(false);
+      setError("গুগল লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো।");
+    },
+  });
 
-    // নিজে popup বন্ধ করলে error দেখাই না
-    if (
-      code === "auth/popup-closed-by-user" ||
-      code === "auth/cancelled-popup-request"
-    ) {
+  const handleGoogleLogin = () => {
+    if (busy) return;
+    setError("");
+
+    if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+      setError(
+        "গুগল লগইন বর্তমানে কনফিগার করা নেই। অনুগ্রহ করে আপনার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন。",
+      );
       return;
     }
 
-    if (axios.isAxiosError(err)) {
-      setError(
-        err.response?.data?.message ??
-          "Google দিয়ে লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো।",
-      );
-    } else if (code.startsWith("auth/")) {
-      setError(`Google দিয়ে লগইন করা যায়নি (${code})।`);
-    } else {
-      setError("একটি অপ্রত্যাশিত সমস্যা হয়েছে। আবার চেষ্টা করো।");
+    setGoogleLoading(true);
+    try {
+      loginWithGoogle();
+    } catch (err) {
+      setGoogleLoading(false);
+      console.error("Failed to open Google login popup:", err);
+      setError("গুগল পপআপ খুলতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
     }
-  } finally {
-    setGoogleLoading(false);
-  }
-};
+  };
+
   /* ---------------- Login Form ---------------- */
 
   return (
@@ -376,7 +401,7 @@ const handleGoogleLogin = async () => {
           className="flex cursor-pointer w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-background/80 px-5 py-2.5 text-sm font-semibold transition hover:border-primary hover:bg-secondary hover:text-secondary-foreground active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
         >
           <FcGoogle className="h-4 w-4" />
-          {googleLoading ? "Redirecting..." : "Continue with Google"}
+          {googleLoading ? "অপেক্ষা করুন..." : "Continue with Google"}
         </button>
 
         <p className="text-center text-xs text-muted-foreground sm:text-sm">

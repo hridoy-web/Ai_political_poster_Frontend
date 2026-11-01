@@ -11,7 +11,7 @@ interface PosterSuccessModalProps {
   posterImageUrl?: string | null;
   candidateName: string;
   onDownload: () => void;
-  creditsLeft?: number | null;
+  creditsLeft?: number | string | null;
   onStartNewPoster?: () => void;
   isPro?: boolean;
 }

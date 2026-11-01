@@ -105,7 +105,8 @@ export const fetchPackagesFromApi = async (): Promise<PackagePlan[]> => {
   try {
     const baseUrl = getBaseServerUrl();
     const response = await axios.get<{ success: boolean; data: any[] }>(
-      `${baseUrl}/api/v1/packages`
+      `${baseUrl}/api/v1/packages`,
+      { withCredentials: true }
     );
 
     if (response.data?.success && Array.isArray(response.data.data)) {
