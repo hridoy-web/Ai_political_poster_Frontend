@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getCurrentUser = useCallback(async (): Promise<User | null> => {
     try {
       const response = await axiosInstance({
-        url: `${serverURL}${authApi.getCurrentUser.url}`,
+        url: authApi.getCurrentUser.url,
         method: authApi.getCurrentUser.method,
         withCredentials: true,
       });
@@ -53,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.warn("[AuthContext] Failed to fetch current user (not authenticated):", error);
       setUser(null);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth_token");
+      }
       return null;
     } finally {
       setLoading(false);
