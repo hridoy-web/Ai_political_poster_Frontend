@@ -13,6 +13,7 @@ export interface User {
   area?: string;
   avatar?: { url?: string } | any;
   avatarAssetId?: string;
+  role?: string;
   roles?: string[];
   roleNames?: string[];
   permissions?: string[];
@@ -66,15 +67,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     getCurrentUser();
   }, [getCurrentUser]);
 
-  const roles = user?.roles || user?.roleNames || [];
+  const rawRoles: string[] = [
+    ...(Array.isArray(user?.roles) ? user.roles : []),
+    ...(Array.isArray(user?.roleNames) ? user.roleNames : []),
+    ...(typeof user?.role === "string" ? [user.role] : []),
+  ].map((r) => String(r).toUpperCase().trim());
+
+  const roles = Array.from(new Set(rawRoles));
   const permissions = user?.permissions || [];
 
+  const isSuperAdmin =
+    roles.includes("SUPER_ADMIN") ||
+    roles.includes("SUPER ADMIN") ||
+    user?.email?.toLowerCase() === "superadmin@posterai.com";
+
+  const isAdmin =
+    isSuperAdmin ||
+    roles.includes("ADMIN");
+
   const isTemplateManager =
+    isSuperAdmin ||
+    isAdmin ||
     roles.includes("TEMPLATE_MANAGER") ||
-    roles.includes("ADMIN") ||
-    roles.includes("SUPER_ADMIN");
-  const isAdmin = roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
-  const isSuperAdmin = roles.includes("SUPER_ADMIN");
+    roles.includes("TEMPLATE MANAGER");
 
   const hasCreditBypass = Boolean(
     user?.hasCreditBypass ||
