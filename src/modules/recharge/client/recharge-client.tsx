@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useId, useMemo, useCallback, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   Zap,
   Flame,
@@ -138,7 +138,6 @@ export function RechargeClient({
   quickAmounts,
   trustBadges,
 }: RechargeClientProps) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const inputId = useId();

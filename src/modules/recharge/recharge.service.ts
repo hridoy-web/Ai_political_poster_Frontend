@@ -1,5 +1,5 @@
 import apiClient from "@/lib/api-client";
-import { serverURL } from "@/lib/api/authApi";
+import type { PackagePlan } from "./types";
 
 export interface InitiatePaymentPayload {
   customAmount?: number;
@@ -27,14 +27,25 @@ export interface WalletPurchaseResponse {
   };
 }
 
-const getBaseServerUrl = () =>
-  serverURL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
+export interface RawApiPackage {
+  id: string;
+  code?: string;
+  name: string;
+  description?: string | null;
+  price: number | string;
+  currency?: string;
+  posterCredits?: number;
+  bonusCredits?: number;
+  durationDays?: number | null;
+  aiCaptionLimit?: number;
+  aiBackgroundLimit?: number;
+  premiumAccess?: boolean;
+}
 
 /** Initiates an SSLCommerz gateway payment session (for recharge/top-up). */
 export const initiateRechargePayment = async (
   payload: InitiatePaymentPayload
 ): Promise<PaymentInitiateResponse> => {
-  const baseUrl = getBaseServerUrl();
   const response = await apiClient.post<PaymentInitiateResponse>("/api/v1/payments/initiate", payload);
   return response.data;
 };
@@ -43,7 +54,6 @@ export const initiateRechargePayment = async (
 export const purchasePackageFromWallet = async (
   packageId: string
 ): Promise<WalletPurchaseResponse> => {
-  const baseUrl = getBaseServerUrl();
   const response = await apiClient.post<WalletPurchaseResponse>("/api/v1/payments/buy-with-wallet", { packageId });
   return response.data;
 };
@@ -73,7 +83,6 @@ export interface WalletBalanceData {
 
 export const fetchWalletBalance = async (): Promise<WalletBalanceData | null> => {
   try {
-    const baseUrl = getBaseServerUrl();
     const response = await apiClient.get<{ success: boolean; data: WalletBalanceData }>("/api/v1/wallets/me");
     return response.data?.data || null;
   } catch (error) {
@@ -82,15 +91,12 @@ export const fetchWalletBalance = async (): Promise<WalletBalanceData | null> =>
   }
 };
 
-import type { PackagePlan } from "./types";
-
 export const fetchPackagesFromApi = async (): Promise<PackagePlan[]> => {
   try {
-    const baseUrl = getBaseServerUrl();
-    const response = await apiClient.get<{ success: boolean; data: any[] }>("/api/v1/packages");
+    const response = await apiClient.get<{ success: boolean; data: RawApiPackage[] }>("/api/v1/packages");
 
     if (response.data?.success && Array.isArray(response.data.data)) {
-      return response.data.data.map((pkg: any) => {
+      return response.data.data.map((pkg: RawApiPackage) => {
         const isCampaign = pkg.code === "campaign" || pkg.posterCredits === 50;
         const isPro = pkg.code === "pro" || pkg.posterCredits === 100;
 
@@ -111,7 +117,7 @@ export const fetchPackagesFromApi = async (): Promise<PackagePlan[]> => {
           isPopular: isCampaign,
           isBestValue: isPro,
           features: [
-            pkg.description || `${pkg.posterCredits}টি পোস্টার তৈরির সুযোগ`,
+            pkg.description || `${pkg.posterCredits || 0}টি পোস্টার তৈরির সুযোগ`,
             "সমস্ত প্রিমিয়াম টেমপ্লেট এবং এআই স্লোগান জেনারেটরের অ্যাক্সেস",
           ],
           bonusText:
