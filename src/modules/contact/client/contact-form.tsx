@@ -11,18 +11,18 @@ export default function ContactForm() {
   const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setLoading(true);
     setStatus(null);
 
     try {
       const data = {
-        access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "YOUR_ACCESS_KEY_HERE",
-        name: formData.name,
-        email: formData.email,
+        access_key: process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         subject: `[Political Poster App] ${formData.subject}`,
-        message: formData.message,
+        message: formData.message.trim(),
         from_name: "AI Political Poster Maker",
       };
 

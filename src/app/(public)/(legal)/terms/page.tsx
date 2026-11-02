@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Scale, ShieldAlert, CheckCircle2, UserX, AlertOctagon, ArrowRight, Lock, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ShieldAlert, CheckCircle2, UserX, AlertOctagon, ArrowRight, Lock, Sparkles } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -50,16 +49,12 @@ const CLAUSES = [
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20 relative overflow-hidden">
+        <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-10 relative overflow-hidden">
             <div className="absolute top-10 left-1/2 -translate-x-1/2 w-125 h-125 bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
             <div className="absolute top-[40%] right-0 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] -z-10 pointer-events-none" />
 
             {/* Hero Section */}
             <section className="text-center space-y-6 max-w-3xl mx-auto">
-                <Badge variant="outline" className="px-4 py-2 rounded-full bg-accent/80 border border-primary/20 text-xs sm:text-sm font-semibold backdrop-blur-md">
-                    <Scale className="w-4 h-4 text-primary animate-pulse" />
-                    <span>আইনগত নির্দেশিকা ও নিয়মাবলী</span>
-                </Badge>
                 <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
                     সেবার <span className="text-gradient-brand">শর্তাবলী</span>
                 </h1>
