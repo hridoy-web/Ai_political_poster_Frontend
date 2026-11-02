@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
@@ -41,10 +41,10 @@ export function AdminNavbar() {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      await axios({
-        url: `${serverURL}${authApi.logout.url}`,
+      await apiClient.request({
+        url: authApi.logout.url,
         method: authApi.logout.method,
-        withCredentials: true,
+
       });
     } catch (error) {
       console.error("Logout failed:", error);

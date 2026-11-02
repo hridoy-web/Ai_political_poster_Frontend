@@ -33,7 +33,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
       <div className="bg-card border border-border/80 rounded-2xl p-2.5 shadow-lg text-xs font-semibold">
         <p className="text-muted-foreground mb-1">{label}</p>
         <p className="text-brand-primary">
-          আয়: <span className="font-bold">৳ {payload[0].value}</span>
+          আয়: <span className="font-bold">৳ {Number(payload[0].value || 0).toLocaleString("bn-BD")}</span>
         </p>
       </div>
     );
@@ -94,6 +94,8 @@ export function AdminOverviewCharts() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 10 }}
+                domain={[0, (dataMax: number) => (dataMax > 0 ? Math.ceil(dataMax * 1.15) : 500)]}
+                tickFormatter={(val: number) => `৳ ${Number(val || 0).toLocaleString("bn-BD")}`}
               />
 
               {/* Custom Tooltip Component */}
