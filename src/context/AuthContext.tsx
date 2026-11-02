@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
-import axiosInstance from "@/lib/axios";
+import apiClient from "@/lib/api-client";
 import authApi, { serverURL } from "@/lib/api/authApi";
 
 export interface User {
@@ -42,10 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getCurrentUser = useCallback(async (): Promise<User | null> => {
     try {
-      const response = await axiosInstance({
+      const response = await apiClient.request({
         url: authApi.getCurrentUser.url,
         method: authApi.getCurrentUser.method,
-        withCredentials: true,
+
       });
       console.log("[AuthContext] Current user loaded:", response.data?.data);
       const fetchedUser = response.data?.data || null;

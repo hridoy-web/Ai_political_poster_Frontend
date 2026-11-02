@@ -8,8 +8,8 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
-import { axiosInstance } from "@/lib/axios";
+import apiClient, { ApiError } from "@/lib/api-client";
+
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
@@ -111,7 +111,7 @@ export default function LoginForm() {
     try {
       setLoading(true);
 
-      const res = await axios.request({
+      const res = await apiClient.request({
         baseURL: serverURL,
         url: authApi.login.url,
         method: authApi.login.method,
@@ -147,7 +147,7 @@ export default function LoginForm() {
       }
       router.refresh();
     } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+      if (err instanceof ApiError) {
         setError(
           err.response?.data?.message ?? "লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
         );
@@ -181,7 +181,7 @@ export default function LoginForm() {
 
       console.log("[Google Auth] Sending token to backend (length:", token.length, ")");
 
-      const res = await axios.request({
+      const res = await apiClient.request({
         baseURL: serverURL,
         url: authApi.googleLogin.url,
         method: authApi.googleLogin.method,
@@ -219,7 +219,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (err: unknown) {
       console.error("[Google Auth] Request failed:", err);
-      if (axios.isAxiosError(err)) {
+      if (err instanceof ApiError) {
         setError(
           err.response?.data?.message ??
             "গুগল লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
