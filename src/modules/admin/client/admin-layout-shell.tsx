@@ -4,7 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
+
 import { MainFooter } from "@/components/layout/footer/main-footer";
 import { Crown, ShieldCheck, Layers } from "lucide-react";
 import { useAuth } from "@/hooks/get-user-data";
@@ -14,6 +14,7 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import NavbarDropdown from "@/components/layout/navbar/navbar-dropdown";
 
 interface AdminLayoutShellProps {
   children: React.ReactNode;

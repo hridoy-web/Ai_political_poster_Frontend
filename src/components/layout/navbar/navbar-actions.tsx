@@ -1,7 +1,8 @@
 "use client";
 
 import { NavbarDropdown } from "./navbar-dropdown";
-import DesktopAuthButtons from "./desktop-auth-buttons";
+import DesktopAuthButtons from "./server/desktop-auth-buttons";
+
 
 export const loginBtnStyle =
   "cursor-pointer font-semibold rounded-full transition-all duration-200 px-4 text-muted-foreground hover:text-foreground hover:bg-muted";

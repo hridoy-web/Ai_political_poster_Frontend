@@ -3,9 +3,9 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { cn } from "@/lib/utils";
 import { faqData } from "../home.data";
-
 
 export function FaqSection() {
   return (
@@ -38,13 +38,13 @@ export function FaqSection() {
             <AccordionItem
               key={item.id}
               value={item.id}
-              className={
-                "border rounded-2xl px-5 py-0.5 shadow-sm transition-all duration-300 backdrop-blur-md " +
-                /* ☀️ LIGHT THEME DESIGN: Glass White Card with Emerald Borders */
-                "bg-white/80 border-brand-green/20 hover:border-brand-green/40 data-[state=open]:border-brand-green/60 data-[state=open]:shadow-md " +
-                /* 🌙 DARK THEME DESIGN: #0c131d Glass Slate with Mint Glowing Borders */
-                "dark:bg-(--card)/80 dark:border-white/10 dark:hover:border-brand-mint/40 dark:data-[state=open]:border-brand-mint/60 dark:data-[state=open]:bg-card/95 dark:data-[state=open]:shadow-[0_0_15px_rgba(16,185,129,0.12)]"
-              }
+              className={cn(
+                "border rounded-2xl px-5 py-0.5 shadow-sm transition-all duration-300 backdrop-blur-md",
+                // Light Theme: Glass White Card with Emerald Borders
+                "bg-white/80 border-brand-green/20 hover:border-brand-green/40 data-[state=open]:border-brand-green/60 data-[state=open]:shadow-md",
+                // Dark Theme: Glass Slate with Mint Glowing Borders
+                "dark:bg-card/80 dark:border-white/10 dark:hover:border-brand-mint/40 dark:data-[state=open]:border-brand-mint/60 dark:data-[state=open]:bg-card/95 dark:data-[state=open]:shadow-[0_0_15px_rgba(16,185,129,0.12)]"
+              )}
             >
               <AccordionTrigger className="cursor-pointer font-semibold text-foreground hover:text-brand-green dark:hover:text-brand-mint transition-colors py-4 text-left text-sm sm:text-base no-underline hover:no-underline border-none">
                 {item.question}

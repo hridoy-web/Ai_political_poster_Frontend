@@ -1,5 +1,5 @@
 import { Mail } from "lucide-react";
-import { socialLinks } from "./footer-data";
+import { socialLinks } from "./footer.constants";
 
 export function SocialMediaLinks() {
   return (

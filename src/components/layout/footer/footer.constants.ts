@@ -5,11 +5,10 @@ import {
   FaLinkedinIn,
   FaWhatsapp,
 } from "react-icons/fa6";
-import type { IconType } from "react-icons";
+import { LegalLink, QuickLink, SocialLink } from "./footer.types";
 
-export type QuickLink = { name: string; href: string; badge?: string };
-export type LegalLink = { name: string; href: string };
-export type SocialLink = { name: string; icon: IconType; href: string; color: string; hoverStyle: string };
+
+
 
 export const quickLinks: QuickLink[] = [
   { name: "হোম", href: "/" },

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, ShieldCheck } from "lucide-react";
-import { legalLinks } from "./footer-data";
+import { legalLinks } from "./footer.constants";
 
 export function FooterLegalLinks() {
   return (

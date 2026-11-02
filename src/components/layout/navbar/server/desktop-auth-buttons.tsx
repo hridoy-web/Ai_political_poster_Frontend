@@ -1,11 +1,12 @@
 
 import { registerBtnStyle } from "./navbar-actions";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/get-user-data";
+// import { useAuth } from "@/hooks/get-user-data";
 import Link from "next/link";
 
 const DesktopAuthButtons = () => {
-  const { loading, user } = useAuth();
+  // const { loading, user } = useAuth();
+  const loading = true;
 
   if (loading || user) {
     return null;

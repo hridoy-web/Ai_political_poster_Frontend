@@ -2,18 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { NavbarScrollShellProps } from "../navbar.types";
 
 
 
-interface NavbarScrollShellProps {
-  logo: React.ReactNode;
-  desktopNav: React.ReactNode;
-  mobileThemeToggle: React.ReactNode;
-  desktopThemeToggle: React.ReactNode;
-  mobileActions: React.ReactNode;
-  desktopActions: React.ReactNode;
-  mobileMenu: React.ReactNode;
-}
 
 export function NavbarScrollShell({
   logo,
@@ -53,14 +45,14 @@ export function NavbarScrollShell({
   }, []);
 
   return (
-    <header
+    <header 
       className={cn(
         "sticky z-50 w-full inset-x-0 mx-auto max-w-7xl transition-all duration-300 ease-in-out",
         "max-lg:top-2 max-lg:sm:top-3 max-lg:px-4 max-lg:sm:px-6",
         isScrolled ? "lg:top-2 lg:px-14" : "lg:top-0 lg:px-8"
       )}
     >
-      <div
+      <nav 
         className={cn(
           "flex items-center justify-between transition-all duration-300 ease-in-out",
           "max-lg:w-full max-lg:px-2.5 max-lg:py-2 max-lg:rounded-full max-lg:backdrop-blur-xl max-lg:shadow-sm",
@@ -108,7 +100,7 @@ export function NavbarScrollShell({
             {desktopActions}
           </div>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
