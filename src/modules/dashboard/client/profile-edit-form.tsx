@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { serverURL } from "@/lib/api/authApi";
 import { useAuth } from "@/hooks/get-user-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,15 +96,9 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         submitData.append("image", avatarFile);
       }
 
-      const response = await axios.patch(
-        `${serverURL}/api/v1/user/profile`,
-        submitData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+      const response = await apiClient.patch(
+        "/api/v1/user/profile",
+        submitData
       );
 
       if (response.data?.success) {
@@ -137,13 +131,12 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
 
     try {
       setIsUpdatingPassword(true);
-      const response = await axios.post(
-        `${serverURL}/api/v1/user/change-password`,
+      const response = await apiClient.post(
+        "/api/v1/user/change-password",
         {
           currentPassword: passwords.currentPassword,
           newPassword: passwords.newPassword,
-        },
-        { withCredentials: true }
+        }
       );
 
       if (response.data?.success) {
