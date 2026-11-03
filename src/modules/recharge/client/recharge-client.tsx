@@ -49,12 +49,14 @@ interface RechargeClientProps {
 function InsufficientFundsModal({
   isOpen,
   onClose,
+  onRecharge,
   required,
   available,
   packageName,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onRecharge: () => void;
   required: number;
   available: number;
   packageName: string;
@@ -120,7 +122,7 @@ function InsufficientFundsModal({
         </p>
 
         <Button
-          onClick={onClose}
+          onClick={onRecharge}
           className="w-full bg-gradient-brand text-white font-bold rounded-xl"
         >
           ঠিক আছে, রিচার্জ করব
@@ -273,6 +275,12 @@ export function RechargeClient({
       heading?.scrollIntoView({ behavior: "smooth" });
     }
   }, [inputId]);
+
+  /** Handles "ঠিক আছে, রিচার্জ করব" action from InsufficientFundsModal */
+  const handleInsufficientFundsRecharge = useCallback(() => {
+    setInsufficientFundsModal((s) => ({ ...s, open: false }));
+    handleScrollToRecharge();
+  }, [handleScrollToRecharge]);
 
   /** Handles package purchase by deducting from wallet balance */
   const handleBuyPackage = useCallback(
@@ -531,6 +539,7 @@ export function RechargeClient({
       <InsufficientFundsModal
         isOpen={insufficientFundsModal.open}
         onClose={() => setInsufficientFundsModal((s) => ({ ...s, open: false }))}
+        onRecharge={handleInsufficientFundsRecharge}
         required={insufficientFundsModal.required}
         available={insufficientFundsModal.available}
         packageName={insufficientFundsModal.packageName}
