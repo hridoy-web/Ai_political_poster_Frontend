@@ -1,7 +1,7 @@
 "use client";
 
 import React, { memo } from "react";
-import { Sparkles, Zap, Crown, CheckCircle2, Check } from "lucide-react";
+import { Sparkles, Zap, Crown, CheckCircle2, Check, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "cn";
@@ -60,9 +60,9 @@ export const PackageCard = memo(function PackageCard({
             className={cn(
               "inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-black tracking-wide shadow-md transition-transform group-hover:scale-105",
               isRedHero
-                ? "bg-primary text-primary-foreground"
+                ? "bg-gradient-brand text-white"
                 : isGreenHero
-                ? "bg-secondary text-secondary-foreground"
+                ? "bg-gradient-green text-white"
                 : "bg-muted text-foreground border border-border"
             )}
           >
@@ -76,8 +76,8 @@ export const PackageCard = memo(function PackageCard({
       {/* Card Content Top */}
       <div className="space-y-4 pt-1">
         <div className="flex justify-between items-start gap-2">
-          <div>
-            <h3 className="font-black text-xl text-foreground tracking-tight">
+          <div className="min-w-0 flex-1 pr-2">
+            <h3 className="font-black text-xl text-foreground tracking-tight leading-snug">
               {plan.nameBangla}
             </h3>
             <p className="text-xs text-muted-foreground font-medium mt-0.5">
@@ -87,15 +87,15 @@ export const PackageCard = memo(function PackageCard({
 
           <div
             className={cn(
-              "size-6 rounded-full border flex items-center justify-center transition-all",
+              "size-6 shrink-0 aspect-square rounded-full border flex items-center justify-center transition-all mt-0.5",
               isSelected
                 ? isGreenHero
-                  ? "border-secondary bg-secondary text-secondary-foreground shadow-sm scale-110"
-                  : "border-primary bg-primary text-primary-foreground shadow-sm scale-110"
+                  ? "border-emerald-500 bg-gradient-green text-white shadow-sm scale-110"
+                  : "border-rose-500 bg-gradient-brand text-white shadow-sm scale-110"
                 : "border-muted-foreground/30 bg-muted/30 group-hover:border-primary/60"
             )}
           >
-            {isSelected && <Check className="size-3.5 stroke-[3]" />}
+            {isSelected && <Check className="size-3.5 stroke-[3] shrink-0" />}
           </div>
         </div>
 
@@ -105,7 +105,7 @@ export const PackageCard = memo(function PackageCard({
             <span
               className={cn(
                 "text-3xl sm:text-4xl font-black tracking-tight",
-                isRedHero ? "text-primary" : isGreenHero ? "text-secondary" : "text-foreground"
+                isRedHero ? "text-gradient-brand" : isGreenHero ? "text-gradient-green" : "text-foreground"
               )}
             >
               ৳{toBengaliNumber(plan.amount)}
@@ -142,7 +142,7 @@ export const PackageCard = memo(function PackageCard({
                 : "bg-muted border-border text-foreground"
             )}
           >
-            <GiftIcon className="size-4 shrink-0" />
+            <Gift className="size-4 shrink-0" />
             <span className="leading-tight">{plan.bonusText}</span>
           </div>
         )}
@@ -171,8 +171,10 @@ export const PackageCard = memo(function PackageCard({
             "w-full font-bold rounded-xl transition-all h-10 cursor-pointer",
             isSelected
               ? isGreenHero
-                ? "bg-secondary text-secondary-foreground shadow-md hover:bg-secondary/90"
-                : "bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                ? "bg-gradient-green text-white shadow-md hover:scale-[1.01]"
+                : "bg-gradient-brand text-white shadow-md hover:scale-[1.01]"
+              : isGreenHero
+              ? "hover:border-secondary hover:bg-secondary/10 hover:text-secondary text-foreground"
               : "hover:border-primary/60 hover:bg-accent/40"
           )}
           onClick={(e) => {
@@ -190,24 +192,3 @@ export const PackageCard = memo(function PackageCard({
     </Card>
   );
 });
-
-// Clean internal icon helper to avoid extra Lucide import if not needed
-function GiftIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="3" y="8" width="18" height="4" rx="1" />
-      <path d="M12 8v13" />
-      <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-      <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
-    </svg>
-  );
-}
