@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { serverURL } from "@/lib/api/authApi";
 
 export interface ApiResponse<T = any> {
