@@ -39,9 +39,6 @@ import { GuestAuthModal } from "./guest-auth-modal";
 import { toast } from "sonner";
 import type { TrustBadgeItem } from "../types";
 
-export type { PackagePlan } from "../types";
-export { toBengaliNumber, toEnglishNumber } from "../utils";
-
 interface RechargeClientProps {
   presetPackages: PackagePlan[];
   quickAmounts: number[];
@@ -265,6 +262,18 @@ export function RechargeClient({
     }
   }, [isMinimumValid, isSubmitting, user, currentAmount, selectedPlanId]);
 
+  /** Smooth scrolls and focuses the custom recharge input */
+  const handleScrollToRecharge = useCallback(() => {
+    const inputElem = document.getElementById(inputId);
+    if (inputElem) {
+      inputElem.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => inputElem.focus(), 250);
+    } else {
+      const heading = document.getElementById("custom-recharge-heading");
+      heading?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [inputId]);
+
   /** Handles package purchase by deducting from wallet balance */
   const handleBuyPackage = useCallback(
     async (plan: PackagePlan) => {
@@ -315,6 +324,7 @@ export function RechargeClient({
       <WalletBalanceCard
         trustBadges={trustBadges || TRUST_BADGES}
         refreshTrigger={`${paymentStatus || statusBanner}-${balanceRefreshKey}`}
+        onRechargeClick={handleScrollToRecharge}
       />
 
       {/* Payment Feedback Banners */}
