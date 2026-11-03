@@ -9,9 +9,9 @@ import {
 
 export const metadata: Metadata = rechargeMetadata;
 
-export default function WalletPage() {
+export default function RechargePage() {
   return (
-    <div className="relative min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-300">
+    <div className="relative isolate min-h-screen bg-background text-foreground py-12 px-4 sm:px-6 lg:px-8 overflow-hidden transition-colors duration-300">
       {/* Decorative Ambient Background Dual Glows (Crimson Red & Emerald Green from globals.css) */}
       <div
         aria-hidden="true"
@@ -23,8 +23,11 @@ export default function WalletPage() {
       />
 
       <div className="max-w-6xl mx-auto space-y-12">
-        {/* Page Hero Header */}
-        <header className="text-center space-y-4 max-w-3xl mx-auto">
+        {/* Page Hero Section */}
+        <section
+          aria-labelledby="recharge-page-title"
+          className="text-center space-y-4 max-w-3xl mx-auto"
+        >
           <Badge
             variant="outline"
             className="px-4 py-1.5 rounded-full bg-accent border-border text-accent-foreground text-xs font-bold tracking-wider uppercase shadow-xs inline-flex items-center gap-2"
@@ -32,16 +35,18 @@ export default function WalletPage() {
             <span>কুইক ওয়ালেট রিচার্জ ও ক্রেডিট সিস্টেম</span>
           </Badge>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+          <h1
+            id="recharge-page-title"
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight"
+          >
             সহজেই রিচার্জ করুন{" "}
             <span className="text-gradient-brand">পোস্টার ওয়ালেট</span>
           </h1>
 
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
-            ব্যবহারকারী যেন নিজের ইচ্ছমতো যেকোনো পরিমাণ টাকা (ন্যূনতম ২০ টাকা) রিচার্জ করতে পারেন,
-            তার জন্য কাস্টম অ্যামাউন্ট বক্সের পাশাপাশি রয়েছে জনপ্রিয় প্রি-সেট প্ল্যানসমূহ।
+            আপনার অ্যাকাউন্টে সহজে যেকোনো পরিমাণ টাকা রিচার্জ করুন এবং আকর্ষণীয় অফারে পোস্টার তৈরির ক্রেডিট উপভোগ করুন। কাস্টম অ্যামাউন্টের পাশাপাশি বেছে নিন জনপ্রিয় প্রি-সেট প্ল্যানসমূহ।
           </p>
-        </header>
+        </section>
 
         {/* Client Interactive Section (Live Balance + Preset Packages + Custom Box + Calculation) */}
         <RechargeClient

@@ -1,28 +1,22 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Eye } from "lucide-react";
+import { ArrowRight, Eye, Flame } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { CATEGORY_MAP, TemplateCardProps, TemplateCategory, TrendingTemplateClientProps } from "../home.types";
-import { BADGE_CONFIG } from "../home.data";
+import { Badge } from "@/components/ui/badge";
+import { CATEGORY_MAP, TemplateCardProps, TrendingTemplateClientProps } from "../home.types";
 
 
-function TemplateCard({ template, className }: TemplateCardProps) {
+function TemplateCard({ template }: TemplateCardProps) {
     const [imageError, setImageError] = useState(false);
-    const badge = template.badge && template.badge in BADGE_CONFIG ? BADGE_CONFIG[template.badge] : null;
-    const BadgeIcon = badge?.icon;
     const categoryLabel = template.categoryLabel || CATEGORY_MAP[template.category] || template.category;
+    // console.log("Rendering TemplateCard:", template);
 
     return (
-        <Card
-            className={cn(
-                "group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-xl hover:shadow-brand-primary/5 py-0! gap-0! [--card-spacing:0px] w-full flex flex-col justify-between",
-                className
-            )}
-        >
+        <Card className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card p-0 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-brand-primary/50 hover:shadow-xl hover:shadow-brand-primary/5 py-0! gap-0! [--card-spacing:0px] w-full flex flex-col justify-between">
             {/* Image & Preview Container */}
             <div className="relative aspect-3/4 w-full overflow-hidden bg-muted">
                 {/* Background */}
@@ -76,18 +70,13 @@ function TemplateCard({ template, className }: TemplateCardProps) {
                     </Button>
                 </div>
 
-                {/* Badge (Trending / New / Popular) */}
-                {badge && BadgeIcon && (
-                    <div
-                        className={cn(
-                            "absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-10 flex items-center gap-1 rounded-full border px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-semibold shadow-md backdrop-blur-md",
-                            badge.className
-                        )}
-                    >
-                        <BadgeIcon className="h-3 w-3 shrink-0" />
-                        <span>{badge.label}</span>
-                    </div>
-                )}
+                {/* Trending Badge */}
+                <Badge
+                    className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-10 border-brand-secondary/40 bg-brand-primary/90 text-white shadow-xs backdrop-blur-md text-[10px] sm:text-xs font-semibold"
+                >
+                    <Flame className="text-white" />
+                    <span>ট্রেন্ডিং</span>
+                </Badge>
 
                 {/* Category Tag */}
                 <div className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3 z-10 rounded-full border border-white/20 bg-black/40 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium text-white backdrop-blur-md">
@@ -95,6 +84,7 @@ function TemplateCard({ template, className }: TemplateCardProps) {
                 </div>
             </div>
 
+            
             {/* Card Information */}
             <CardContent className="p-3 sm:p-4">
                 <Link href={`/templates/${template.id}`} className="block">
@@ -128,70 +118,21 @@ function TemplateCard({ template, className }: TemplateCardProps) {
 
 export default function TrendingTemplateClient({
     templates,
-    categories,
 }: TrendingTemplateClientProps) {
-    const [activeCategory, setActiveCategory] = useState<TemplateCategory | string>("all");
-
-    // Memoized filter logic
-    const filteredTemplates = useMemo(() => {
-        if (activeCategory === "all") return templates;
-        return templates.filter((t) => {
-            if (t.category === activeCategory) return true;
-            if (t.categoryId === activeCategory) return true;
-            if (t.categorySlug === activeCategory) return true;
-
-            const text = `${t.category} ${t.categorySlug || ""} ${t.title} ${t.categoryLabel || ""}`.toLowerCase();
-            if (activeCategory === "election" && (text.includes("election") || text.includes("নির্বাচন") || text.includes("ভোট"))) return true;
-            if (activeCategory === "rally" && (text.includes("rally") || text.includes("সমাবেশ") || text.includes("জনসভা") || text.includes("মিছিল"))) return true;
-            if (activeCategory === "birthday" && (text.includes("birthday") || text.includes("জন্মদিন"))) return true;
-            if (activeCategory === "victory" && (text.includes("victory") || text.includes("বিজয়") || text.includes("১৬ ডিসেম্বর"))) return true;
-            if (activeCategory === "independence" && (text.includes("independence") || text.includes("sadhinota") || text.includes("shadhinota") || text.includes("স্বাধীনতা") || text.includes("২৬ মার্চ"))) return true;
-            if (activeCategory === "condolence" && (text.includes("condolence") || text.includes("shok") || text.includes("শোক") || text.includes("স্মরণ"))) return true;
-
-            return false;
-        });
-    }, [activeCategory, templates]);
-
     return (
         <div>
-            {/* Category Filter Tabs */}
-            <div className="mb-4 flex items-center justify-center sm:mb-6">
-                <div className="flex max-w-full gap-2 overflow-x-auto p-1.5 scrollbar-none sm:flex-wrap sm:justify-center">
-                    {categories.map((cat) => {
-                        const isActive = activeCategory === cat.id;
-                        return (
-                            <Button
-                                key={cat.id}
-                                type="button"
-                                variant={isActive ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setActiveCategory(cat.id)}
-                                className={cn(
-                                    "shrink-0 rounded-full px-5 py-2 text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer h-auto",
-                                    isActive
-                                        ? "bg-linear-to-b from-brand-primary via-brand-primary to-brand-hover dark:from-brand-secondary dark:via-brand-secondary dark:to-brand-hover text-white border-transparent shadow-none! hover:shadow-none! [box-shadow:none!important] hover:[box-shadow:none!important]"
-                                        : "bg-card text-muted-foreground border border-border/80 shadow-xs hover:border-brand-primary/40 hover:bg-accent hover:text-accent-foreground hover:shadow-sm"
-                                )}
-                            >
-                                <span>{cat.label}</span>
-                            </Button>
-                        );
-                    })}
-                </div>
-            </div>
-
             {/* Templates Grid Container */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5 lg:gap-6">
-                {filteredTemplates.map((template) => (
+                {templates.map((template) => (
                     <TemplateCard key={template.id} template={template} />
                 ))}
             </div>
 
             {/* Empty State */}
-            {filteredTemplates.length === 0 && (
+            {templates.length === 0 && (
                 <div className="py-16 text-center">
                     <p className="text-sm font-medium text-muted-foreground sm:text-base">
-                        এই ক্যাটেগরিতে এখনো কোনো টেমপ্লেট পাওয়া যায়নি।
+                        কোনো টেমপ্লেট পাওয়া যায়নি।
                     </p>
                 </div>
             )}

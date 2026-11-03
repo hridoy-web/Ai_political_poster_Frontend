@@ -1,13 +1,14 @@
 import { Flame, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import TrendingTemplateClient from '../client/trending-template-client';
 import { HomeService } from "../home.service";
 
 
 export default async function TrendingTemplates() {
     const templates = await HomeService.getTrendingTemplates();
-    const categories = await HomeService.getTrendingCategories();
+    // console.log("Fetched trending templates:", templates);
 
     return (
         <section className="relative w-full overflow-hidden bg-linear-to-b from-background via-brand-primary/5 to-background py-4 md:py-6 lg:py-8 dark:via-brand-primary/10">
@@ -17,13 +18,16 @@ export default async function TrendingTemplates() {
                 <div className="absolute -bottom-20 right-1/3 h-80 w-80 rounded-full bg-brand-secondary/10 blur-[120px] dark:bg-brand-secondary/5" />
             </div>
 
-            <div className="container relative mx-auto px-4 sm:px-6">
+            <div className="container relative mx-auto px-4 md:px-6 lg:px-8">
                 {/* Header */}
-                <div className="mb-3 text-center sm:mb-4 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-forwards">
-                    <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-1 text-xs font-semibold text-brand-primary dark:text-brand-secondary shadow-xs sm:text-sm animate-in zoom-in-90 fade-in duration-500 delay-150 fill-mode-forwards">
-                        <Flame className="h-4 w-4 text-brand-primary animate-pulse" />
+                <div className="mb-5 text-center sm:mb-4 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-forwards">
+                    <Badge
+                        variant="outline"
+                        className="mb-2 inline-flex h-auto w-fit items-center gap-2 rounded-full border-brand-primary/20 bg-brand-primary/10 px-4 py-1.5 text-xs font-semibold text-brand-primary dark:text-brand-secondary shadow-xs sm:text-sm animate-in zoom-in-90 fade-in duration-500 delay-150 fill-mode-forwards"
+                    >
+                        <Flame className="h-4 w-4 text-brand-primary animate-pulse shrink-0" />
                         <span>জনপ্রিয় টেমপ্লেট</span>
-                    </div>
+                    </Badge>
 
                     <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100 fill-mode-forwards">
                         ট্রেন্ডিং <span className="text-gradient-brand">টেমপ্লেট</span>
@@ -35,7 +39,7 @@ export default async function TrendingTemplates() {
                 </div>
 
                 {/* Client Component */}
-                <TrendingTemplateClient templates={templates} categories={categories} />
+                <TrendingTemplateClient templates={templates} />
 
                 {/* View All CTA Button */}
                 <div className="mt-4 md:mt-6 text-center sm:mt-5">
