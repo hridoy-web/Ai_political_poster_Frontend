@@ -24,7 +24,7 @@ export interface TemplateCardProps {
 // TRENDING-TEMPLATES-CLIENT
 export interface TrendingTemplateClientProps {
     templates: Template[];
-    categories: { id: TemplateCategory | string; label: string }[];
+    categories?: { id: TemplateCategory | string; label: string }[];
 }
 
 // STEP-CARD
@@ -80,5 +80,52 @@ export interface FAQItem {
     id: string;
     question: string;
     answer: string;
+}
+
+// TRENDING-TEMPLATES-CLIENT
+export interface ApiCategoryItem {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string | null;
+    sortOrder?: number;
+    isActive?: boolean;
+}
+
+// TRENDING-TEMPLATES-CLIENT
+export interface ApiTemplateConfig {
+    type?: "canvas" | "html";
+    previewUrl?: string;
+    blankTemplateUrl?: string;
+    photoSlots?: unknown;
+    textSlots?: unknown;
+    width?: number;
+    height?: number;
+    fields?: unknown;
+}
+
+// TRENDING-TEMPLATES-CLIENT
+export interface ApiTemplateItem {
+    id: string;
+    title: string;
+    categoryId?: string;
+    accessLevel?: "FREE" | "PREMIUM";
+    aspectRatio?: string;
+    width?: number;
+    height?: number;
+    status?: string;
+    config?: ApiTemplateConfig;
+    previewAssetId?: string | null;
+    previewUrl?: string;
+    category?: ApiCategoryItem;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+// TRENDING-TEMPLATES-CLIENT
+export interface TemplateCategoryOption {
+    id: string;
+    label: string;
+    count?: number;
 }
 

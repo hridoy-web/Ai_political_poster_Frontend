@@ -1,23 +1,18 @@
 import Link from "next/link";
 import { Sparkles, ChevronRight, CheckCircle2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import HeroSectionClient from "../client/hero-section-client";
 
 
 export default function HeroSection() {
     return (
-        <section
-            id="hero-section"
-            className="relative flex w-full select-none items-center justify-center overflow-hidden bg-background pb-5 text-foreground transition-colors duration-300 sm:overflow-hidden"
-        >
+        <section className="relative flex w-full select-none items-center justify-center overflow-hidden bg-background pb-5 text-foreground transition-colors duration-300 sm:overflow-hidden">
             {/* Smooth Radial Overlay Across Navbar & Bottom Section */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,var(--color-brand-primary)/0.15,transparent_75%)] dark:bg-[radial-gradient(ellipse_at_top,var(--color-brand-primary)/0.25,transparent_80%)]"
-            />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,var(--color-brand-primary)/0.15,transparent_75%)] dark:bg-[radial-gradient(ellipse_at_top,var(--color-brand-primary)/0.25,transparent_80%)]"/>
 
             {/* Main Grid Container */}
-            <div className="container relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-14">
+            <div className="container relative z-10 mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
                 <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12 lg:gap-8 xl:gap-12">
 
                     {/* RIGHT COLUMN: CLIENT COMPONENT (CSR) */}
@@ -26,8 +21,7 @@ export default function HeroSection() {
                     </div>
 
                     {/* LEFT COLUMN: HERO CONTENT (SSR) */}
-                    <header className="order-last lg:order-first relative z-10 flex flex-col items-center text-center lg:col-span-6 lg:items-start lg:text-left">
-
+                    <div className="order-last lg:order-first relative z-10 flex flex-col items-center text-center lg:col-span-6 lg:items-start lg:text-left">
 
                         {/* Title Heading */}
                         <h1 className="mb-4 sm:mb-6 text-3xl font-black leading-tight sm:leading-[1.2] tracking-tight sm:text-4xl md:text-5xl lg:text-[2.75rem] xl:text-[3.25rem]">
@@ -64,29 +58,37 @@ export default function HeroSection() {
                         </div>
 
                         {/* Trust Badges */}
-                        <footer className="mt-7 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-muted-foreground lg:justify-start">
-                            <div className="flex items-center gap-1.5 bg-card/60 px-3.5 py-1.5 rounded-full border border-border/80 shadow-2xs backdrop-blur-xs">
+                        <div className="mt-7 sm:mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-muted-foreground lg:justify-start">
+                            <Badge
+                                variant="outline"
+                                className="h-auto gap-1.5 rounded-full border-border/80 bg-card/60 px-3.5 py-1.5 text-xs font-normal text-muted-foreground shadow-2xs backdrop-blur-xs"
+                            >
                                 <div className="flex text-amber-400">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className="h-3.5 w-3.5 fill-amber-400" />
+                                        <Star key={i} className="h-3.5 w-3.5 fill-amber-400 shrink-0" />
                                     ))}
                                 </div>
                                 <span className="font-bold text-foreground">৪.৯/৫</span>
                                 <span className="text-muted-foreground">(হাজারো কর্মী)</span>
-                            </div>
+                            </Badge>
 
-                            <div className="flex items-center gap-1.5 font-medium">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">১০০% ফ্রি ও ওয়াটারমার্ক ছাড়া</span>
-                            </div>
+                            <Badge
+                                variant="outline"
+                                className="h-auto gap-1.5 rounded-full border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 shadow-2xs backdrop-blur-xs"
+                            >
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                <span className="font-semibold">১০০% ফ্রি ও ওয়াটারমার্ক ছাড়া</span>
+                            </Badge>
 
-                            <div className="flex items-center gap-1.5 font-medium">
-                                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">এইচডি কোয়ালিটি ডাউনলোড</span>
-                            </div>
-                        </footer>
-
-                    </header>
+                            <Badge
+                                variant="outline"
+                                className="h-auto gap-1.5 rounded-full border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 shadow-2xs backdrop-blur-xs"
+                            >
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                                <span className="font-semibold">এইচডি কোয়ালিটি ডাউনলোড</span>
+                            </Badge>
+                        </div>
+                    </div>
 
                 </div>
             </div>
