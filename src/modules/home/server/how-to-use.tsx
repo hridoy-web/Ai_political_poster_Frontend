@@ -13,7 +13,7 @@ const HowToUse = () => {
                 <div className="absolute -bottom-20 right-1/3 h-80 w-80 rounded-full bg-brand-mint/10 blur-[120px] dark:bg-brand-mint/5" />
             </div>
 
-            <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="container relative mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
                 {/* Header Section */}
                 <div className="mb-7 text-center sm:mb-9 animate-in fade-in slide-in-from-top-6 duration-700 ease-out fill-mode-both">
                     {/* Badge */}
@@ -42,7 +42,7 @@ const HowToUse = () => {
                 {/* Steps Grid Wrapper */}
                 <div className="relative">
                     {/* Positioned above Card Title */}
-                    <div className="pointer-events-none absolute top-21 left-0 z-10 hidden h-1 w-full -translate-y-1/2 rounded-full bg-linear-to-r from-transparent via-brand-primary/35 to-transparent shadow-[0_0_10px_rgba(225,29,72,0.3)] lg:block" />
+                    <div className="pointer-events-none absolute top-21 left-0 z-10 hidden h-1 w-full -translate-y-1/2 rounded-full bg-linear-to-r from-transparent via-brand-primary/35 to-transparent shadow-brand-hover lg:block" />
 
                     {/* Positioned above Card Title  */}
                     <div className="pointer-events-none absolute top-21 left-0 z-30 hidden -translate-y-1/2 items-center animate-travel-line lg:flex">
