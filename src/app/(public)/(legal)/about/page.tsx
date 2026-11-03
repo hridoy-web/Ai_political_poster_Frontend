@@ -3,14 +3,12 @@ import {
     CheckCircle2,
     Target,
     Users,
-    Sparkles,
     ArrowRight,
     ShieldCheck,
     Zap,
     Award,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import {
     Card,
     CardContent,
@@ -59,19 +57,11 @@ const platforms = [
 
 export default function AboutPage() {
     return (
-        <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20 relative overflow-hidden">
+        <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-10 relative overflow-hidden">
             <div className="absolute top-10 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none" />
             <div className="absolute top-96 right-10 w-80 h-80  rounded-full blur-3xl -z-10 pointer-events-none" />
 
-            <section className="text-center space-y-6 max-w-3xl mx-auto">
-                <Badge
-                    variant="outline"
-                    className="px-4 py-1.5 gap-2 rounded-full bg-accent/80 border-primary/20 text-accent-foreground text-xs sm:text-sm font-semibold backdrop-blur-md shadow-xs"
-                >
-                    <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                    <span>স্মার্ট ও আধুনিক রাজনৈতিক প্রচারণা</span>
-                </Badge>
-
+            <section className="text-center space-y-5 max-w-3xl mx-auto">
                 <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight">
                     ডিজিটাল যুগে পোস্টার তৈরির <br />
                     <span className="text-gradient-brand">নতুন অভিজ্ঞতা</span>
