@@ -8,8 +8,8 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
-import { axiosInstance } from "@/lib/axios";
+import apiClient, { ApiError } from "@/lib/api-client";
+
 import { LogIn, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
@@ -111,7 +111,7 @@ export default function LoginForm() {
     try {
       setLoading(true);
 
-      const res = await axios.request({
+      const res = await apiClient.request({
         baseURL: serverURL,
         url: authApi.login.url,
         method: authApi.login.method,
@@ -121,6 +121,10 @@ export default function LoginForm() {
         },
         withCredentials: true,
       });
+      const authToken = res?.data?.data?.token;
+      if (authToken && typeof window !== "undefined") {
+        localStorage.setItem("auth_token", authToken);
+      }
       const userData = res?.data?.data?.user;
       setUser(userData);
       await refreshUser?.().catch(() => {});
@@ -143,7 +147,7 @@ export default function LoginForm() {
       }
       router.refresh();
     } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+      if (err instanceof ApiError) {
         setError(
           err.response?.data?.message ?? "লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
         );
@@ -177,7 +181,7 @@ export default function LoginForm() {
 
       console.log("[Google Auth] Sending token to backend (length:", token.length, ")");
 
-      const res = await axios.request({
+      const res = await apiClient.request({
         baseURL: serverURL,
         url: authApi.googleLogin.url,
         method: authApi.googleLogin.method,
@@ -189,6 +193,10 @@ export default function LoginForm() {
         withCredentials: true,
       });
 
+      const authToken = res?.data?.data?.token;
+      if (authToken && typeof window !== "undefined") {
+        localStorage.setItem("auth_token", authToken);
+      }
       const loggedUser = res?.data?.data?.user;
       setUser(loggedUser);
       await refreshUser?.().catch(() => {});
@@ -211,7 +219,7 @@ export default function LoginForm() {
       router.refresh();
     } catch (err: unknown) {
       console.error("[Google Auth] Request failed:", err);
-      if (axios.isAxiosError(err)) {
+      if (err instanceof ApiError) {
         setError(
           err.response?.data?.message ??
             "গুগল লগইন সম্পন্ন হয়নি। আবার চেষ্টা করো。",
@@ -237,7 +245,12 @@ export default function LoginForm() {
     if (busy) return;
     setError("");
 
-    if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+    const configuredClientId =
+      (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1092641471377-7a1uo4i2jc9n8ljigmb90s19vuojv0ja.apps.googleusercontent.com")
+        .trim()
+        .replace(/^["']|["']$/g, "");
+
+    if (!configuredClientId) {
       setError(
         "গুগল লগইন বর্তমানে কনফিগার করা নেই। অনুগ্রহ করে আপনার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন。",
       );

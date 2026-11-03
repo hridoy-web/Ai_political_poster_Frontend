@@ -1,5 +1,4 @@
-import axios from "axios";
-import { serverURL } from "@/lib/api/authApi";
+import apiClient from "@/lib/api-client";
 import { AdminUser } from "./admin.types";
 
 export interface OverviewAnalyticsData {
@@ -15,15 +14,9 @@ export interface OverviewAnalyticsData {
 }
 
 export class AdminService {
-  static getBaseUrl() {
-    return serverURL || process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
-  }
-
   static async getOverviewAnalytics(): Promise<OverviewAnalyticsData | null> {
     try {
-      const res = await axios.get(`${this.getBaseUrl()}/api/v1/admin/analytics/overview`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get<any>("/api/v1/admin/analytics/overview");
       if (res.data?.success && res.data.data) {
         return res.data.data;
       }
@@ -49,12 +42,7 @@ export class AdminService {
       });
       if (search.trim()) query.set("search", search.trim());
 
-      const res = await axios.get(
-        `${this.getBaseUrl()}/api/v1/admin/users?${query.toString()}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await apiClient.get<any>(`/api/v1/admin/users?${query.toString()}`);
 
       if (res.data?.success && res.data.data) {
         const items = res.data.data.items || [];
@@ -117,9 +105,7 @@ export class AdminService {
 
   static async getRoles(): Promise<any[]> {
     try {
-      const res = await axios.get(`${this.getBaseUrl()}/api/v1/admin/roles`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get<any>("/api/v1/admin/roles");
       if (res.data?.success && Array.isArray(res.data.data)) {
         return res.data.data;
       }
@@ -138,11 +124,9 @@ export class AdminService {
     userId: string,
     status: "ACTIVE" | "BLOCKED"
   ): Promise<boolean> {
-    const res = await axios.patch(
-      `${this.getBaseUrl()}/api/v1/admin/users/${userId}/status`,
-      { status },
-      { withCredentials: true }
-    );
+    const res = await apiClient.patch<any>(`/api/v1/admin/users/${userId}/status`, {
+      status,
+    });
     return Boolean(res.data?.success);
   }
 
@@ -150,11 +134,9 @@ export class AdminService {
     userId: string,
     roleName: string
   ): Promise<boolean> {
-    const res = await axios.patch(
-      `${this.getBaseUrl()}/api/v1/admin/users/${userId}/role`,
-      { roleName },
-      { withCredentials: true }
-    );
+    const res = await apiClient.patch<any>(`/api/v1/admin/users/${userId}/role`, {
+      roleName,
+    });
     return Boolean(res.data?.success);
   }
 
@@ -174,10 +156,7 @@ export class AdminService {
       });
       if (search.trim()) query.set("search", search.trim());
 
-      const res = await axios.get(
-        `${this.getBaseUrl()}/api/v1/admin/posters?${query.toString()}`,
-        { withCredentials: true }
-      );
+      const res = await apiClient.get<any>(`/api/v1/admin/posters?${query.toString()}`);
 
       if (res.data?.success && res.data.data) {
         return {
@@ -194,10 +173,7 @@ export class AdminService {
 
   static async deletePoster(posterId: string): Promise<boolean> {
     try {
-      const res = await axios.delete(
-        `${this.getBaseUrl()}/api/v1/admin/posters/${posterId}`,
-        { withCredentials: true }
-      );
+      const res = await apiClient.delete<any>(`/api/v1/admin/posters/${posterId}`);
       return Boolean(res.data?.success);
     } catch (err) {
       console.error("Failed to delete poster:", err);
@@ -221,10 +197,7 @@ export class AdminService {
       });
       if (search.trim()) query.set("search", search.trim());
 
-      const res = await axios.get(
-        `${this.getBaseUrl()}/api/v1/admin/transactions?${query.toString()}`,
-        { withCredentials: true }
-      );
+      const res = await apiClient.get<any>(`/api/v1/admin/transactions?${query.toString()}`);
 
       if (res.data?.success && res.data.data) {
         return {

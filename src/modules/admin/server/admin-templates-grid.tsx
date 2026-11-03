@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,9 +40,9 @@ export function AdminTemplatesGrid({ templates: initialTemplates }: { templates:
 
     try {
       setIsDeleting(true);
-      const res = await axios.delete(`${serverURL}/api/v1/template/${deleteCandidate.id}`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.delete(`/api/v1/template/${deleteCandidate.id}`);
+
+
 
       if (res.data?.success || res.status === 200) {
         toast.success(`"${deleteCandidate.title}" টেমপ্লেট সফলভাবে মুছে ফেলা হয়েছে!`);

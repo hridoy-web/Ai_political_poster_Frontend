@@ -5,11 +5,14 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { mockUser } from "../navbar.constants";
+import { MockUserType } from "../navbar.types";
 // import { useAuth } from "@/hooks/get-user-data";
 
 export function NavbarAvatar() {
   // const { loading, user } = useAuth();
-  const loading = true;
+  const loading = false;
+  const user:MockUserType = mockUser;
 
 
   return (

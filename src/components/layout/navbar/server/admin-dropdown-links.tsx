@@ -1,6 +1,6 @@
 
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import NavActiveLink from "./nav-active-link";
+import NavActiveLink from "../client/nav-active-link";
 import { AdminDropdownLinksProps } from "../navbar.types";
 import { adminLinks } from "../navbar.constants";
 

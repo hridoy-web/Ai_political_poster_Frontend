@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { serverURL } from "@/lib/api/authApi";
 import {
   CandidateInfo,
@@ -53,11 +53,7 @@ export class PosterGeneratorService {
    */
   static async ensureGuestSession(): Promise<string | null> {
     try {
-      const res = await axios.post(
-        `${serverURL}/api/v1/guest/session`,
-        {},
-        { withCredentials: true }
-      );
+      const res = await apiClient.post(`/api/v1/guest/session`, {});
       if (res.data?.success && res.data?.data?.guestSessionId) {
         if (typeof window !== "undefined") {
           localStorage.setItem("poster_ai_guest_id", res.data.data.guestSessionId);
@@ -88,8 +84,8 @@ export class PosterGeneratorService {
     await this.ensureGuestSession();
 
     try {
-      const res = await axios.post(
-        `${serverURL}/api/v1/ai/generate-slogans`,
+      const res = await apiClient.post(
+        `/api/v1/ai/generate-slogans`,
         {
           topic: params.topic || "নির্বাচনী প্রচারণা",
           candidateName: params.candidateName || "জননেতা",
@@ -99,8 +95,7 @@ export class PosterGeneratorService {
           category: params.category || "নির্বাচনী প্রচারণা",
           count: params.count || 4,
           language: "bn",
-        },
-        { withCredentials: true }
+        }
       );
 
       if (res.data?.success && Array.isArray(res.data.data?.slogans)) {
@@ -128,9 +123,7 @@ export class PosterGeneratorService {
    */
   static async fetchPublishedTemplates(): Promise<PublishedTemplate[]> {
     try {
-      const res = await axios.get(`${serverURL}/api/v1/template?limit=50`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get(`/api/v1/template?limit=50`);
       if (res.data?.success && Array.isArray(res.data.data?.items)) {
         return res.data.data.items;
       }
@@ -145,9 +138,7 @@ export class PosterGeneratorService {
    */
   static async getTemplateById(id: string): Promise<PublishedTemplate | null> {
     try {
-      const res = await axios.get(`${serverURL}/api/v1/template/${id}`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get(`/api/v1/template/${id}`);
       if (res.data?.success && res.data.data) {
         return res.data.data;
       }
@@ -167,14 +158,13 @@ export class PosterGeneratorService {
     await this.ensureGuestSession();
 
     const idempotencyKey = `poster_draft_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const res = await axios.post(
-      `${serverURL}/api/v1/posters`,
+    const res = await apiClient.post(
+      "/api/v1/posters",
       {
         templateId: payload.templateId,
         inputData: payload.inputData,
         idempotencyKey,
-      },
-      { withCredentials: true }
+      }
     );
 
     if (!res.data?.success || !res.data?.data?.id) {
@@ -188,13 +178,12 @@ export class PosterGeneratorService {
    * Triggers background rendering and billing hold via POST /api/v1/posters/:id/render.
    */
   static async triggerPosterRender(posterId: string): Promise<PosterRenderResult> {
-    const res = await axios.post(
-      `${serverURL}/api/v1/posters/${posterId}/render`,
+    const res = await apiClient.post(
+      `/api/v1/posters/${posterId}/render`,
       {
         idempotencyKey: `render_${posterId}_${Date.now()}`,
         rendererVersion: "1.0.0",
-      },
-      { withCredentials: true }
+      }
     );
 
     if (!res.data?.success) {
@@ -208,10 +197,7 @@ export class PosterGeneratorService {
    * Polls status of rendering poster via GET /api/v1/posters/:id/status.
    */
   static async pollPosterStatus(posterId: string): Promise<PosterRenderResult> {
-    const res = await axios.get(
-      `${serverURL}/api/v1/posters/${posterId}/status`,
-      { withCredentials: true }
-    );
+    const res = await apiClient.get(`/api/v1/posters/${posterId}/status`);
 
     if (res.data?.success && res.data?.data) {
       return res.data.data;

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import axios from "axios";
+import apiClient, { ApiError } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,7 +162,7 @@ export default function RegisterForm() {
     try {
       setLoading(true);
 
-      const res = await axios.request({
+      const res = await apiClient.request({
         baseURL: serverURL,
         url: authApi.register.url,
         method: authApi.register.method,
@@ -180,7 +180,7 @@ export default function RegisterForm() {
       router.refresh();
       return;
     } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+      if (err instanceof ApiError) {
         setError(
           err.response?.data?.message ??
             "রেজিস্ট্রেশন সম্পন্ন হয়নি। আবার চেষ্টা করুন",

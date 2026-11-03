@@ -14,7 +14,8 @@ import {
   SidebarInset,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import NavbarDropdown from "@/components/layout/navbar/navbar-dropdown";
+import NavbarDropdown from "@/components/layout/navbar/client/navbar-dropdown";
+
 
 interface AdminLayoutShellProps {
   children: React.ReactNode;
@@ -47,15 +48,15 @@ export function AdminLayoutShell({ children }: AdminLayoutShellProps) {
 
               {isSuperAdmin ? (
                 <span className="inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 items-center gap-1">
-                  <Crown className="size-3 text-amber-500" /> সুপার অ্যাডমিন
+                  <Crown className="size-3 text-amber-500" /> SUPER ADMIN
                 </span>
               ) : isAdmin ? (
                 <span className="inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20 items-center gap-1">
-                  <ShieldCheck className="size-3 text-brand-primary" /> অ্যাডমিন
+                  <ShieldCheck className="size-3 text-brand-primary" /> ADMIN
                 </span>
               ) : (
                 <span className="inline-flex text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 items-center gap-1">
-                  <Layers className="size-3 text-rose-500" /> টেমপ্লেট
+                  <Layers className="size-3 text-rose-500" /> TEMPLATE MANAGER
                 </span>
               )}
             </div>

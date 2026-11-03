@@ -31,3 +31,8 @@ export interface AdminDropdownLinksProps {
   isAdmin: boolean;
   isTemplateManager: boolean;
 }
+
+export interface MockUserType{
+  name:string,
+  email:string
+}

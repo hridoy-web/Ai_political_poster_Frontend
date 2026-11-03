@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
 import {
   PhotoSlot,
@@ -209,9 +209,7 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
     async function loadCategories() {
       try {
         setIsLoadingCategories(true);
-        const res = await axios.get(`${serverURL}/api/v1/category`, {
-          withCredentials: true,
-        });
+        const res = await apiClient.get("/api/v1/category");
         if (res.data?.success && Array.isArray(res.data.data)) {
           setCategories(res.data.data);
           if (res.data.data.length > 0) {
@@ -245,9 +243,7 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
     async function loadExistingTemplate() {
       try {
         setIsLoadingTemplate(true);
-        const res = await axios.get(`${serverURL}/api/v1/template/${editTemplateId}`, {
-          withCredentials: true,
-        });
+        const res = await apiClient.get(`/api/v1/template/${editTemplateId}`);
 
         if (isCancelled) return;
         const tmpl = res.data?.data;
@@ -511,14 +507,7 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
 
       if (editTemplateId) {
         // Update existing template via PATCH
-        const res = await axios.patch(
-          `${serverURL}/api/v1/template/${editTemplateId}`,
-          templatePayload,
-          {
-            withCredentials: true,
-            timeout: 25000,
-          }
-        );
+        const res = await apiClient.patch(`/api/v1/template/${editTemplateId}`, templatePayload, { timeout: 25000 });
 
         if (res.data?.success || res.status === 200) {
           toast.success("টেমপ্লেট সফলভাবে আপডেট করা হয়েছে!");
@@ -531,10 +520,7 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
       }
 
       // 1. Create Template (DRAFT) with timeout
-      const res = await axios.post(`${serverURL}/api/v1/template`, templatePayload, {
-        withCredentials: true,
-        timeout: 20000,
-      });
+      const res = await apiClient.post("/api/v1/template", templatePayload, { timeout: 20000 });
 
       const createdTemplate = res.data?.data;
       if (!createdTemplate?.id) {
@@ -542,11 +528,7 @@ export function TemplateStudioWorkspace({ editTemplateId }: TemplateStudioWorksp
       }
 
       // 2. Publish Template with timeout
-      await axios.post(
-        `${serverURL}/api/v1/template/${createdTemplate.id}/publish`,
-        {},
-        { withCredentials: true, timeout: 20000 }
-      );
+      await apiClient.post(`/api/v1/template/${createdTemplate.id}/publish`, {}, { timeout: 20000 });
 
       toast.success("টেমপ্লেট সফলভাবে তৈরি এবং পাবলিশ করা হয়েছে!");
       setIsPublishing(false);

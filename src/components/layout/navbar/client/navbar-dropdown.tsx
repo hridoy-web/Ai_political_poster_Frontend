@@ -24,7 +24,7 @@ import { loginBtnStyle, registerBtnStyle } from "../server/navbar-actions";
 import { LogIn, LogOut, User, UserPlus } from "lucide-react";
 import { userDropdownLinks } from "../navbar.constants";
 import NavActiveLink from "./nav-active-link";
-import AdminDropdownLinks from "./admin-dropdown-links";
+import AdminDropdownLinks from "../server/admin-dropdown-links";
 
 export function NavbarDropdown() {
   const router = useRouter();

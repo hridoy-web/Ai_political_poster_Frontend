@@ -48,3 +48,8 @@ export const adminLinks = [
   },
 ];
 
+export const mockUser = {
+  name:"Rakib Gazi",
+  email:"rakib@gazi.com"
+}
+

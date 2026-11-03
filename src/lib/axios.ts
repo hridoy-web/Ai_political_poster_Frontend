@@ -1,18 +1,7 @@
-import axios from "axios";
-import { serverURL } from "./api/authApi";
+import apiClient, { ApiResponse, RequestOptions, ApiError } from "./api-client";
 
-// Ensure global Axios default carries credentials for all requests
-axios.defaults.withCredentials = true;
+export const axiosInstance = apiClient;
+export { apiClient, ApiError };
+export type { ApiResponse, RequestOptions };
 
-export const axiosInstance = axios.create({
-  baseURL: serverURL,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-axiosInstance.defaults.withCredentials = true;
-
-export { axios };
-export default axiosInstance;
+export default apiClient;
