@@ -1,8 +1,6 @@
 import { CheckCheck, X } from "lucide-react";
-
 import { cn } from "@/lib/utils";
 import { PASSWORD_REQUIREMENTS, STRENGTH_BAR_COLORS, STRENGTH_TEXTS } from "@/lib/validation/authValidation";
-
 
 type Props = {
   password: string;

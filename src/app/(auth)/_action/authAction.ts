@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-
 import { apiRequest } from "@/lib/api";
 import {
   clearGuestSession,
@@ -14,23 +13,18 @@ import {
 import type { ActionState, ApiResult, AuthData, LoginInput } from "@/lib/type";
 import { ALLOWED_IMAGE_TYPES, loginSchema, MAX_IMAGE_SIZE, registerSchema, toFieldErrors } from "@/lib/validation/authValidation";
 
-
 const AUTH = "/auth";
-
-/** সফল হলে cookie বসিয়ে redirect করে; ব্যর্থ হলে error ফেরত দেয়। */
-
 
 async function finishAuth(res: ApiResult<AuthData>): Promise<ActionState> {
   if (!res.success) {
     return { success: false, message: res.message };
   }
 
-  // Backend সফল বলেছে কিন্তু token বা user আসেনি
   if (!res.data?.token || !res.data.user) {
     return { success: false, message: "সার্ভার থেকে অপ্রত্যাশিত উত্তর এসেছে।" };
   }
 
-  await setSession(res.data.token, res.data.user); // দুটো argument
+  await setSession(res.data.token, res.data.user); 
   await clearGuestSession();
 
   redirect(getRedirectPath(res.data.user));
@@ -81,7 +75,7 @@ export async function registerAction(formData: FormData): Promise<ActionState> {
     if (image.size > MAX_IMAGE_SIZE) {
       return { success: false, message: "ছবির সাইজ সর্বোচ্চ 2 MB হতে পারবে।" };
     }
-    body.append("image", image, image.name); // backend: upload.single("image")
+    body.append("image", image, image.name); 
   }
 
   const res = await apiRequest<AuthData>(`${AUTH}/register`, {
@@ -106,7 +100,7 @@ export async function googleLoginAction(credential: string): Promise<ActionState
 }
 
 export async function logoutAction() {
-  // backend logout-এ verifyToken আছে; fail করলেও আমাদের cookie মুছি
+  // backend logout-এ verifyToken 
   await apiRequest(`${AUTH}/logout`, { cookies: { token: await getToken() } });
 
   await clearSession();

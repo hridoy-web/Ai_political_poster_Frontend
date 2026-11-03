@@ -2,7 +2,6 @@
 
 import { useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { Eye, EyeOff, type LucideIcon } from "lucide-react";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -15,7 +14,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   icon?: LucideIcon;
   error?: string;
-  labelRight?: ReactNode; // যেমন "Forgot password?"
+  labelRight?: ReactNode; 
 };
 
 export default function FormField({

@@ -24,7 +24,7 @@ export default function LoginForm() {
     setError("");
   };
 
-  // সফল হলে server নিজেই redirect করে; এখানে শুধু ব্যর্থতা সামলাই
+  // server  redirect 
   const handleResult = (result?: ActionState) => {
     if (result && !result.success) {
       setFieldErrors(result.fieldErrors ?? {});
@@ -130,7 +130,7 @@ export default function LoginForm() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        {/* Google ID token (credential) পাঠায় */}
+        {/* Google ID token (credential)*/}
         
 <div className={`flex justify-center ${pending ? "pointer-events-none opacity-70" : ""}`}>
   <GoogleLogin

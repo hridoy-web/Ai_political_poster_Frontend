@@ -1,12 +1,9 @@
-
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import Image from "next/image";
 import { Camera, User } from "lucide-react";
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/validation/authValidation";
-
-
+   import { useEffect, useMemo, useRef, type ChangeEvent } from "react";
 
 type Props = {
   image: File | null;
@@ -16,17 +13,17 @@ type Props = {
 
 export default function ProfileImagePicker({ image, onChange, onError }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+ 
+  const preview = useMemo(
+  () => (image ? URL.createObjectURL(image) : null),
+  [image],
+);
 
-  useEffect(() => {
-    if (!image) {
-      setPreview(null);
-      return;
-    }
-    const url = URL.createObjectURL(image);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [image]);
+useEffect(() => {
+  return () => {
+    if (preview) URL.revokeObjectURL(preview);
+  };
+}, [preview]);
 
   const handleSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,7 +37,7 @@ export default function ProfileImagePicker({ image, onChange, onError }: Props) 
       onChange(file);
     }
 
-    e.target.value = ""; // একই ফাইল আবার বাছাই করা যাবে
+    e.target.value = ""; 
   };
 
   return (

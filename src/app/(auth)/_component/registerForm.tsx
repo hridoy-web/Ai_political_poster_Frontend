@@ -47,7 +47,7 @@ export default function RegisterForm() {
     startTransition(async () => {
       const result = await registerAction(data);
 
-      // সফল হলে server নিজেই redirect করে
+      // server redirect 
       if (result && !result.success) {
         setFieldErrors(result.fieldErrors ?? {});
         setError(result.fieldErrors ? "" : result.message);

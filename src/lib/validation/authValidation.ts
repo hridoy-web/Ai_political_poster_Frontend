@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { FieldErrors } from "../type";
 
-
-
-/* ---------------- Schemas (backend-এর সাথে মেলানো) ---------------- */
+/* ---------------- Schemas (backend) ---------------- */
 
 const emailSchema = z
   .string()
@@ -35,7 +33,7 @@ export const loginSchema = z.object({
   password: z.string().min(1, { error: "Password is required" }),
 });
 
-/** Zod error থেকে প্রতিটি field-এর প্রথম message বের করে। */
+/** Zod error*/
 export function toFieldErrors(error: z.ZodError): FieldErrors {
   const errors: FieldErrors = {};
 

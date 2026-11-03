@@ -30,7 +30,7 @@ export type AuthUser = {
   hasCreditBypass?: boolean;
 };
 
-/** Cookie-তে রাখা হালকা user (UI দেখানোর জন্য) */
+
 
 
 export type SessionUser = {

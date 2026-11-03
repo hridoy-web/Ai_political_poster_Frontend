@@ -1,26 +1,3 @@
-// "use client";
-
-// // TODO: authentication শেষ হলে এখানে আসল user logic বসবে।
-// // আপাতত AuthContext ছাড়াই navbar যেন build error না দেয়, সেজন্য stub।
-
-// export type User = {
-//   id: string;
-//   name: string;
-//   email: string;
-//   roles?: string[];
-// };
-
-// export const useAuth = () => {
-//   return {
-//     user: null as User | null,
-//     loading: false,
-//     setUser: (_user: User | null) => {},
-//     refreshUser: async () => {},
-//     logout: async () => {},
-//   };
-// };
-
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -49,11 +26,16 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setUser(readUserCookie());
-    setLoading(false);
-  }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setUser(readUserCookie());
+  setLoading(false);
+}, []);
 
   const roles = user?.roles ?? [];
+
+  const isSuperAdmin = roles.includes("SUPER_ADMIN");
+  const isAdmin = isSuperAdmin || roles.includes("ADMIN");
+  const isTemplateManager = isAdmin || roles.includes("TEMPLATE_MANAGER");
 
   return {
     user,
@@ -62,6 +44,9 @@ export const useAuth = () => {
     isAuthenticated: !!user,
     roles,
     role: roles[0] ?? null,
+    isSuperAdmin,
+    isAdmin,
+    isTemplateManager,
     setUser,
     refreshUser: async () => setUser(readUserCookie()),
   };

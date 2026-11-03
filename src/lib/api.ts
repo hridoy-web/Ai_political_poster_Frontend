@@ -2,7 +2,7 @@ import type { ApiResult, RequestOptions } from "@/lib/type";
 
 const API_URL = (process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
 
-/** Next.js server থেকে Express backend-এ fetch request পাঠায়। */
+/** Next.js Express backend fetch request */
 export async function apiRequest<T = unknown>(
   path: string,
   { method = "POST", body, cookies = {} }: RequestOptions = {},
@@ -24,7 +24,6 @@ export async function apiRequest<T = unknown>(
     const res = await fetch(`${API_URL}${path}`, {
       method,
       headers,
-      // FormData হলে Content-Type দেওয়া হয়নি; fetch নিজেই boundary বসাবে
       body: isForm ? body : body ? JSON.stringify(body) : undefined,
       cache: "no-store",
     });
