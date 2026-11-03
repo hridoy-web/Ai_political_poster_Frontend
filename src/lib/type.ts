@@ -1,8 +1,6 @@
 import type { z } from "zod";
 import { loginSchema, registerSchema } from "./validation/authValidation";
 
-
-
 /* ---------------- API ---------------- */
 
 export type ApiResult<T> = {
@@ -29,9 +27,6 @@ export type AuthUser = {
   permissions?: string[];
   hasCreditBypass?: boolean;
 };
-
-
-
 
 export type SessionUser = {
   id: string;
