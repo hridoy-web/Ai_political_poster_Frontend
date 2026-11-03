@@ -4,20 +4,18 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { PosterGeneratorService } from "../generator.service";
 import { BannerTheme, CandidateInfo, PublishedTemplate } from "../generator.types";
-import { Download, Loader2, MapPin, ShieldCheck, Sparkles, Move, RotateCcw, Eye, ZoomIn } from "lucide-react";
+import { Download, Loader2, MapPin, ShieldCheck, Sparkles, Move, RotateCcw, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { renderTemplateCanvas } from "@/modules/template-studio/utils/canvas-renderer";
-import { PhotoSlot } from "./photo-slot";
 
 interface StudioCanvasProps {
   candidate: CandidateInfo;
   photoUrl: string;
   theme: BannerTheme;
   imageScale: number;
-  onImageScaleChange?: (scale: number) => void;
   imageOffsetX?: number;
   imageOffsetY?: number;
   onImageOffsetChange?: (x: number, y: number) => void;
-  onPhotoChange?: (url: string) => void;
   template?: PublishedTemplate | null;
   onCreatePoster: () => void;
   onStartNewPoster?: () => void;
@@ -34,11 +32,9 @@ export function StudioCanvas({
   photoUrl,
   theme,
   imageScale,
-  onImageScaleChange,
   imageOffsetX = 0,
   imageOffsetY = 0,
   onImageOffsetChange,
-  onPhotoChange,
   template,
   onCreatePoster,
   onStartNewPoster,
@@ -250,7 +246,20 @@ export function StudioCanvas({
 
   return (
     <section className="flex flex-col gap-3.5 items-center w-full">
-      
+      {/* Template Badge Indicator */}
+      {template && (
+        <div className="w-full flex items-center justify-between px-3.5 py-2 rounded-2xl bg-card border border-border text-xs sm:text-sm shadow-2xs">
+          <span className="font-semibold text-foreground flex items-center gap-1.5">
+            <Sparkles className="size-4 text-brand-primary" />
+            <span>সিলেক্টেড টেমপ্লেট:</span>
+            <span className="text-brand-primary font-bold">{template.title}</span>
+          </span>
+          <span className="text-muted-foreground font-mono text-xs">
+            {canvasWidth} × {canvasHeight} ({template.aspectRatio || "৪:৫"})
+          </span>
+        </div>
+      )}
+
       {/* Main Preview Container */}
       <div className="w-full max-w-[620px] mx-auto flex flex-col items-center justify-center p-3 sm:p-4 rounded-3xl bg-muted/40 border border-border min-h-[460px] relative">
         {/* Compare Mode Banner Overlay */}
@@ -261,7 +270,7 @@ export function StudioCanvas({
           </div>
         )}
 
-        
+        {hasCanvasConfig ? (
           <div className="relative flex items-center justify-center max-w-full">
             <canvas
               ref={canvasRef}
@@ -281,65 +290,96 @@ export function StudioCanvas({
               }}
               className="w-auto h-auto max-h-[min(560px,calc(100vh-220px))] max-w-full rounded-2xl shadow-2xl border border-white/20 object-contain select-none transition-all duration-150"
             />
-             {
-              primarySlot && (
-                           <div
-              style={{
-                position: "absolute",
-                left: `${(primarySlot.x / canvasWidth) * 100}%`,
-                top: `${(primarySlot.y / canvasHeight) * 100}%`,
-                width: `${(primarySlot.width / canvasWidth) * 100}%`,
-                height: `${(primarySlot.height / canvasHeight) * 100}%`,
-                pointerEvents: photoUrl ? "none" : "auto",
-              }}
-             >
 
-                 <PhotoSlot
-                  photoUrl={photoUrl}
-                  onPhotoChange={(newUrl) => {onPhotoChange?.(newUrl);onImageOffsetChange?.(0, 0);}}
-                   imageScale={imageScale}
-                   imageOffsetX={imageOffsetX}
-                   imageOffsetY={imageOffsetY}
-                  />
-               </div>
-              )
-             }
             {isRendering && (
               <div className="absolute inset-0 bg-background/40 backdrop-blur-2xs rounded-2xl flex items-center justify-center pointer-events-none">
                 <Loader2 className="size-8 text-brand-primary animate-spin" />
               </div>
             )}
           </div>
+        ) : (
+          /* Fallback HTML Banner Preview (if template has no canvas background) */
+          <div
+            className={`aspect-[1300/1800] h-[min(450px,calc(100vh-200px))] w-auto max-w-full rounded-2xl text-white transition-all duration-300 select-none shadow-2xl flex flex-col justify-between overflow-hidden relative border text-center ${bgGradientClass}`}
+          >
+            <div className="relative z-10 w-full px-3 pt-2 flex items-center justify-between border-b border-white/15 pb-1.5 shrink-0">
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-emerald-100 font-semibold border border-white/20">
+                জাতীয় সংসদ নির্বাচন ২০২৬
+              </span>
+              <Badge className="bg-rose-600 hover:bg-rose-600 text-white font-bold text-[9px] px-2 py-0.5 shadow-xs border-none">
+                মার্কা: ধানের শীষ
+              </Badge>
+            </div>
 
-               {/* Drag Guidance & Scale Slider Bar */}
-        <div className="w-full mt-3 pt-2.5 border-t border-border/70 flex flex-col gap-2 text-xs text-muted-foreground">
+            <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center gap-1.5 sm:gap-2 px-3 py-1">
+              <p className="text-[10px] sm:text-[11px] font-bold text-amber-300 drop-shadow flex items-center justify-center gap-1">
+                <span className="text-amber-400">★</span>
+                <span>{candidate.bannerTitle || "গণতন্ত্র ও জনগণের অধিকার আদায়ে"}</span>
+              </p>
+
+              <div className="w-32 sm:w-36 h-36 sm:h-40 rounded-2xl overflow-hidden flex items-center justify-center relative shadow-md bg-slate-900">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photoUrl}
+                  alt={candidate.name}
+                  style={{
+                    transform: `translate(${imageOffsetX}px, ${imageOffsetY}px) scale(${imageScale / 100})`,
+                  }}
+                  className="w-full h-full object-cover object-top transition-transform duration-200"
+                />
+              </div>
+
+              <h1 className="text-lg sm:text-xl font-black tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-tight text-center">
+                {candidate.name || "জনাব মোঃ আরিফুল ইসলাম"}
+              </h1>
+
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                <span className="bg-gradient-brand text-white font-bold text-[9px] sm:text-[10px] px-2.5 py-0.5 rounded-full shadow-xs border border-rose-300/30">
+                  {candidate.designation || "সাধারণ সম্পাদক পদপ্রার্থী"}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-100 flex items-center gap-0.5">
+                  <MapPin className="size-2.5 text-emerald-300" />
+                  <span>{candidate.area || "ঢাকা-১০ সংসদীয় আসন"}</span>
+                </span>
+              </div>
+
+              <div className="px-2.5 py-1 sm:py-1.5 rounded-lg bg-black/45 border border-white/15 max-w-[260px] w-full text-center shadow-xs">
+                <p className="text-[8.5px] sm:text-[9.5px] font-medium text-slate-100 italic leading-snug">
+                  &ldquo;{candidate.slogan || "জনগণের সেবায় নিবেদিতপ্রাণ, দুর্নীতির বিরুদ্ধে আপোষহীন কণ্ঠস্বর"}&rdquo;
+                </p>
+              </div>
+            </div>
+
+            <div className="relative z-10 w-full px-2 py-1.5 bg-black/70 border-t border-white/15 flex items-center justify-center text-center shrink-0">
+              <div className="flex items-center justify-center gap-1 text-[8.5px] sm:text-[9.5px] text-slate-200">
+                <span className="text-amber-400 font-bold">সৌজন্যে ও প্রচারে:</span>
+                <span className="font-bold text-white truncate max-w-[180px]">
+                  {candidate.courtesy || "এলাকাবাসী ও দলীয় সর্বস্তরের কর্মী-সমর্থক"}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Drag Guidance & Position Reset Bar */}
+        <div className="w-full mt-3 pt-2.5 border-t border-border/70 flex items-center justify-between text-xs text-muted-foreground flex-wrap gap-2">
           <span className="flex items-center gap-1.5 text-foreground/80 font-medium">
-            <Move className="size-3.5 text-brand-primary shrink-0" />
+            <Move className="size-3.5 text-brand-primary" />
             <span>ছবির উপর ক্লিক করে টেনে ৩০% পর্যন্ত অবস্থান বদলাতে পারেন</span>
           </span>
-          <span className="flex items-center gap-1.5 text-foreground/80 font-medium">
-            <ZoomIn className="size-3.5 text-brand-primary shrink-0" />
-            <span>নিচের স্কেল স্লাইডারটি ডানে-বামে টেনে ছবির আকার ছোট বা বড় করতে পারবেন</span>
-          </span>
 
-          {/* Scale Slider  */}
-          {photoUrl && onImageScaleChange && (
-            <div className="flex items-center justify-between gap-3 pt-1 border-t border-border/40">
-              <span className="font-semibold text-foreground/90 whitespace-nowrap">
-                ছবির আকার (Scale): <span className="text-brand-primary font-bold">{imageScale}%</span>
-              </span>
-              <input
-                type="range"
-                min="50"
-                max="120"
-                value={imageScale}
-                onChange={(e) => onImageScaleChange(Number(e.target.value))}
-                className="w-48 sm:w-64 accent-primary h-2 bg-muted rounded-lg cursor-pointer"
-              />
-            </div>
+          {(imageOffsetX !== 0 || imageOffsetY !== 0) && (
+            <button
+              type="button"
+              onClick={() => onImageOffsetChange?.(0, 0)}
+              className="text-brand-primary hover:underline font-bold flex items-center gap-1 cursor-pointer bg-brand-primary/10 px-2.5 py-1 rounded-lg"
+            >
+              <RotateCcw className="size-3" />
+              <span>পজিশন রিসেট ({imageOffsetX}px, {imageOffsetY}px)</span>
+            </button>
           )}
         </div>
-        </div>
+      </div>
 
       {/* Action Section at Bottom of Poster */}
       <div className="w-full rounded-2xl p-4 border border-border bg-card flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">

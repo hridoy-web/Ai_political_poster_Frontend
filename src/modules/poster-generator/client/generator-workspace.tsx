@@ -3,12 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import {BannerTheme,CandidateInfo,PublishedTemplate,SloganTopicOption,} from "../generator.types";
+import {
+  BannerTheme,
+  CandidateInfo,
+  PublishedTemplate,
+  SloganTopicOption,
+} from "../generator.types";
 import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
 import { PosterSuccessModal } from "./poster-success-modal";
-import { Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins, Crown, CheckCircle2 } from "lucide-react";
+import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins, Crown, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchWalletBalance } from "@/modules/recharge/recharge.service";
@@ -46,7 +51,9 @@ export function GeneratorWorkspace({
   // 1. Core central states
   const [candidate, setCandidate] = useState<CandidateInfo>(initialCandidate);
   const [theme, setTheme] = useState<BannerTheme>("emerald");
-  const [photoUrl, setPhotoUrl] = useState("")
+  const [photoUrl, setPhotoUrl] = useState(
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
+  );
   const [imageScale, setImageScale] = useState(100);
   const [imageOffsetX, setImageOffsetX] = useState(0);
   const [imageOffsetY, setImageOffsetY] = useState(0);
@@ -634,20 +641,18 @@ export function GeneratorWorkspace({
         </div>
 
         {/* Right side: Live banner with dynamic template */}
-        <div className="lg:col-span-5 w-full sticky top-30">
+        <div className="lg:col-span-5 w-full sticky top-6">
           <StudioCanvas
             candidate={candidate}
             photoUrl={isComparing && comparePhotoUrl ? comparePhotoUrl : photoUrl}
             theme={theme}
             imageScale={imageScale}
-            onImageScaleChange={setImageScale}
             imageOffsetX={imageOffsetX}
             imageOffsetY={imageOffsetY}
             onImageOffsetChange={(x, y) => {
               setImageOffsetX(x);
               setImageOffsetY(y);
             }}
-            onPhotoChange={setPhotoUrl}
             template={activeTemplate}
             onCreatePoster={handleCreatePoster}
             onStartNewPoster={handleStartNewPoster}

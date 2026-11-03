@@ -269,7 +269,7 @@ export async function removeImageBackground(
     });
 
     onProgress?.(100, "সম্পন্ন!");
-    return blobToDataURL(blob);
+    return await blobToDataURL(blob);
   } catch (error) {
     console.warn(
       "AI background removal model encountered an error, activating smart edge fallback:",

@@ -1,12 +1,26 @@
 "use client";
 
 import { useState } from "react";
-import { BannerTheme, CandidateInfo } from "../generator.types";
-import {Crop,Edit3,ImageIcon, RotateCcw,UploadCloud,User,Wand2,RefreshCw,Undo2,Eye, Move,} from "lucide-react";
+import { BannerTheme, CandidateInfo, GeneratedSloganItem } from "../generator.types";
+import { PosterGeneratorService, SLOGAN_TOPICS } from "../generator.service";
+import {
+  Crop,
+  Edit3,
+  ImageIcon,
+  Loader2,
+  RotateCcw,
+  Sparkles,
+  UploadCloud,
+  User,
+  Wand2,
+  RefreshCw,
+  Undo2,
+  Eye,
+  Move,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useBackgroundRemoval } from "@/modules/background-removal";
-import { AiSloganSection } from "./ai-slogan-section";
 
 interface StudioInputPanelProps {
   candidate: CandidateInfo;
@@ -45,8 +59,45 @@ export function StudioInputPanel({
   onCompareStart,
   onCompareEnd,
 }: StudioInputPanelProps) {
-  const [activeTab, setActiveTab] = useState<"candidate" | "photo">("candidate");
+  const [activeTab, setActiveTab] = useState<"candidate" | "photo" | "slogan">("candidate");
+  const [sloganTopic, setSloganTopic] = useState("তারুণ্য ও কর্মসংস্থান");
+  const [isGeneratingSlogans, setIsGeneratingSlogans] = useState(false);
+  const [suggestedSlogans, setSuggestedSlogans] = useState<GeneratedSloganItem[]>(() =>
+    PosterGeneratorService.getSlogansByTopic("তারুণ্য ও কর্মসংস্থান").map((s) => ({
+      slogan: s,
+      subText: "আসন্ন নির্বাচনে আপনার মূল্যবান ভোট ও দোয়া প্রার্থনা করছি।",
+    }))
+  );
 
+  // Live Handler for AI slogans connecting to backend
+  const handleGenerateSlogans = async (topicTouse?: string) => {
+    const topic = topicTouse || sloganTopic;
+    setIsGeneratingSlogans(true);
+    try {
+      const results = await PosterGeneratorService.generateAiSlogans({
+        topic,
+        candidateName: candidate.name,
+        designation: candidate.designation,
+        area: candidate.area,
+        partyOrIdeology: candidate.courtesy?.includes("বিএনপি")
+          ? "বিএনপি"
+          : candidate.courtesy?.includes("জামায়াত")
+          ? "জামায়াতে ইসলামী"
+          : "স্বতন্ত্র / সর্বদলীয়",
+        count: 4,
+      });
+      setSuggestedSlogans(results);
+    } catch (err) {
+      console.error("AI Slogan generation error:", err);
+      const fallback = PosterGeneratorService.getSlogansByTopic(topic).map((s) => ({
+        slogan: s,
+        subText: "আসন্ন নির্বাচনে আপনার মূল্যবান ভোট ও দোয়া প্রার্থনা করছি।",
+      }));
+      setSuggestedSlogans(fallback);
+    } finally {
+      setIsGeneratingSlogans(false);
+    }
+  };
 
   // Background removal hook
   const {
@@ -117,8 +168,8 @@ export function StudioInputPanel({
         </button>
       </div>
 
-         {/* Tabs Navigation (2 Tabs) */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 bg-muted/60 rounded-2xl border border-border">
+      {/* Tabs Navigation (Bigger & Clearer) */}
+      <div className="grid grid-cols-3 gap-2 p-1.5 bg-muted/60 rounded-2xl border border-border">
         <button
           type="button"
           onClick={() => setActiveTab("candidate")}
@@ -143,6 +194,19 @@ export function StudioInputPanel({
         >
           <ImageIcon className="size-4 text-muted-foreground shrink-0" />
           <span>ছবি ও থিম</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("slogan")}
+          className={`py-2.5 sm:py-3 px-3 text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === "slogan"
+              ? "bg-card text-emerald-600 shadow-sm border border-emerald-500/30 ring-1 ring-emerald-500/20"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Sparkles className="size-4 text-amber-500 shrink-0" />
+          <span>এআই স্লোগান</span>
         </button>
       </div>
 
@@ -217,10 +281,6 @@ export function StudioInputPanel({
               className="h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl border-border px-3.5 focus-visible:ring-primary"
             />
           </div>
-          <AiSloganSection
-            candidate={candidate}
-            onCandidateChange={onCandidateChange}
-          />
         </div>
       )}
 
@@ -232,6 +292,14 @@ export function StudioInputPanel({
               <ImageIcon className="size-4 text-brand-green" />
               <span>ছবি আপলোড ও ব্যাকগ্রাউন্ড</span>
             </span>
+            <button
+              type="button"
+              onClick={onOpenCropModal}
+              className="text-xs sm:text-sm font-bold text-brand-secondary hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <Crop className="size-3.5" />
+              <span>ক্রপ ও সাইজ</span>
+            </button>
           </div>
 
           {/* Drag-and-drop file upload */}
@@ -391,12 +459,155 @@ export function StudioInputPanel({
                 </button>
               )}
             </div>
+
+            {/* Scale Slider */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-center text-xs sm:text-sm font-semibold text-muted-foreground">
+                <span>ছবির আকার (Scale):</span>
+                <span className="font-bold text-foreground">{imageScale}%</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="200"
+                value={imageScale}
+                onChange={(e) => onImageScaleChange?.(Number(e.target.value))}
+                className="w-full accent-primary h-2 bg-muted rounded-lg cursor-pointer"
+              />
+            </div>
           </div>
-       </div>
-       )}
-   </section>
+        </div>
+      )}
+
+      {/* Tab 3: Slogan Generator (Bigger & Clearer) */}
+      {activeTab === "slogan" && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-muted/30 border border-border flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Sparkles className="size-4 text-emerald-600" />
+              <span>লাইভ স্লোগান জেনারেটর</span>
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs sm:text-sm font-bold text-foreground flex items-center justify-between">
+              <span>স্লোগানের বিষয় বা থিম লিখুন:</span>
+              <span className="text-xs text-muted-foreground">
+                বিষয় লিখলে এআই সাজেস্ট করবে
+              </span>
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={sloganTopic}
+                onChange={(e) => setSloganTopic(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleGenerateSlogans()}
+                placeholder="যেমন: তারুণ্য, উন্নয়ন, সুশাসন..."
+                className="h-11 text-sm rounded-xl px-4 flex-1 border-border"
+              />
+              <Button
+                type="button"
+                onClick={() => handleGenerateSlogans()}
+                disabled={isGeneratingSlogans}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold h-11 px-4 rounded-xl gap-2 cursor-pointer shrink-0 shadow-sm"
+              >
+                {isGeneratingSlogans ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                <span>স্লোগান তৈরি</span>
+              </Button>
+            </div>
+
+            {/* Quick Topic Chips */}
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {SLOGAN_TOPICS.map((topic) => (
+                <button
+                  key={topic.id}
+                  type="button"
+                  onClick={() => {
+                    setSloganTopic(topic.label);
+                    handleGenerateSlogans(topic.label);
+                  }}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-card border border-border text-foreground hover:bg-muted transition-colors font-medium cursor-pointer"
+                >
+                  {topic.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 pt-2 border-t border-border">
+            <span className="text-xs sm:text-sm font-bold text-muted-foreground">
+              এআই সাজেস্টেড স্লোগান (ক্লিক করলেই ব্যানারে বসবে):
+            </span>
+            <div className="flex flex-col gap-2">
+              {suggestedSlogans.map((item, idx) => {
+                const text = typeof item === "string" ? item : item.slogan;
+                const sub = typeof item === "object" ? item.subText : undefined;
+                const isActive = candidate.slogan === text;
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      onCandidateChange("slogan", text);
+                      if (sub && !candidate.bannerTitle) {
+                        onCandidateChange("bannerTitle", sub);
+                      }
+                    }}
+                    className={`p-3.5 rounded-2xl border text-left cursor-pointer transition-all flex flex-col gap-1.5 text-xs sm:text-sm leading-snug ${
+                      isActive
+                        ? "bg-emerald-500/10 border-emerald-500 text-foreground font-bold shadow-xs ring-1 ring-emerald-500/30"
+                        : "bg-card border-border hover:border-emerald-500/50 hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2 flex-1">
+                        <span className="text-emerald-600 font-bold mt-0.5 shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <span className="text-foreground font-semibold">
+                          &ldquo;{text}&rdquo;
+                        </span>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[10px] px-2.5 py-0.5 rounded-full font-bold ${
+                          isActive
+                            ? "bg-emerald-600 text-white"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isActive ? "✓ সক্রিয়" : "বসাতে ক্লিক"}
+                      </span>
+                    </div>
+                    {sub && (
+                      <p className="text-xs text-muted-foreground pl-5 font-normal italic">
+                        {sub}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+            <label className="text-xs sm:text-sm font-bold text-foreground flex items-center justify-between">
+              <span>ক্যাম্পেইন স্লোগান (ট্যাগলাইন):</span>
+              <span className="text-xs text-emerald-600 font-semibold">
+                ক্যানভাসে লাইভ রিয়েল-টাইম
+              </span>
+            </label>
+            <Input
+              type="text"
+              value={candidate.slogan}
+              onChange={(e) => onCandidateChange("slogan", e.target.value)}
+              className="h-11 sm:h-12 text-sm sm:text-base font-semibold border-emerald-400 bg-emerald-500/5 rounded-xl px-4"
+            />
+          </div>
+        </div>
+      )}
+    </section>
   );
- }
-
-
-   
+}

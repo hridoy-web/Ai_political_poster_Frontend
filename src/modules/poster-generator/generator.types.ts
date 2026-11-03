@@ -90,14 +90,3 @@ export interface PublishedTemplate {
   accessLevel?: "FREE" | "PREMIUM";
   config?: TemplateCanvasConfig;
 }
-
-export interface PhotoSlotCardProps  {
-   photoUrl?:string;
-   onPhotoChange:(newPhotoUrl:string) => void;
-   imageScale?:number;
-   imageOffsetX?: number;
-   imageOffsetY?: number;
-   width?: number;
-   height?: number;
-   className?: string;
-}
