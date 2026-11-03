@@ -4,8 +4,8 @@ import Link from "next/link";
 
 import bgFlag from "../../../../public/bgFlag.png";
 import { Card } from "@/components/ui/card";
-import LoginForm from "@/modules/auth/client/login/login-form";
 import { Logo } from "@/components/brand/logo";
+import LoginForm from "../_component/loginForm";
 
 export const metadata: Metadata = {
   title: "Login | Poster Maker",
@@ -14,8 +14,7 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <main className="relative isolate min-h-dvh overflow-y-auto bg-background text-foreground">
-      {/* BACKGROUND: Bangladesh flag (blurred) + dark overlay */}
+    <div className="relative isolate min-h-dvh overflow-y-auto bg-background text-foreground">
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <Image
           src={bgFlag}
@@ -32,12 +31,12 @@ export default function LoginPage() {
       <div className="flex min-h-dvh items-center justify-center p-3 sm:p-6">
         <Card className="w-full max-w-md gap-0 rounded-2xl border border-white/20 bg-card/80 p-5 shadow-2xl backdrop-blur-xl sm:rounded-3xl sm:p-7">
           <Link href="/" className="mb-5 flex w-fit items-center gap-2.5">
-           <Logo/>
+            <Logo />
           </Link>
 
           <LoginForm />
         </Card>
       </div>
-    </main>
+    </div>
   );
 }

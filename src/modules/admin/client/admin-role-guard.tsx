@@ -89,7 +89,7 @@ export function AdminRoleGuard({ children }: AdminRoleGuardProps) {
   }
 
   // If user does not have TEMPLATE_MANAGER or ADMIN role
-  if (!isTemplateManager) {
+  if (!isTemplateManager && !isAdmin) {
     return (
       <div className="min-h-[75vh] flex items-center justify-center p-4">
         <div className="w-full max-w-lg bg-card/90 backdrop-blur-xl border border-destructive/20 rounded-3xl p-8 sm:p-10 text-center space-y-6 shadow-2xl">

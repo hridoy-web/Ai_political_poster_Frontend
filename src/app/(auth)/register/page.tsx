@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-
 import bgFlag from "../../../../public/bgFlag.png";
-
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/brand/logo";
-import RegisterForm from "@/modules/auth/client/register/RegisterForm";
+import RegisterForm from "../_component/registerForm";
 
 export const metadata: Metadata = {
   title: "Create your account | Poster Maker",
@@ -15,8 +13,7 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <main className="relative isolate min-h-dvh overflow-y-auto bg-background text-foreground">
-      {/* BACKGROUND: Bangladesh flag  */}
+    <div className="relative isolate min-h-dvh overflow-y-auto bg-background text-foreground">
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
         <Image
           src={bgFlag}
@@ -39,6 +36,6 @@ export default function RegisterPage() {
           <RegisterForm />
         </Card>
       </div>
-    </main>
+    </div>
   );
 }

@@ -1,9 +1,8 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme/theme-provider";
-import { AuthProvider } from "@/context/AuthContext";
 import { GoogleAuthProvider } from "@/components/providers/google-auth-provider";
 
 export const metadata: Metadata = {
@@ -41,11 +40,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
           rel="stylesheet"
@@ -59,9 +54,7 @@ export default function RootLayout({
           disableTransitionOnChange
           scriptProps={{ type: "application/json" }}
         >
-          <GoogleAuthProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </GoogleAuthProvider>
+          <GoogleAuthProvider>{children}</GoogleAuthProvider>
           <Toaster position="top-center" richColors />
         </ThemeProvider>
       </body>
