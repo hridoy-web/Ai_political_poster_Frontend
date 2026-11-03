@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "@/lib/api-client";
 import { serverURL } from "@/lib/api/authApi";
 import {
   ActiveSubscription,
@@ -25,9 +25,9 @@ export class DashboardService {
   static async getDashboardOverviewStats(): Promise<DashboardOverview> {
     try {
       const [walletRes, postersRes, bookmarksRes] = await Promise.allSettled([
-        axios.get(`${serverURL}/api/v1/wallets/me`, { withCredentials: true }),
-        axios.get(`${serverURL}/api/v1/posters?limit=1`, { withCredentials: true }),
-        axios.get(`${serverURL}/api/v1/bookmarks`, { withCredentials: true }),
+        apiClient.get(`/api/v1/wallets/me`),
+        apiClient.get(`/api/v1/posters?limit=1`),
+        apiClient.get(`/api/v1/bookmarks`),
       ]);
 
       const walletData =
@@ -89,10 +89,7 @@ export class DashboardService {
    */
   static async getMyPosters(page: number = 1, limit: number = 20): Promise<UserPoster[]> {
     try {
-      const res = await axios.get(
-        `${serverURL}/api/v1/posters?page=${page}&limit=${limit}`,
-        { withCredentials: true }
-      );
+      const res = await apiClient.get(`/api/v1/posters?page=${page}&limit=${limit}`);
 
       if (res.data?.success && Array.isArray(res.data.data?.items)) {
         return res.data.data.items.map((item: any) => {
@@ -142,9 +139,7 @@ export class DashboardService {
    * Deletes a poster from the database via DELETE /api/v1/posters/:id.
    */
   static async deletePoster(posterId: string): Promise<boolean> {
-    const res = await axios.delete(`${serverURL}/api/v1/posters/${posterId}`, {
-      withCredentials: true,
-    });
+    const res = await apiClient.delete(`/api/v1/posters/${posterId}`);
     return Boolean(res.data?.success);
   }
 
@@ -153,9 +148,7 @@ export class DashboardService {
    */
   static async getMyBookmarks(): Promise<Template[]> {
     try {
-      const res = await axios.get(`${serverURL}/api/v1/bookmarks`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.get(`/api/v1/bookmarks`);
 
       if (res.data?.success && Array.isArray(res.data.data)) {
         return res.data.data.map((item: any) => {
@@ -186,16 +179,10 @@ export class DashboardService {
    */
   static async toggleBookmark(templateId: string, currentlyBookmarked: boolean): Promise<boolean> {
     if (currentlyBookmarked) {
-      const res = await axios.delete(`${serverURL}/api/v1/bookmarks/${templateId}`, {
-        withCredentials: true,
-      });
+      const res = await apiClient.delete(`/api/v1/bookmarks/${templateId}`);
       return Boolean(res.data?.success);
     } else {
-      const res = await axios.post(
-        `${serverURL}/api/v1/bookmarks`,
-        { templateId },
-        { withCredentials: true }
-      );
+      const res = await apiClient.post(`/api/v1/bookmarks`, { templateId });
       return Boolean(res.data?.success);
     }
   }
@@ -207,11 +194,8 @@ export class DashboardService {
   static async getMyTransactions(page: number = 1, limit: number = 20): Promise<TransactionHistory[]> {
     try {
       const [txRes, walletRes] = await Promise.allSettled([
-        axios.get(
-          `${serverURL}/api/v1/transaction/my-history?page=${page}&limit=${limit}`,
-          { withCredentials: true }
-        ),
-        axios.get(`${serverURL}/api/v1/wallets/transactions`, { withCredentials: true }),
+        apiClient.get(`/api/v1/transaction/my-history?page=${page}&limit=${limit}`),
+        apiClient.get(`/api/v1/wallets/transactions`),
       ]);
 
       const results: TransactionHistory[] = [];
@@ -250,6 +234,7 @@ export class DashboardService {
             status,
             date: formattedDate,
             packageName: p.package?.name,
+            rawTimestamp: p.createdAt ? new Date(p.createdAt).getTime() : 0,
           });
         });
       }
@@ -281,12 +266,13 @@ export class DashboardService {
             trxId: entry.idempotencyKey || entry.id,
             status: "Successful",
             date: formattedDate,
+            rawTimestamp: entry.createdAt ? new Date(entry.createdAt).getTime() : 0,
           });
         });
       }
 
-      // Sort by most recent first (by id string which includes timestamps)
-      return results.sort((a, b) => (b.id > a.id ? 1 : -1));
+      // Sort by date descending (present / most recent date first)
+      return results.sort((a, b) => (b.rawTimestamp || 0) - (a.rawTimestamp || 0));
     } catch (err) {
       console.error("Failed to fetch transaction history from DB:", err);
     }

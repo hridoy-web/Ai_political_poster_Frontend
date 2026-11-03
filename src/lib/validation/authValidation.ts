@@ -1,44 +1,80 @@
 import { z } from "zod";
+import { FieldErrors } from "../type";
 
-/* ---------------- Image rules (register) ---------------- */
 
-export const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
-export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB
 
-/** Returns an error message, or null if the file is OK. */
-export function validateImage(file: File): string | null {
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return "Please select a PNG, JPG or WEBP image.";
-  }
-  if (file.size > MAX_IMAGE_SIZE) {
-    return "Image size must be 2 MB or less.";
-  }
-  return null;
-}
+/* ---------------- Schemas (backend-এর সাথে মেলানো) ---------------- */
 
-/* ---------------- Schemas ---------------- */
-
-export const loginSchema = z.object({
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
-});
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email({ error: "Enter a valid email address" }));
 
 export const registerSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name is too long"),
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email"),
+    .min(1, { error: "Name is required" })
+    .max(100, { error: "Name must be 100 characters or fewer" }),
+  email: emailSchema,
   password: z
     .string()
-    .min(8, "At least 8 characters")
-    .regex(/[A-Z]/, "Add at least one uppercase letter")
-    .regex(/[a-z]/, "Add at least one lowercase letter")
-    .regex(/[0-9]/, "Add at least one number"),
+    .min(8, { error: "Password must be at least 8 characters" })
+    .regex(/[a-z]/, { error: "Password must contain a lowercase letter" })
+    .regex(/[A-Z]/, { error: "Password must contain an uppercase letter" })
+    .regex(/[0-9]/, { error: "Password must contain a number" })
+    .regex(/[^a-zA-Z0-9]/, { error: "Password must contain a special character" })
+    .refine((v) => new TextEncoder().encode(v).length <= 72, {
+      error: "Password must not exceed 72 bytes",
+    }),
 });
 
-/* ---------------- Types (inferred from the schemas) ---------------- */
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, { error: "Password is required" }),
+});
 
-export type LoginData = z.infer<typeof loginSchema>;
-export type RegisterData = z.infer<typeof registerSchema>;
+/** Zod error থেকে প্রতিটি field-এর প্রথম message বের করে। */
+export function toFieldErrors(error: z.ZodError): FieldErrors {
+  const errors: FieldErrors = {};
+
+  for (const issue of error.issues) {
+    const key = issue.path[0] as keyof FieldErrors;
+    errors[key] ??= issue.message;
+  }
+
+  return errors;
+}
+
+/* ---------------- Password strength (UI) ---------------- */
+
+export const PASSWORD_REQUIREMENTS = [
+  { regex: /.{8,}/, text: "At least 8 characters" },
+  { regex: /[a-z]/, text: "One lowercase letter" },
+  { regex: /[A-Z]/, text: "One uppercase letter" },
+  { regex: /[0-9]/, text: "One number" },
+  { regex: /[^a-zA-Z0-9]/, text: "One special character" },
+];
+
+export const STRENGTH_BAR_COLORS = [
+  "bg-red-500",
+  "bg-orange-500",
+  "bg-amber-500",
+  "bg-lime-500",
+  "bg-emerald-500",
+];
+
+export const STRENGTH_TEXTS = [
+  "Enter a password",
+  "Very weak",
+  "Weak",
+  "Medium",
+  "Strong",
+  "Very strong",
+];
+
+/* ---------------- Profile image ---------------- */
+
+export const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+export const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2 MB

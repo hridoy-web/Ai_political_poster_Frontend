@@ -4,10 +4,14 @@ import { Download, ImagePlus, LayoutGrid, LucideIcon, UserPlus } from "lucide-re
 export type TemplateCategory =
     | "all"
     | "election"
+    | "gathering"
     | "rally"
     | "birthday"
+    | "victory-day"
     | "victory"
+    | "independence-day"
     | "independence"
+    | "mourning"
     | "condolence"
     | (string & {});
 
@@ -28,10 +32,14 @@ export interface Template {
 // TRENDING-TEMPLATES
 export const CATEGORY_MAP: Record<string, string> = {
     election: "নির্বাচনী",
+    gathering: "সমাবেশ",
     rally: "সমাবেশ",
     birthday: "জন্মদিন",
+    "victory-day": "বিজয় দিবস",
     victory: "বিজয় দিবস",
+    "independence-day": "স্বাধীনতা দিবস",
     independence: "স্বাধীনতা দিবস",
+    mourning: "শোকবার্তা",
     condolence: "শোকবার্তা",
     "political-posters": "রাজনৈতিক পোস্টার",
     "election-poster-new": "নির্বাচনী প্রচারণা পোস্টার",
@@ -45,12 +53,12 @@ export const categories: {
     label: string;
 }[] = [
         { id: "all", label: "সব" },
-        { id: "election", label: CATEGORY_MAP.election },
-        { id: "rally", label: CATEGORY_MAP.rally },
-        { id: "birthday", label: CATEGORY_MAP.birthday },
-        { id: "victory", label: CATEGORY_MAP.victory },
-        { id: "independence", label: CATEGORY_MAP.independence },
-        { id: "condolence", label: CATEGORY_MAP.condolence },
+        { id: "election", label: "নির্বাচনী" },
+        { id: "gathering", label: "সমাবেশ" },
+        { id: "birthday", label: "জন্মদিন" },
+        { id: "victory-day", label: "বিজয় দিবস" },
+        { id: "independence-day", label: "স্বাধীনতা দিবস" },
+        { id: "mourning", label: "শোকবার্তা" },
     ];
 
 // STEP-CARD

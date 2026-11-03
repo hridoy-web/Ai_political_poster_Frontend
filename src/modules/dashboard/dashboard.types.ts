@@ -24,6 +24,7 @@ export interface TransactionHistory {
   status: "Successful" | "Failed" | "Pending";
   date: string;
   packageName?: string;
+  rawTimestamp?: number;
 }
 
 export interface Template {

@@ -1,172 +1,120 @@
 "use client";
 
-import { useContext, useState, type ChangeEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, type ChangeEvent, type SyntheticEvent } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2, Lock, Mail, User } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AuthContext } from "@/context/AuthContext";
+import type { FieldErrors, RegisterInput } from "@/lib/type";
 
-import { getApiErrorMessage, registerRequest } from "../_action/authAction";
-import { ALLOWED_IMAGE_TYPES, RegisterData, registerSchema, validateImage } from "@/lib/validation/authValidation";
-
-function FieldError({ message }: { message?: string }) {
-  return message ? (
-    <p role="alert" className="text-xs text-destructive">
-      {message}
-    </p>
-  ) : null;
-}
+import { registerAction } from "../_action/authAction";
+import FormField from "./formField";
+import PasswordStrength from "./passwordStrength";
+import ProfileImagePicker from "./profileImagePicker";
+import { registerSchema, toFieldErrors } from "@/lib/validation/authValidation";
 
 export default function RegisterForm() {
-  const router = useRouter();
-  const setUser = useContext(AuthContext)?.setUser;
-
+  const [form, setForm] = useState<RegisterInput>({ name: "", email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [image, setImage] = useState<File | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "" },
-  });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    setError("");
+  };
 
-  /* ---------- Image ---------- */
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
+    setError("");
 
-  const onImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const message = validateImage(file);
-    if (message) {
-      setError(message);
-      setImage(null);
-      e.target.value = "";
+    const parsed = registerSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(toFieldErrors(parsed.error));
       return;
     }
+    setFieldErrors({});
 
-    setError("");
-    setImage(file);
-  };
-
-  /* ---------- Submit ---------- */
-
-  const onSubmit = async (values: RegisterData) => {
-    setError("");
-
-    // multipart/form-data body
     const data = new FormData();
-    data.append("name", values.name);
-    data.append("email", values.email);
-    data.append("password", values.password);
+    data.append("name", form.name);
+    data.append("email", form.email);
+    data.append("password", form.password);
     if (image) data.append("image", image);
 
-    try {
-      const user = await registerRequest(data);
-      if (user) setUser?.(user);
+    startTransition(async () => {
+      const result = await registerAction(data);
 
-      router.push("/");
-      router.refresh();
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Registration failed. Please try again."));
-    }
+      // সফল হলে server নিজেই redirect করে
+      if (result && !result.success) {
+        setFieldErrors(result.fieldErrors ?? {});
+        setError(result.fieldErrors ? "" : result.message);
+      }
+    });
   };
 
-  /* ---------- UI ---------- */
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-      {/* Name */}
-      <div className="space-y-1.5">
-        <Label htmlFor="name">Full name</Label>
-        <Input
-          id="name"
-          placeholder="Enter your full name"
-          autoComplete="name"
-          maxLength={100}
-          aria-invalid={!!errors.name}
-          {...register("name")}
-        />
-        <FieldError message={errors.name?.message} />
-      </div>
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <ProfileImagePicker image={image} onChange={setImage} onError={setError} />
 
-      {/* Email */}
-      <div className="space-y-1.5">
-        <Label htmlFor="email">Email address</Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
-          aria-invalid={!!errors.email}
-          {...register("email")}
-        />
-        <FieldError message={errors.email?.message} />
-      </div>
+      <FormField
+        name="name"
+        label="Full name"
+        icon={User}
+        placeholder="Enter your full name"
+        autoComplete="name"
+        maxLength={100}
+        value={form.name}
+        onChange={handleChange}
+        error={fieldErrors.name}
+      />
 
-      {/* Password */}
-      <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
-          <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="At least 8 characters"
-            autoComplete="new-password"
-            className="pr-10"
-            aria-invalid={!!errors.password}
-            {...register("password")}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((p) => !p)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-3 text-muted-foreground hover:text-primary"
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        <FieldError message={errors.password?.message} />
-      </div>
+      <FormField
+        name="email"
+        label="Email address"
+        type="email"
+        icon={Mail}
+        placeholder="you@example.com"
+        autoComplete="email"
+        value={form.email}
+        onChange={handleChange}
+        error={fieldErrors.email}
+      />
 
-      {/* Profile photo (optional) */}
-      <div className="space-y-1.5">
-        <Label htmlFor="image">
-          Profile photo <span className="font-normal text-muted-foreground">(optional)</span>
-        </Label>
-        <Input
-          id="image"
-          type="file"
-          accept={ALLOWED_IMAGE_TYPES.join(",")}
-          onChange={onImageChange}
+      <div>
+        <FormField
+          name="password"
+          label="Password"
+          type="password"
+          icon={Lock}
+          placeholder="At least 8 characters"
+          autoComplete="new-password"
+          aria-describedby="password-strength"
+          value={form.password}
+          onChange={handleChange}
+          error={fieldErrors.password}
         />
-        <p className="text-xs text-muted-foreground">PNG, JPG or WEBP · Max 2 MB</p>
+        <PasswordStrength password={form.password} hasError={!!fieldErrors.password} />
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
           {error}
         </p>
       )}
 
       <button
         type="submit"
-        disabled={isSubmitting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+        disabled={pending}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
       >
-        {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
-        {isSubmitting ? "Submitting..." : "Create account"}
+        {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+        {pending ? "Submitting..." : "Create account"}
       </button>
 
-      <p className="text-center text-sm text-muted-foreground">
+      <p className="text-center text-xs text-muted-foreground sm:text-sm">
         Already have an account?{" "}
         <Link href="/login" className="font-semibold text-primary hover:underline">
           Login

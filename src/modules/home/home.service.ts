@@ -62,11 +62,11 @@ export class HomeService {
   /**
    * Fetch published trending templates from backend API: GET /api/v1/template
    */
-  static async getTrendingTemplates(limit: number = 20): Promise<Template[]> {
+  static async getTrendingTemplates(limit: number = 8): Promise<Template[]> {
     try {
       const baseUrl = getBaseServerUrl();
       const res = await fetch(`${baseUrl}/api/v1/template?limit=${limit}`, {
-        cache: "no-store",
+        next: { revalidate: 3600 },
       });
 
       if (!res.ok) {

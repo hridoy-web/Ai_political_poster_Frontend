@@ -1,16 +1,7 @@
 "use client"
 
 import { CategoryOption, TemplateCategory } from "../template.types"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import {
-  Vote,
-  Flag,
-  Award,
-  Cake,
-  Sparkles,
-  LayoutGrid,
-} from "lucide-react"
 
 interface CategoryTabsProps {
   categories: CategoryOption[]
@@ -18,63 +9,40 @@ interface CategoryTabsProps {
   onSelectCategory: (category: TemplateCategory) => void
 }
 
-const getCategoryIcon = (id: TemplateCategory) => {
-  switch (id) {
-    case "election":
-      return <Vote className="size-4" />
-    case "national-day":
-      return <Flag className="size-4" />
-    case "greetings":
-      return <Award className="size-4" />
-    case "birthday":
-      return <Cake className="size-4" />
-    case "religious":
-      return <Sparkles className="size-4" />
-    case "all":
-    default:
-      return <LayoutGrid className="size-4" />
-  }
-}
-
 export function CategoryTabs({
   categories,
   selectedCategory,
   onSelectCategory,
 }: CategoryTabsProps) {
+  // Filter out any redundant 'all' category so it displays the exact pill categories from design
+  const visibleCategories = categories.filter((c) => c.id !== "all")
+
   return (
-    <div className="w-full">
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-muted/60 border border-border">
-        {categories.map((cat) => {
+    <div className="w-full flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar py-2">
+      <div className="flex items-center gap-2.5 sm:gap-3.5 flex-nowrap sm:flex-wrap px-1">
+        {visibleCategories.map((cat) => {
           const isActive = selectedCategory === cat.id
           return (
-            <Button
+            <button
               key={cat.id}
               type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onSelectCategory(cat.id)}
+              onClick={() => {
+                // Toggling the active category resets to show all
+                if (isActive) {
+                  onSelectCategory("all")
+                } else {
+                  onSelectCategory(cat.id)
+                }
+              }}
               className={cn(
-                "rounded-lg transition-colors duration-200 text-xs sm:text-sm font-medium gap-2 px-3.5 py-1.5 h-9 cursor-pointer select-none",
+                "rounded-full transition-all duration-200 text-sm sm:text-base font-semibold px-5 sm:px-6 py-2 sm:py-2.5 whitespace-nowrap cursor-pointer select-none",
                 isActive
-                  ? "bg-gradient-brand text-white shadow-md hover:text-white"
-                  : "text-muted-foreground hover:text-brand-primary hover:bg-brand-primary/10"
+                  ? "bg-[#e11d48] text-white shadow-md shadow-rose-500/25 border border-transparent scale-[1.02]"
+                  : "bg-white dark:bg-card text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-border hover:bg-rose-50/80 hover:text-[#e11d48] hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:border-rose-900/60 shadow-xs"
               )}
             >
-              {getCategoryIcon(cat.id)}
-              <span>{cat.label}</span>
-              {typeof cat.count === "number" && (
-                <span
-                  className={cn(
-                    "text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-colors duration-200 leading-none",
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {cat.count}
-                </span>
-              )}
-            </Button>
+              {cat.label}
+            </button>
           )
         })}
       </div>

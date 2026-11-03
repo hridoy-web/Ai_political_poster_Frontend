@@ -1,76 +1,287 @@
-"use client";
+// "use client";
 
-import { createContext, useEffect, useState, type ReactNode } from "react";
-import axios from "axios";
-import authApi, { serverURL } from "@/lib/api/authApi";
+// import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
+// import apiClient from "@/lib/api-client";
+// import authApi, { serverURL } from "@/lib/api/authApi";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  title?: string;
-  area?: string;
-  avatar?: { url?: string } | any;
-  avatarAssetId?: string;
-  roles?: string[];
-  roleNames?: string[];
-}
+// export interface User {
+//   id: string;
+//   name: string;
+//   email: string;
+//   phone?: string;
+//   title?: string;
+//   area?: string;
+//   avatar?: { url?: string } | any;
+//   avatarAssetId?: string;
+//   role?: string;
+//   roles?: string[];
+//   roleNames?: string[];
+//   permissions?: string[];
+//   hasCreditBypass?: boolean;
+// }
 
-interface AuthContextType {
-  user: User | null;
-  setUser: (user: User | null) => void;
-  loading: boolean;
-  isTemplateManager: boolean;
-  isAdmin: boolean;
-  isSuperAdmin: boolean;
-}
+// interface AuthContextType {
+//   user: User | null;
+//   setUser: (user: User | null) => void;
+//   refreshUser: () => Promise<User | null>;
+//   loading: boolean;
+//   isTemplateManager: boolean;
+//   isAdmin: boolean;
+//   isSuperAdmin: boolean;
+//   hasCreditBypass: boolean;
+//   canBypassCredits: boolean;
+// }
 
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined,
-);
+// export const AuthContext = createContext<AuthContextType | undefined>(
+//   undefined,
+// );
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      try {
-        const response = await axios({
-          url: `${serverURL}${authApi.getCurrentUser.url}`,
-          method: authApi.getCurrentUser.method,
-          withCredentials: true,
-        });
-        console.log(response.data);
-        setUser(response.data.data);
-      } catch (error) {
-        console.error("Failed to fetch current user:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+//   const getCurrentUser = useCallback(async (): Promise<User | null> => {
+//     try {
+//       const response = await apiClient.request({
+//         url: authApi.getCurrentUser.url,
+//         method: authApi.getCurrentUser.method,
 
-    getCurrentUser();
-  }, []);
+//       });
+//       console.log("[AuthContext] Current user loaded:", response.data?.data);
+//       const fetchedUser = response.data?.data || null;
+//       setUser(fetchedUser);
+//       return fetchedUser;
+//     } catch (error) {
+//       console.warn("[AuthContext] Failed to fetch current user (not authenticated):", error);
+//       setUser(null);
+//       if (typeof window !== "undefined") {
+//         localStorage.removeItem("auth_token");
+//       }
+//       return null;
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
 
-  const roles = user?.roles || user?.roleNames || [];
-  const isTemplateManager =
-    roles.includes("TEMPLATE_MANAGER") ||
-    roles.includes("ADMIN") ||
-    roles.includes("SUPER_ADMIN");
-  const isAdmin = roles.includes("ADMIN") || roles.includes("SUPER_ADMIN");
-  const isSuperAdmin = roles.includes("SUPER_ADMIN");
+//   useEffect(() => {
+//     getCurrentUser();
+//   }, [getCurrentUser]);
 
-  const info = {
-    user,
-    setUser,
-    loading,
-    isTemplateManager,
-    isAdmin,
-    isSuperAdmin,
-  };
+//   const rawRoles: string[] = [
+//     ...(Array.isArray(user?.roles) ? user.roles : []),
+//     ...(Array.isArray(user?.roleNames) ? user.roleNames : []),
+//     ...(typeof user?.role === "string" ? [user.role] : []),
+//   ].map((r) => String(r).toUpperCase().trim());
 
-  return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;
-}
+//   const roles = Array.from(new Set(rawRoles));
+//   const permissions = user?.permissions || [];
+
+//   const isSuperAdmin =
+//     roles.includes("SUPER_ADMIN") ||
+//     roles.includes("SUPER ADMIN") ||
+//     user?.email?.toLowerCase() === "superadmin@posterai.com";
+
+//   const isAdmin =
+//     isSuperAdmin ||
+//     roles.includes("ADMIN");
+
+//   const isTemplateManager =
+//     isSuperAdmin ||
+//     isAdmin ||
+//     roles.includes("TEMPLATE_MANAGER") ||
+//     roles.includes("TEMPLATE MANAGER");
+
+//   const hasCreditBypass = Boolean(
+//     user?.hasCreditBypass ||
+//       isSuperAdmin ||
+//       isAdmin ||
+//       permissions.includes("UNLIMITED_CREDITS") ||
+//       permissions.includes("BYPASS_CREDIT_CHECK") ||
+//       permissions.includes("POSTER_CREATE_FREE") ||
+//       permissions.includes("POSTER:CREATE:FREE") ||
+//       permissions.includes("CREDITS:BYPASS")
+//   );
+
+//   const info = {
+//     user,
+//     setUser,
+//     refreshUser: getCurrentUser,
+//     loading,
+//     isTemplateManager,
+//     isAdmin,
+//     isSuperAdmin,
+//     hasCreditBypass,
+//     canBypassCredits: hasCreditBypass,
+//   };
+
+//   return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;
+// }
+
+
+// "use client";
+
+// import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
+// import { getCurrentUserAction } from "@/app/(auth)/_action/authAction";
+
+// export interface User {
+//   id: string;
+//   name: string;
+//   email: string;
+//   phone?: string;
+//   title?: string;
+//   area?: string;
+//   avatar?: { url?: string } | any;
+//   avatarAssetId?: string;
+//   role?: string;
+//   roles?: string[];
+//   roleNames?: string[];
+//   permissions?: string[];
+//   hasCreditBypass?: boolean;
+// }
+
+// interface AuthContextType {
+//   user: User | null;
+//   setUser: (user: User | null) => void;
+//   refreshUser: () => Promise<User | null>;
+//   loading: boolean;
+//   isTemplateManager: boolean;
+//   isAdmin: boolean;
+//   isSuperAdmin: boolean;
+//   hasCreditBypass: boolean;
+//   canBypassCredits: boolean;
+// }
+
+// export const AuthContext = createContext<AuthContextType | undefined>(
+//   undefined,
+// );
+
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [loading, setLoading] = useState(true);
+
+//   const refreshUser = useCallback(async (): Promise<User | null> => {
+//     try {
+//       const fresh = await getCurrentUserAction();
+//       setUser(fresh);
+//       return fresh;
+//     } catch {
+//       setUser(null);
+//       return null;
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   useEffect(() => {
+//     refreshUser();
+//   }, [refreshUser]);
+
+//   const rawRoles: string[] = [
+//     ...(Array.isArray(user?.roles) ? user.roles : []),
+//     ...(Array.isArray(user?.roleNames) ? user.roleNames : []),
+//     ...(typeof user?.role === "string" ? [user.role] : []),
+//   ].map((r) => String(r).toUpperCase().trim());
+
+//   const roles = Array.from(new Set(rawRoles));
+//   const permissions = user?.permissions || [];
+
+//   const isSuperAdmin =
+//     roles.includes("SUPER_ADMIN") ||
+//     roles.includes("SUPER ADMIN") ||
+//     user?.email?.toLowerCase() === "superadmin@posterai.com";
+
+//   const isAdmin = isSuperAdmin || roles.includes("ADMIN");
+
+//   const isTemplateManager =
+//     isSuperAdmin ||
+//     isAdmin ||
+//     roles.includes("TEMPLATE_MANAGER") ||
+//     roles.includes("TEMPLATE MANAGER");
+
+//   const hasCreditBypass = Boolean(
+//     user?.hasCreditBypass ||
+//       isSuperAdmin ||
+//       isAdmin ||
+//       permissions.includes("UNLIMITED_CREDITS") ||
+//       permissions.includes("BYPASS_CREDIT_CHECK") ||
+//       permissions.includes("POSTER_CREATE_FREE") ||
+//       permissions.includes("POSTER:CREATE:FREE") ||
+//       permissions.includes("CREDITS:BYPASS"),
+//   );
+
+//   const info: AuthContextType = {
+//     user,
+//     setUser,
+//     refreshUser,
+//     loading,
+//     isTemplateManager,
+//     isAdmin,
+//     isSuperAdmin,
+//     hasCreditBypass,
+//     canBypassCredits: hasCreditBypass,
+//   };
+
+//   return <AuthContext.Provider value={info}>{children}</AuthContext.Provider>;
+// }
+
+
+
+// "use client";
+
+// import {
+//   createContext,
+//   useCallback,
+//   useEffect,
+//   useState,
+//   type ReactNode,
+// } from "react";
+
+// import {
+//   getCurrentUserAction,
+//   logoutAction,
+// } from "@/app/(auth)/_action/authAction";
+// import type { AuthUser } from "@/lib/auth";
+
+// export type User = AuthUser;
+
+// type AuthContextType = {
+//   user: User | null;
+//   setUser: (user: User | null) => void;
+//   loading: boolean;
+//   refreshUser: () => Promise<void>;
+//   logout: () => Promise<void>;
+// };
+
+// export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// export function AuthProvider({ children }: { children: ReactNode }) {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [loading, setLoading] = useState(true);
+
+//   // cookie থেকে user পড়ে state-এ বসায়
+//   const refreshUser = useCallback(async () => {
+//     try {
+//       setUser(await getCurrentUserAction());
+//     } catch {
+//       setUser(null);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   // পেজ reload দিলেও user ফিরে আসবে
+//   useEffect(() => {
+//     refreshUser();
+//   }, [refreshUser]);
+
+//   const logout = useCallback(async () => {
+//     setUser(null);
+//     await logoutAction(); // cookie মুছে /login-এ redirect করে
+//   }, []);
+
+//   return (
+//     <AuthContext.Provider value={{ user, setUser, loading, refreshUser, logout }}>
+//       {children}
+//     </AuthContext.Provider>
+//   );
+// }

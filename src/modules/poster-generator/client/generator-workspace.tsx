@@ -13,9 +13,11 @@ import { PosterGeneratorService } from "../generator.service";
 import { StudioInputPanel } from "./studio-input-panel";
 import { StudioCanvas } from "./studio-canvas";
 import { PosterSuccessModal } from "./poster-success-modal";
-import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2 } from "lucide-react";
+import { Check, Layers, Loader2, Sparkles, ArrowLeft, Wand2, Coins, Crown, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fetchWalletBalance } from "@/modules/recharge/recharge.service";
+import { useAuth } from "@/hooks/get-user-data";
 
 // Type of data coming from the server component
 interface GeneratorWorkspaceProps {
@@ -30,6 +32,21 @@ export function GeneratorWorkspace({
 }: GeneratorWorkspaceProps) {
   const searchParams = useSearchParams();
   const queryTemplateId = searchParams?.get("templateId") || initialTemplateId;
+  const { user, hasCreditBypass, canBypassCredits: contextCanBypass } = useAuth();
+  const canBypassCredits = Boolean(
+    hasCreditBypass ||
+    contextCanBypass ||
+    user?.hasCreditBypass ||
+    user?.roles?.includes("SUPER_ADMIN") ||
+    user?.roles?.includes("ADMIN") ||
+    user?.roleNames?.includes("SUPER_ADMIN") ||
+    user?.roleNames?.includes("ADMIN") ||
+    user?.permissions?.includes("UNLIMITED_CREDITS") ||
+    user?.permissions?.includes("BYPASS_CREDIT_CHECK") ||
+    user?.permissions?.includes("POSTER_CREATE_FREE") ||
+    user?.permissions?.includes("POSTER:CREATE:FREE") ||
+    user?.permissions?.includes("CREDITS:BYPASS")
+  );
 
   // 1. Core central states
   const [candidate, setCandidate] = useState<CandidateInfo>(initialCandidate);
@@ -47,7 +64,41 @@ export function GeneratorWorkspace({
   const [createdPosterUrl, setCreatedPosterUrl] = useState<string | null>(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Load user credit balance (or guest 3-poster quota)
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadCredits() {
+      try {
+        const wallet = await fetchWalletBalance();
+        if (isCancelled) return;
+        if (wallet && typeof wallet.credits === "number") {
+          setCredits(wallet.credits);
+          setIsGuest(false);
+          return;
+        }
+      } catch {
+        // Guest or unauthenticated session
+      }
+
+      if (!isCancelled) {
+        setIsGuest(true);
+        const usedStr = typeof window !== "undefined" ? localStorage.getItem("guest_posters_created") : null;
+        const used = usedStr ? parseInt(usedStr, 10) : 0;
+        setCredits(Math.max(0, 3 - used));
+      }
+    }
+
+    loadCredits();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   // Template selection flow state:
   // If user visits /create-poster without templateId, show template picker first
@@ -144,8 +195,20 @@ export function GeneratorWorkspace({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 2. Logic to update the canvas instantly when input changes
+  // Start a fresh poster creation session without page reload
+  const handleStartNewPoster = () => {
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
+    setIsSuccessModalOpen(false);
+    toast.info("নতুন পোস্টার তৈরির সেশন প্রস্তুত করা হয়েছে।");
+  };
+
+  // 2. Logic to update the canvas instantly when input changes & auto-reset session on edit
   const handleCandidateChange = (field: keyof CandidateInfo, value: string) => {
+    if (isCreated) {
+      setIsCreated(false);
+      setCreatedPosterUrl(null);
+    }
     setCandidate((prev) => ({
       ...prev,
       [field]: value,
@@ -153,6 +216,10 @@ export function GeneratorWorkspace({
   };
 
   const handlePhotoUpload = (file: File) => {
+    if (isCreated) {
+      setIsCreated(false);
+      setCreatedPosterUrl(null);
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -164,6 +231,9 @@ export function GeneratorWorkspace({
   };
 
   const handleReset = () => {
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
+    setIsSuccessModalOpen(false);
     setCandidate(initialCandidate);
     setTheme("emerald");
     setImageScale(100);
@@ -171,7 +241,7 @@ export function GeneratorWorkspace({
     setImageOffsetY(0);
     setIsComparing(false);
     setComparePhotoUrl(null);
-    toast.info("ইনপুট তথ্য রিসেট করা হয়েছে।");
+    toast.info("ইনপুট তথ্য ও সেশন রিসেট করা হয়েছে।");
   };
 
   // Full real database pipeline: Validate -> Save Draft -> Trigger Render -> Poll Completion -> Show Success Modal
@@ -187,7 +257,34 @@ export function GeneratorWorkspace({
     }
 
     const currentTemplateId = activeTemplate?.id || "4c8057b1-35fb-4dad-83a3-32ecd314a0a3";
+    const isProTemplate = activeTemplate?.accessLevel === "PREMIUM";
+
+    // 2. Credits check ONLY for PRO templates! Free templates are 100% complimentary.
+    if (isProTemplate && !canBypassCredits && credits !== null && credits <= 0) {
+      toast.error(
+        isGuest
+          ? "ফ্রি ৩টি প্রো পোস্টার তৈরির কোটা শেষ হয়ে গেছে! পরবর্তী প্রো পোস্টার তৈরি করতে অনুগ্রহ করে সাইন-আপ বা লগইন করুন।"
+          : "আপনার অ্যাকাউন্টে কোনো পোস্টার ক্রেডিট অবশিষ্ট নেই। প্রো পোস্টার তৈরি করতে অনুগ্রহ করে রিচার্জ করুন।"
+      );
+      return;
+    }
+
+    // Pre-capture high-res canvas image directly before async operations
+    let canvasDataUrl = "";
+    if (canvasRef.current) {
+      try {
+        canvasDataUrl = canvasRef.current.toDataURL("image/png");
+      } catch (e) {
+        console.warn("Pre-capture canvas toDataURL error:", e);
+      }
+    }
+
+    // Reset previous modal/created state for clean session execution
+    setIsSuccessModalOpen(false);
+    setIsCreated(false);
+    setCreatedPosterUrl(null);
     setIsCreating(true);
+
     try {
       toast.info("ডাটাবেজে পোস্টার ড্রাফট সেভ হচ্ছে...");
 
@@ -230,17 +327,39 @@ export function GeneratorWorkspace({
         attempts++;
       }
 
-      // Try capturing direct high-res canvas PNG as primary or fallback
-      let capturedDataUrl = "";
+      // Re-capture fresh canvas if available
       if (canvasRef.current) {
         try {
-          capturedDataUrl = canvasRef.current.toDataURL("image/png");
+          const fresh = canvasRef.current.toDataURL("image/png");
+          if (fresh) canvasDataUrl = fresh;
         } catch {
           // ignore
         }
       }
 
-      const finalUrl = completedStatus?.outputUrl || completedStatus?.previewUrl || capturedDataUrl || photoUrl;
+      // Prioritize the real rendered canvas image so the preview in modal displays the actual poster cleanly
+      const finalUrl =
+        canvasDataUrl ||
+        completedStatus?.outputUrl ||
+        completedStatus?.previewUrl ||
+        photoUrl;
+
+      // Real-time credit deduction ONLY for PRO templates!
+      if (isProTemplate && !canBypassCredits) {
+        if (isGuest) {
+          const nextUsed = parseInt(localStorage.getItem("guest_posters_created") || "0", 10) + 1;
+          localStorage.setItem("guest_posters_created", nextUsed.toString());
+          setCredits(Math.max(0, 3 - nextUsed));
+        } else {
+          setCredits((prev) => (prev !== null ? Math.max(0, prev - 1) : null));
+          fetchWalletBalance().then((bal) => {
+            if (bal && typeof bal.credits === "number") {
+              setCredits(bal.credits);
+            }
+          });
+        }
+      }
+
       setCreatedPosterUrl(finalUrl);
       setIsCreated(true);
       setIsSuccessModalOpen(true);
@@ -343,10 +462,16 @@ export function GeneratorWorkspace({
                 tmpl.config?.blankTemplateUrl ||
                 "https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=600&q=80";
 
+              const isPro = tmpl.accessLevel === "PREMIUM";
+
               return (
                 <div
                   key={tmpl.id}
-                  className="group relative flex flex-col rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:border-brand-primary/50 flex-1"
+                  className={`group relative flex flex-col rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex-1 ${
+                    isPro
+                      ? "border-2 border-amber-500/50 bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-card/90 shadow-amber-500/10 hover:border-amber-500 hover:shadow-amber-500/20"
+                      : "border border-border/80 bg-card/80 backdrop-blur-xl hover:border-brand-primary/50"
+                  }`}
                 >
                   <div className="relative aspect-3/4 w-full bg-muted/60 overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -360,25 +485,52 @@ export function GeneratorWorkspace({
                         {tmpl.aspectRatio || "৪:৫"} • ডিজিটাল ক্যানভাস
                       </span>
                     </div>
+
+                    <div className="absolute top-3 right-3 z-10">
+                      {isPro ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-black bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 rounded-full shadow-md">
+                          <Crown className="size-3 fill-slate-950" /> প্রো ফ্রেম
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-emerald-600/90 text-white rounded-full shadow-xs backdrop-blur-md">
+                          ফ্রি ফ্রেম
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="p-4 space-y-3 flex flex-col justify-between flex-1">
-                    <div>
+                  <div className={`p-4 space-y-3 flex flex-col justify-between flex-1 ${isPro ? "bg-amber-500/5" : ""}`}>
+                    <div className="space-y-1">
                       <h3 className="font-bold text-foreground text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
                         {tmpl.title}
                       </h3>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                      <p className="text-[11px] text-muted-foreground line-clamp-1">
                         {tmpl.description || "রাজনৈতিক নির্বাচনী ও সাংগঠনিক পোস্টার ফ্রেম"}
                       </p>
+                      <div className="pt-1.5 flex items-center justify-between text-[11px] font-bold">
+                        {isPro ? (
+                          <span className="text-amber-700 dark:text-amber-300 flex items-center gap-1">
+                            <Sparkles className="size-3 text-amber-500" /> ১টি ক্রেডিট কাটবে
+                          </span>
+                        ) : (
+                          <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                            <CheckCircle2 className="size-3 text-emerald-500" /> সম্পূর্ণ ফ্রি (০ ক্রেডিট)
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <Button
                       type="button"
                       onClick={() => handleSelectTemplate(tmpl)}
-                      className="w-full bg-gradient-brand text-white font-bold text-xs h-10 rounded-2xl shadow-md gap-2 cursor-pointer transition-transform active:scale-95"
+                      className={`w-full font-bold text-xs h-10 rounded-2xl shadow-md gap-2 cursor-pointer transition-transform active:scale-95 ${
+                        isPro
+                          ? "bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white shadow-amber-500/20 hover:opacity-95"
+                          : "bg-gradient-brand text-white"
+                      }`}
                     >
                       <Wand2 className="w-3.5 h-3.5" />
-                      <span>এই টেমপ্লেট দিয়ে তৈরি করুন</span>
+                      <span>{isPro ? "প্রো টেমপ্লেট দিয়ে তৈরি করুন" : "ফ্রি টেমপ্লেট দিয়ে তৈরি করুন"}</span>
                     </Button>
                   </div>
                 </div>
@@ -413,16 +565,41 @@ export function GeneratorWorkspace({
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setIsSelectingTemplate(true)}
-          className="rounded-xl border-border/80 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 font-semibold text-xs gap-1.5 cursor-pointer shrink-0"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>অন্য টেমপ্লেট বেছে নিন</span>
-        </Button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {/* Template Tier Badge */}
+          {activeTemplate?.accessLevel === "PREMIUM" ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-yellow-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-400 font-bold text-xs shadow-2xs">
+              <Crown className="size-3.5 fill-amber-500 text-amber-500" />
+              <span>{canBypassCredits ? "প্রো ফ্রেম (ফ্রি অ্যাক্সেস)" : "প্রো ফ্রেম (১ ক্রেডিট)"}</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 font-bold text-xs shadow-2xs">
+              <CheckCircle2 className="size-3.5 text-emerald-500" />
+              <span>ফ্রি ফ্রেম (০ ক্রেডিট)</span>
+            </div>
+          )}
+
+          {/* Live Remaining Credits Badge */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs font-semibold text-amber-800 dark:text-amber-300 shadow-2xs">
+            <Coins className="size-4 text-amber-500 shrink-0" />
+            <span className="hidden sm:inline">অবশিষ্ট পোস্টার তৈরির সুযোগ:</span>
+            <span className="sm:hidden">বাকি ক্রেডিট:</span>
+            <span className="font-extrabold text-sm text-foreground bg-background/80 px-2.5 py-0.5 rounded-lg border border-border/60">
+              {canBypassCredits ? "আনলিমিটেড (Unlimited)" : credits !== null ? `${credits}টি` : "..."}
+            </span>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSelectingTemplate(true)}
+            className="rounded-xl border-border/80 hover:bg-brand-primary/10 hover:text-brand-primary hover:border-brand-primary/30 font-semibold text-xs gap-1.5 cursor-pointer shrink-0"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>অন্য টেমপ্লেট বেছে নিন</span>
+          </Button>
+        </div>
       </div>
 
       {/* Main Studio Grid - Input Panel is wider & bigger */}
@@ -478,6 +655,7 @@ export function GeneratorWorkspace({
             }}
             template={activeTemplate}
             onCreatePoster={handleCreatePoster}
+            onStartNewPoster={handleStartNewPoster}
             isCreating={isCreating}
             isCreated={isCreated}
             onDownload={handleDownloadFile}
@@ -491,10 +669,17 @@ export function GeneratorWorkspace({
       {/* Poster Generation Success & Download Modal */}
       <PosterSuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
+        onClose={() => {
+          setIsSuccessModalOpen(false);
+          setIsCreated(false);
+          setCreatedPosterUrl(null);
+        }}
         posterImageUrl={createdPosterUrl}
         candidateName={candidate.name}
         onDownload={handleDownloadFile}
+        creditsLeft={canBypassCredits ? "আনলিমিটেড" : credits}
+        onStartNewPoster={handleStartNewPoster}
+        isPro={activeTemplate?.accessLevel === "PREMIUM"}
       />
     </div>
   );

@@ -87,5 +87,6 @@ export interface PublishedTemplate {
   aspectRatio: string;
   width: number;
   height: number;
+  accessLevel?: "FREE" | "PREMIUM";
   config?: TemplateCanvasConfig;
 }

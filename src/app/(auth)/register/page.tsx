@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-
 import bgFlag from "../../../../public/bgFlag.png";
-
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/brand/logo";
 import RegisterForm from "../_component/registerForm";
-
 
 
 export const metadata: Metadata = {
@@ -45,27 +42,3 @@ export default function RegisterPage() {
   );
 }
 
-// import type { Metadata } from "next";
-// import RegisterForm from "../_component/registerForm";
-
-// export const metadata: Metadata = {
-//   title: "Create Account | Poster Maker",
-//   description: "Join to start creating and sharing your posters.",
-// };
-
-// export default function RegisterPage() {
-//   return (
-//     <div className="flex min-h-[70vh] items-center justify-center px-4 py-10">
-//       <div className="w-full max-w-md space-y-6 rounded-lg border p-8 shadow-lg">
-//         <div className="space-y-2 text-center">
-//           <h1 className="text-3xl font-bold">Create Account</h1>
-//           <p className="text-muted-foreground">
-//             Join to start creating and sharing your posters.
-//           </p>
-//         </div>
-
-//         <RegisterForm />
-//       </div>
-//     </div>
-//   );
-// }

@@ -1,183 +1,154 @@
 "use client";
 
-import { useContext, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useTransition, type ChangeEvent, type SyntheticEvent } from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from "lucide-react";
-import { FcGoogle } from "react-icons/fc";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { Lock, LogIn, Mail } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { auth, googleProvider } from "@/lib/firebase";
-import { AuthContext } from "@/context/AuthContext";
+import type { ActionState, FieldErrors, LoginInput } from "@/lib/type";
 
-import type { SessionUser } from "@/types/type";
-import { LoginData, loginSchema } from "@/lib/validation/authValidation";
-import { getApiErrorMessage, getRedirectPath, googleLoginRequest, loginRequest } from "../_action/authAction";
-
-
-const POPUP_CANCEL_CODES = ["auth/popup-closed-by-user", "auth/cancelled-popup-request"];
+import { googleLoginAction, loginAction } from "../_action/authAction";
+import FormField from "./formField";
+import { loginSchema, toFieldErrors } from "@/lib/validation/authValidation";
 
 export default function LoginForm() {
-  const router = useRouter();
-  const setUser = useContext(AuthContext)?.setUser;
-
-  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState<LoginInput>({ email: "", password: "" });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState("");
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [pending, startTransition] = useTransition();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
-  });
-
-  const busy = isSubmitting || googleLoading;
-
-  const finishLogin = (user: SessionUser) => {
-    setUser?.(user);
-    router.push(getRedirectPath(user));
-    router.refresh();
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    setError("");
   };
 
-  /* ---------- Email login ---------- */
-
-  const onSubmit = async (data: LoginData) => {
-    setError("");
-    try {
-      finishLogin(await loginRequest(data));
-    } catch (err) {
-      setError(getApiErrorMessage(err, "Login failed. Please try again."));
+  // সফল হলে server নিজেই redirect করে; এখানে শুধু ব্যর্থতা সামলাই
+  const handleResult = (result?: ActionState) => {
+    if (result && !result.success) {
+      setFieldErrors(result.fieldErrors ?? {});
+      setError(result.fieldErrors ? "" : result.message);
     }
   };
 
-  /* ---------- Google login ---------- */
-
-  const onGoogleLogin = async () => {
+  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
     setError("");
 
-    if (!auth || !googleProvider) {
-      setError("Google login is not configured. Please use email and password.");
+    const parsed = loginSchema.safeParse(form);
+    if (!parsed.success) {
+      setFieldErrors(toFieldErrors(parsed.error));
       return;
     }
+    setFieldErrors({});
 
-    setGoogleLoading(true);
-    try {
-      const credential = await signInWithPopup(auth, googleProvider);
-      const idToken = await credential.user.getIdToken();
-      await signOut(auth).catch(() => {}); // our own cookie is the session
-
-      finishLogin(await googleLoginRequest(idToken));
-    } catch (err) {
-      const code = (err as { code?: string })?.code ?? "";
-      if (POPUP_CANCEL_CODES.includes(code)) return; // user closed popup
-
-      setError(getApiErrorMessage(err, "Google login failed. Please try again."));
-    } finally {
-      setGoogleLoading(false);
-    }
+    startTransition(async () => {
+      handleResult(await loginAction(form));
+    });
   };
 
-  /* ---------- UI ---------- */
+  const handleGoogle = (credential?: string) => {
+    if (!credential) {
+      setError("Google দিয়ে লগইন করা যায়নি। আবার চেষ্টা করো।");
+      return;
+    }
+    setError("");
+
+    startTransition(async () => {
+      handleResult(await googleLoginAction(credential));
+    });
+  };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-      {/* Email */}
-      <div className="space-y-1.5">
-        <Label htmlFor="email">Email address</Label>
-        <Input
-          id="email"
+    <>
+      <div className="mb-4">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+            <LogIn className="h-5 w-5" />
+          </span>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Welcome back</h2>
+        </div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground sm:text-sm">
+          Log in to continue creating and sharing your posters.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} noValidate className="space-y-3">
+        <FormField
+          name="email"
+          label="Email address"
           type="email"
+          icon={Mail}
           placeholder="you@example.com"
           autoComplete="email"
-          aria-invalid={!!errors.email}
-          {...register("email")}
+          value={form.email}
+          onChange={handleChange}
+          error={fieldErrors.email}
         />
-        {errors.email && (
-          <p role="alert" className="text-xs text-destructive">
-            {errors.email.message}
+
+        <FormField
+          name="password"
+          label="Password"
+          type="password"
+          icon={Lock}
+          placeholder="Enter your password"
+          autoComplete="current-password"
+          value={form.password}
+          onChange={handleChange}
+          error={fieldErrors.password}
+          labelRight={
+            <Link
+              href="/forgot-password"
+              className="text-xs font-semibold text-primary hover:underline sm:text-sm"
+            >
+              Forgot password?
+            </Link>
+          }
+        />
+
+        {error && (
+          <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {error}
           </p>
         )}
-      </div>
 
-      {/* Password */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
-          <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
-            Forgot password?
+        <button
+          type="submit"
+          disabled={pending}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-primary/20 transition hover:brightness-105 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 sm:py-3"
+        >
+          {pending ? "Logging in..." : "Login"}
+        </button>
+
+        <div className="flex items-center gap-3 py-1">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground sm:text-xs">
+            or
+          </span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        {/* Google ID token (credential) পাঠায় */}
+        
+<div className={`flex justify-center ${pending ? "pointer-events-none opacity-70" : ""}`}>
+  <GoogleLogin
+    onSuccess={(res) => handleGoogle(res.credential)}
+    onError={() => setError("Google দিয়ে লগইন করা যায়নি। আবার চেষ্টা করো।")}
+    text="continue_with"
+    shape="pill"
+    width="320"
+  />
+</div>
+
+        <p className="text-center text-xs text-muted-foreground sm:text-sm">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-semibold text-primary hover:underline">
+            Create account
           </Link>
-        </div>
-
-        <div className="relative">
-          <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            placeholder="Enter your password"
-            autoComplete="current-password"
-            className="pr-10"
-            aria-invalid={!!errors.password}
-            {...register("password")}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((p) => !p)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-3 text-muted-foreground hover:text-primary"
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-
-        {errors.password && (
-          <p role="alert" className="text-xs text-destructive">
-            {errors.password.message}
-          </p>
-        )}
-      </div>
-
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
         </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        {isSubmitting ? "Logging in..." : "Login"}
-      </button>
-
-      <div className="flex items-center gap-3">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs uppercase text-muted-foreground">or</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <button
-        type="button"
-        onClick={onGoogleLogin}
-        disabled={busy}
-        className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-border px-5 py-2.5 text-sm font-semibold transition hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-70"
-      >
-        <FcGoogle className="h-4 w-4" />
-        {googleLoading ? "Signing in..." : "Continue with Google"}
-      </button>
-
-      <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link href="/register" className="font-semibold text-primary hover:underline">
-          Create account
-        </Link>
-      </p>
-    </form>
+      </form>
+    </>
   );
 }
