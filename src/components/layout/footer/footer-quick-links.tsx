@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Sparkles } from "lucide-react";
-import { quickLinks } from "./footer-data";
+import { quickLinks } from "./footer.constants";
 
 export function FooterQuickLinks() {
   return (

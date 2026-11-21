@@ -1,6 +1,4 @@
-"use client";
-
-import { NavbarDropdown } from "./navbar-dropdown";
+import NavbarDropdown from "../client/navbar-dropdown";
 import DesktopAuthButtons from "./desktop-auth-buttons";
 
 export const loginBtnStyle =

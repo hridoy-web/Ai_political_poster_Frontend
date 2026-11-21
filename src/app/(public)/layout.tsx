@@ -1,5 +1,6 @@
 import { MainFooter } from "@/components/layout/footer/main-footer";
-import { MainNavbar } from "@/components/layout/navbar/main-navbar";
+import { MainNavbar } from "@/components/layout/navbar/server/main-navbar";
+
 
 export default function PublicLayout({
   children,

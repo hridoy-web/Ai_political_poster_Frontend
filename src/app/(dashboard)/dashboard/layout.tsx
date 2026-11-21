@@ -3,6 +3,8 @@ import { DashboardNavbar } from "@/modules/dashboard/client/dashboard-navbar";
 import { DashboardAuthGuard } from "@/modules/dashboard/client/dashboard-auth-guard";
 import { MainFooter } from "@/components/layout/footer/main-footer";
 
+export const instant = false;
+
 export default function DashboardLayout({
   children,
 }: {

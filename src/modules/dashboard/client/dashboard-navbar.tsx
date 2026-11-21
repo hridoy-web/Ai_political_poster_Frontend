@@ -4,9 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Logo } from "@/components/brand/logo";
-import { NavbarDropdown } from "@/components/layout/navbar/navbar-dropdown";
+
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NavbarDropdown from "@/components/layout/navbar/client/navbar-dropdown";
 
 export function DashboardNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);

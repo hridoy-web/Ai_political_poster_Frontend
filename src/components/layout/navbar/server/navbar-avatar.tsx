@@ -5,11 +5,15 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/hooks/get-user-data";
+import { mockUser } from "../navbar.constants";
+import { MockUserType } from "../navbar.types";
+// import { useAuth } from "@/hooks/get-user-data";
 
 export function NavbarAvatar() {
-  const { loading, user } = useAuth();
-  console.log(loading, user);
+  // const { loading, user } = useAuth();
+  const loading = false;
+  const user:MockUserType = mockUser;
+
 
   return (
     <div>

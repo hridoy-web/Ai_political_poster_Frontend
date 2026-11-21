@@ -3,8 +3,9 @@ import { DesktopNavMenu } from "./desktop-nav-menu";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import MobileMenu from "./mobile-menu";
 import { Logo } from "@/components/brand/logo";
-import { NavbarActions } from "./navbar-actions";
-import { NavbarScrollShell } from "./navbar-scroll-shell";
+import NavbarActions from "./navbar-actions";
+import { NavbarScrollShell } from "../client/navbar-scroll-shell";
+
 
 /**
  * MainNavbar - Server Component (RSC)
